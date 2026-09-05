@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\PelatihanController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -9,3 +10,5 @@ Route::get('/', function () {
 Route::get('/awal', function () {
     return view('awal');
 });
+
+Route::resource('pelatihans', PelatihanController::class);
