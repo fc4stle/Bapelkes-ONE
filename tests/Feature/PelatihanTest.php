@@ -87,6 +87,13 @@ class PelatihanTest extends TestCase
         $response->assertSee($pelatihan->nama);
     }
 
+    public function test_show_returns_404_for_missing_pelatihan(): void
+    {
+        $response = $this->get(route('pelatihans.show', ['pelatihan' => 99999]));
+
+        $response->assertStatus(404);
+    }
+
     public function test_edit_returns_200(): void
     {
         $pelatihan = Pelatihan::factory()->create();
@@ -117,6 +124,36 @@ class PelatihanTest extends TestCase
         $this->assertDatabaseHas('pelatihans', ['nama' => 'Pelatihan Updated']);
     }
 
+    public function test_update_with_invalid_data(): void
+    {
+        $pelatihan = Pelatihan::factory()->create();
+
+        $response = $this->put(route('pelatihans.update', $pelatihan), [
+            'nama' => '',
+            'tanggal_mulai' => '',
+            'tanggal_selesai' => '',
+            'lokasi' => '',
+            'kuota' => '',
+            'status' => '',
+        ]);
+
+        $response->assertSessionHasErrors(['nama', 'tanggal_mulai', 'tanggal_selesai', 'lokasi', 'kuota', 'status']);
+    }
+
+    public function test_update_returns_404_for_missing_pelatihan(): void
+    {
+        $response = $this->put(route('pelatihans.update', ['pelatihan' => 99999]), [
+            'nama' => 'Pelatihan Updated',
+            'tanggal_mulai' => '2026-11-01',
+            'tanggal_selesai' => '2026-11-05',
+            'lokasi' => 'Jakarta',
+            'kuota' => 50,
+            'status' => 'dibuka',
+        ]);
+
+        $response->assertStatus(404);
+    }
+
     public function test_destroy_deletes_pelatihan(): void
     {
         $pelatihan = Pelatihan::factory()->create();
@@ -125,5 +162,12 @@ class PelatihanTest extends TestCase
 
         $response->assertRedirect(route('pelatihans.index'));
         $this->assertDatabaseMissing('pelatihans', ['id' => $pelatihan->id]);
+    }
+
+    public function test_destroy_returns_404_for_missing_pelatihan(): void
+    {
+        $response = $this->delete(route('pelatihans.destroy', ['pelatihan' => 99999]));
+
+        $response->assertStatus(404);
     }
 }
