@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\StatusPelatihan;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -25,13 +26,17 @@ class Pelatihan extends Model
     ];
 
     /**
-     * The attributes that should be cast.
+     * Get the attributes that should be cast.
      *
-     * @var array<string, string>
+     * @return array<string, string>
      */
-    protected $casts = [
-        'tanggal_mulai' => 'date',
-        'tanggal_selesai' => 'date',
-        'kuota' => 'integer',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'tanggal_mulai' => 'date',
+            'tanggal_selesai' => 'date',
+            'kuota' => 'integer',
+            'status' => StatusPelatihan::class,
+        ];
+    }
 }

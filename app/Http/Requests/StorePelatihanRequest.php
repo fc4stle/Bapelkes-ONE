@@ -2,8 +2,10 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\StatusPelatihan;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StorePelatihanRequest extends FormRequest
 {
@@ -29,7 +31,7 @@ class StorePelatihanRequest extends FormRequest
             'tanggal_selesai' => ['required', 'date', 'after_or_equal:tanggal_mulai'],
             'lokasi' => ['required', 'string', 'max:255'],
             'kuota' => ['required', 'integer', 'min:1'],
-            'status' => ['required', 'in:draft,dibuka,ditutup,selesai'],
+            'status' => ['required', Rule::enum(StatusPelatihan::class)],
         ];
     }
 }
