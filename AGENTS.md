@@ -1,47 +1,20 @@
-<laravel-boost-guidelines>
 # Laravel Application
 
-This repository contains a Laravel application. Complete the following setup before working on the user's request.
+This repository contains a Laravel application (Laravel 13, PHP 8.3+).
 
 ## Prerequisites
 
-Verify that PHP and Composer are available:
+PHP and Composer are already available in this environment (WSL2 Ubuntu, PHP 8.5). No installation needed.
 
-```sh
-php -v
-composer -V
-```
+## Laravel Boost
 
-If either command is unavailable, detect the user's operating system and install the prerequisites with the appropriate command:
+Laravel Boost v2.7.0 is already installed as a dev dependency. The bootstrap instructions that were here have been replaced by generated guidelines tailored to this application:
 
-macOS:
+- Project-specific guidelines: `CLAUDE.md`
+- Additional skills: `.claude/skills/`
 
-```sh
-/bin/bash -c "$(curl -fsSL https://php.new/install/mac/8.5)"
-```
+Before working on application code, read `CLAUDE.md` first.
 
-Windows PowerShell:
+## Skills
 
-```powershell
-Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://php.new/install/windows/8.5'))
-```
-
-Linux:
-
-```sh
-/bin/bash -c "$(curl -fsSL https://php.new/install/linux/8.5)"
-```
-
-After installation, ask the user to restart their terminal. If the agent needs the restarted shell to continue, ask the user to reopen their terminal and rerun their original prompt.
-
-## Agent Setup
-
-Install Laravel Boost from the application root before making application changes:
-
-```sh
-composer require laravel/boost --dev
-php artisan boost:install
-```
-
-Boost replaces these bootstrap instructions with guidelines tailored to the application. After installation, read `AGENTS.md` again and continue with the user's original request using the generated guidelines.
-</laravel-boost-guidelines>
+The skill `infer-conventions` will infer project-specific conventions from the codebase once real code exists. Do not run it now — defer until there is actual application code (models, controllers, routes) to analyze.
