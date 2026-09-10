@@ -37,6 +37,12 @@ Route::middleware('auth')->group(function () {
         ->name('pendaftarans.update');
 });
 
+Route::middleware(['auth', 'role:panitia'])->group(function () {
+    Route::get('/pelatihan/{pelatihan}/pendaftar', [PelatihanController::class, 'pendaftar'])->name('pelatihan.pendaftar');
+    Route::patch('/pendaftarans/{pendaftaran}/verifikasi', [PendaftaranController::class, 'verifikasi'])->name('pendaftarans.verifikasi');
+    Route::patch('/pendaftarans/{pendaftaran}/tolak', [PendaftaranController::class, 'tolak'])->name('pendaftarans.tolak');
+});
+
 Route::resource('pelatihans', PelatihanController::class)
     ->middleware(['auth', 'role:panitia']);
 

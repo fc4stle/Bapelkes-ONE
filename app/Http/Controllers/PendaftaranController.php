@@ -125,6 +125,30 @@ class PendaftaranController extends Controller
     }
 
     /**
+     * Verify a registration (panitia only).
+     */
+    public function verifikasi(Pendaftaran $pendaftaran)
+    {
+        $pendaftaran->verifikasi(Auth::user());
+
+        return back()->with('success', 'Pendaftaran berhasil diverifikasi.');
+    }
+
+    /**
+     * Reject a registration with a reason (panitia only).
+     */
+    public function tolak(Request $request, Pendaftaran $pendaftaran)
+    {
+        $validated = $request->validate([
+            'alasan_penolakan' => ['required', 'string', 'min:3', 'max:1000'],
+        ]);
+
+        $pendaftaran->tolak(Auth::user(), $validated['alasan_penolakan']);
+
+        return back()->with('success', 'Pendaftaran berhasil ditolak.');
+    }
+
+    /**
      * Cancel the authenticated user's own registration.
      */
     public function destroy(Pendaftaran $pendaftaran)

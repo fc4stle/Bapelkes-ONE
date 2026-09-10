@@ -45,6 +45,19 @@ class PelatihanController extends Controller
     }
 
     /**
+     * Show the list of pendaftar for a pelatihan (panitia only).
+     */
+    public function pendaftar(Pelatihan $pelatihan)
+    {
+        $pendaftarans = $pelatihan->pendaftarans()
+            ->with('peserta')
+            ->latest()
+            ->paginate(15);
+
+        return view('pelatihans.pendaftar', compact('pelatihan', 'pendaftarans'));
+    }
+
+    /**
      * Show the form for creating a new resource.
      */
     public function create()

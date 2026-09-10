@@ -25,6 +25,9 @@ class Pendaftaran extends Model
         'dokumen',
         'butuh_asrama',
         'catatan',
+        'verified_by',
+        'verified_at',
+        'alasan_penolakan',
     ];
 
     /**
@@ -37,6 +40,7 @@ class Pendaftaran extends Model
         return [
             'data_diri' => 'array',
             'butuh_asrama' => 'boolean',
+            'verified_at' => 'datetime',
         ];
     }
 
@@ -56,6 +60,14 @@ class Pendaftaran extends Model
         return $this->belongsTo(Pelatihan::class);
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
+    public function verifier(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'verified_by');
+    }
+
     public function isPending(): bool
     {
         return $this->status_verifikasi === 'pending';
@@ -64,5 +76,30 @@ class Pendaftaran extends Model
     public function isDiverifikasi(): bool
     {
         return $this->status_verifikasi === 'diverifikasi';
+    }
+
+    public function isDitolak(): bool
+    {
+        return $this->status_verifikasi === 'ditolak';
+    }
+
+    public function verifikasi(User $panitia): void
+    {
+        $this->update([
+            'status_verifikasi' => 'diverifikasi',
+            'verified_by' => $panitia->id,
+            'verified_at' => now(),
+            'alasan_penolakan' => null,
+        ]);
+    }
+
+    public function tolak(User $panitia, string $alasan): void
+    {
+        $this->update([
+            'status_verifikasi' => 'ditolak',
+            'verified_by' => $panitia->id,
+            'verified_at' => now(),
+            'alasan_penolakan' => $alasan,
+        ]);
     }
 }
