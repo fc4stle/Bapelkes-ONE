@@ -57,6 +57,18 @@
     </div>
 
     <div>
+        <label for="metode" class="block text-sm font-medium text-gray-700">Metode <span class="text-red-500">*</span></label>
+        <select name="metode" id="metode" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border px-3 py-2 @error('metode') border-red-500 @enderror" required>
+            @foreach (\App\Enums\MetodePelatihan::cases() as $metodeOption)
+                <option value="{{ $metodeOption->value }}" {{ old('metode', $pelatihan?->metode?->value) === $metodeOption->value ? 'selected' : '' }}>{{ $metodeOption->label() }}</option>
+            @endforeach
+        </select>
+        @error('metode')
+            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+        @enderror
+    </div>
+
+    <div>
         <label for="status" class="block text-sm font-medium text-gray-700">Status <span class="text-red-500">*</span></label>
         <select name="status" id="status" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border px-3 py-2 @error('status') border-red-500 @enderror" required>
             <option value="{{ \App\Enums\StatusPelatihan::Draft->value }}" {{ old('status', $pelatihan?->status?->value) === \App\Enums\StatusPelatihan::Draft->value ? 'selected' : '' }}>Draft</option>

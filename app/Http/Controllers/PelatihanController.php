@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\MetodePelatihan;
+use App\Enums\StatusPelatihan;
 use App\Http\Requests\StorePelatihanRequest;
 use App\Http\Requests\UpdatePelatihanRequest;
 use App\Models\Pelatihan;
+use Illuminate\Http\Request;
 
 class PelatihanController extends Controller
 {
@@ -16,6 +19,29 @@ class PelatihanController extends Controller
         $pelatihans = Pelatihan::latest()->paginate(10);
 
         return view('pelatihans.index', compact('pelatihans'));
+    }
+
+    /**
+     * Display the catalog of currently open pelatihan for peserta.
+     */
+    public function katalog(Request $request)
+    {
+        $search = $request->query('q');
+        $metode = MetodePelatihan::tryFrom((string) $request->query('metode'));
+
+        $pelatihans = Pelatihan::query()
+            ->where('status', StatusPelatihan::Dibuka)
+            ->when($search, fn ($query) => $query->where('nama', 'like', '%'.$search.'%'))
+            ->when($metode, fn ($query) => $query->where('metode', $metode))
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
+
+        return view('pelatihans.katalog', [
+            'pelatihans' => $pelatihans,
+            'search' => $search,
+            'metode' => $metode?->value,
+        ]);
     }
 
     /**

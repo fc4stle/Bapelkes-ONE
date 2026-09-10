@@ -24,6 +24,8 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/pendaftarans', [PendaftaranController::class, 'index'])->name('pendaftarans.index');
 
+    Route::get('/pelatihan', [PelatihanController::class, 'katalog'])->name('pelatihan.katalog');
+
     Route::middleware('role:peserta')->group(function () {
         Route::get('/pelatihan/{pelatihan}/daftar', [PendaftaranController::class, 'create'])->name('pelatihan.daftar');
         Route::post('/pelatihans/{pelatihan}/daftar', [PendaftaranController::class, 'store'])->name('pelatihans.daftar');

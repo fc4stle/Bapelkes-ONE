@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\MetodePelatihan;
 use App\Enums\StatusPelatihan;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -23,6 +24,7 @@ class Pelatihan extends Model
         'tanggal_selesai',
         'lokasi',
         'kuota',
+        'metode',
         'status',
     ];
 
@@ -37,6 +39,7 @@ class Pelatihan extends Model
             'tanggal_mulai' => 'date',
             'tanggal_selesai' => 'date',
             'kuota' => 'integer',
+            'metode' => MetodePelatihan::class,
             'status' => StatusPelatihan::class,
         ];
     }

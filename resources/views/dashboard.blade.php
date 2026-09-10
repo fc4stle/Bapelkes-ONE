@@ -14,6 +14,7 @@
                         <a href="{{ route('pelatihans.index') }}" class="text-indigo-600 hover:text-indigo-900 underline">{{ __('Kelola Pelatihan') }}</a>
                     @else
                         {{ __('Selamat datang, Peserta. Anda dapat melihat data pelatihan.') }}
+                        <a href="{{ route('pelatihan.katalog') }}" class="text-indigo-600 hover:text-indigo-900 underline">{{ __('Lihat Katalog Pelatihan') }}</a>
                     @endif
                 </div>
             </div>

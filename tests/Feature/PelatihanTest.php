@@ -61,6 +61,7 @@ class PelatihanTest extends TestCase
             'tanggal_selesai' => '2026-10-03',
             'lokasi' => 'Yogyakarta',
             'kuota' => 30,
+            'metode' => 'luring',
             'status' => 'draft',
         ];
 
@@ -78,10 +79,11 @@ class PelatihanTest extends TestCase
             'tanggal_selesai' => '',
             'lokasi' => '',
             'kuota' => '',
+            'metode' => '',
             'status' => '',
         ]);
 
-        $response->assertSessionHasErrors(['nama', 'tanggal_mulai', 'tanggal_selesai', 'lokasi', 'kuota', 'status']);
+        $response->assertSessionHasErrors(['nama', 'tanggal_mulai', 'tanggal_selesai', 'lokasi', 'kuota', 'metode', 'status']);
     }
 
     public function test_show_returns_200(): void
@@ -123,6 +125,7 @@ class PelatihanTest extends TestCase
             'tanggal_selesai' => '2026-11-05',
             'lokasi' => 'Jakarta',
             'kuota' => 50,
+            'metode' => 'daring',
             'status' => 'dibuka',
         ];
 
@@ -142,10 +145,11 @@ class PelatihanTest extends TestCase
             'tanggal_selesai' => '',
             'lokasi' => '',
             'kuota' => '',
+            'metode' => '',
             'status' => '',
         ]);
 
-        $response->assertSessionHasErrors(['nama', 'tanggal_mulai', 'tanggal_selesai', 'lokasi', 'kuota', 'status']);
+        $response->assertSessionHasErrors(['nama', 'tanggal_mulai', 'tanggal_selesai', 'lokasi', 'kuota', 'metode', 'status']);
     }
 
     public function test_update_returns_404_for_missing_pelatihan(): void
@@ -156,6 +160,7 @@ class PelatihanTest extends TestCase
             'tanggal_selesai' => '2026-11-05',
             'lokasi' => 'Jakarta',
             'kuota' => 50,
+            'metode' => 'daring',
             'status' => 'dibuka',
         ]);
 

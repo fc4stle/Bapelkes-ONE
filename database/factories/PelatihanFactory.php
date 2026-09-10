@@ -27,6 +27,7 @@ class PelatihanFactory extends Factory
             'tanggal_selesai' => $tanggalSelesai,
             'lokasi' => fake()->city(),
             'kuota' => fake()->numberBetween(10, 100),
+            'metode' => fake()->randomElement(['luring', 'daring', 'blended']),
             'status' => fake()->randomElement(['draft', 'dibuka', 'ditutup', 'selesai']),
         ];
     }

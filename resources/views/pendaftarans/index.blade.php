@@ -11,7 +11,7 @@
     <div class="px-4 py-5 sm:p-6">
         <div class="flex justify-between items-center mb-6">
             <h1 class="text-2xl font-bold text-gray-900">Pendaftaran Saya</h1>
-            <a href="{{ route('pelatihans.index') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+            <a href="{{ route('pelatihan.katalog') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                 Daftar Pelatihan
             </a>
         </div>
@@ -36,7 +36,7 @@
                 <h3 class="mt-2 text-sm font-medium text-gray-900">Belum ada pendaftaran</h3>
                 <p class="mt-1 text-sm text-gray-500">Anda belum mendaftar pada pelatihan manapun.</p>
                 <div class="mt-6">
-                    <a href="{{ route('pelatihans.index') }}" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    <a href="{{ route('pelatihan.katalog') }}" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                         Daftar Pelatihan
                     </a>
                 </div>
