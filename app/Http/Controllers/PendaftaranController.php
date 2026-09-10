@@ -5,11 +5,19 @@ namespace App\Http\Controllers;
 use App\Enums\StatusPelatihan;
 use App\Models\Pelatihan;
 use App\Models\Pendaftaran;
+use App\Services\KamarService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class PendaftaranController extends Controller
 {
+    protected KamarService $kamarService;
+
+    public function __construct(KamarService $kamarService)
+    {
+        $this->kamarService = $kamarService;
+    }
+
     /**
      * Display a listing of the authenticated user's registrations.
      */
@@ -86,6 +94,23 @@ class PendaftaranController extends Controller
             $dokumenLainPaths[] = $request->file('dokumen_lain')->store('dokumen_pendaftar', 'public');
         }
 
+        $butuhAsrama = (bool) ($validated['butuh_asrama'] ?? false);
+        $checkIn = $validated['check_in'] ?? null;
+        $checkOut = $validated['check_out'] ?? null;
+        $kamarId = null;
+        $pesanAsrama = null;
+
+        if ($butuhAsrama && $checkIn && $checkOut) {
+            $kamar = $this->kamarService->alokasikanKamar($checkIn, $checkOut);
+
+            if ($kamar) {
+                $kamarId = $kamar->id;
+                $pesanAsrama = "Pendaftaran berhasil dikirim. Kamar {$kamar->nomor_kamar} di {$kamar->asrama->nama} telah dialokasikan untuk Anda.";
+            } else {
+                $pesanAsrama = 'Pendaftaran berhasil dikirim, tetapi asrama sudah penuh untuk tanggal tersebut. Anda tetap terdaftar tanpa kamar.';
+            }
+        }
+
         Pendaftaran::create([
             'peserta_id' => $user->id,
             'pelatihan_id' => $pelatihan->id,
@@ -100,13 +125,16 @@ class PendaftaranController extends Controller
             'dokumen' => json_encode(array_filter([
                 'surat_tugas' => $suratTugasPath,
                 'dokumen_lain' => $dokumenLainPaths,
-                'check_in' => $validated['check_in'] ?? null,
-                'check_out' => $validated['check_out'] ?? null,
             ])),
-            'butuh_asrama' => (bool) ($validated['butuh_asrama'] ?? false),
+            'butuh_asrama' => $butuhAsrama,
+            'check_in' => $checkIn,
+            'check_out' => $checkOut,
+            'kamar_id' => $kamarId,
         ]);
 
-        return redirect()->route('pendaftarans.index')->with('success', 'Pendaftaran berhasil dikirim, menunggu konfirmasi panitia.');
+        $successMessage = $pesanAsrama ?? 'Pendaftaran berhasil dikirim, menunggu konfirmasi panitia.';
+
+        return redirect()->route('pendaftarans.index')->with('success', $successMessage);
     }
 
     /**

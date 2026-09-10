@@ -12,11 +12,6 @@ class Pendaftaran extends Model
     /** @use HasFactory<PendaftaranFactory> */
     use HasFactory;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
     protected $fillable = [
         'peserta_id',
         'pelatihan_id',
@@ -28,44 +23,40 @@ class Pendaftaran extends Model
         'verified_by',
         'verified_at',
         'alasan_penolakan',
+        'check_in',
+        'check_out',
+        'kamar_id',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
             'data_diri' => 'array',
             'butuh_asrama' => 'boolean',
             'verified_at' => 'datetime',
+            'check_in' => 'date:Y-m-d',
+            'check_out' => 'date:Y-m-d',
         ];
     }
 
-    /**
-     * @return BelongsTo<User, $this>
-     */
     public function peserta(): BelongsTo
     {
         return $this->belongsTo(User::class, 'peserta_id');
     }
 
-    /**
-     * @return BelongsTo<Pelatihan, $this>
-     */
     public function pelatihan(): BelongsTo
     {
         return $this->belongsTo(Pelatihan::class);
     }
 
-    /**
-     * @return BelongsTo<User, $this>
-     */
     public function verifier(): BelongsTo
     {
         return $this->belongsTo(User::class, 'verified_by');
+    }
+
+    public function kamar(): BelongsTo
+    {
+        return $this->belongsTo(Kamar::class);
     }
 
     public function isPending(): bool
