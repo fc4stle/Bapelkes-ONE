@@ -40,7 +40,13 @@ class PendaftaranTest extends TestCase
         $peserta = User::factory()->create(['role' => 'peserta']);
         $pelatihan = Pelatihan::factory()->create(['status' => 'dibuka', 'kuota' => 10]);
 
-        $response = $this->actingAs($peserta)->post(route('pelatihans.daftar', $pelatihan));
+        $response = $this->actingAs($peserta)->post(route('pelatihans.daftar', $pelatihan), [
+            'nama' => 'John Doe',
+            'nik' => '3201234567890001',
+            'kontak' => '08123456789',
+            'profesi' => 'Perawat',
+            'instansi' => 'RSUD Kota',
+        ]);
 
         $response->assertRedirect();
         $response->assertSessionHas('success');
@@ -166,5 +172,54 @@ class PendaftaranTest extends TestCase
 
         $response->assertForbidden();
         $this->assertDatabaseHas('pendaftarans', ['id' => $pendaftaran->id]);
+    }
+
+    public function test_peserta_can_submit_pendaftaran_with_asrama(): void
+    {
+        $peserta = User::factory()->create(['role' => 'peserta']);
+        $pelatihan = Pelatihan::factory()->create(['status' => 'dibuka', 'kuota' => 10]);
+
+        $response = $this->actingAs($peserta)->post(route('pelatihans.daftar', $pelatihan), [
+            'nama' => 'Budi Santoso',
+            'nik' => '3201234567890001',
+            'kontak' => '08123456789',
+            'profesi' => 'Perawat',
+            'instansi' => 'RSUD Kota',
+            'butuh_asrama' => true,
+            'check_in' => '2026-10-01',
+            'check_out' => '2026-10-03',
+        ]);
+
+        $response->assertRedirect(route('pendaftarans.index'));
+        $response->assertSessionHas('success');
+        $this->assertDatabaseHas('pendaftarans', [
+            'peserta_id' => $peserta->id,
+            'pelatihan_id' => $pelatihan->id,
+            'status_verifikasi' => 'pending',
+            'butuh_asrama' => true,
+        ]);
+    }
+
+    public function test_peserta_can_submit_pendaftaran_without_asrama(): void
+    {
+        $peserta = User::factory()->create(['role' => 'peserta']);
+        $pelatihan = Pelatihan::factory()->create(['status' => 'dibuka', 'kuota' => 10]);
+
+        $response = $this->actingAs($peserta)->post(route('pelatihans.daftar', $pelatihan), [
+            'nama' => 'Ani Wijaya',
+            'nik' => '3201234567890002',
+            'kontak' => '08123456788',
+            'profesi' => 'Bidan',
+            'instansi' => 'Puskesmas',
+        ]);
+
+        $response->assertRedirect(route('pendaftarans.index'));
+        $response->assertSessionHas('success');
+        $this->assertDatabaseHas('pendaftarans', [
+            'peserta_id' => $peserta->id,
+            'pelatihan_id' => $pelatihan->id,
+            'status_verifikasi' => 'pending',
+            'butuh_asrama' => false,
+        ]);
     }
 }

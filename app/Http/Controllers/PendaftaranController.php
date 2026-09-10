@@ -25,6 +25,26 @@ class PendaftaranController extends Controller
     }
 
     /**
+     * Show the registration form for a pelatihan.
+     */
+    public function create(Pelatihan $pelatihan)
+    {
+        if ($pelatihan->status !== StatusPelatihan::Dibuka) {
+            return back()->with('error', 'Pendaftaran untuk pelatihan ini belum dibuka.');
+        }
+
+        if ($pelatihan->isFull()) {
+            return back()->with('error', 'Kuota pelatihan ini sudah penuh.');
+        }
+
+        if (Auth::user()->pendaftaranPelatihan($pelatihan)) {
+            return back()->with('error', 'Anda sudah terdaftar pada pelatihan ini.');
+        }
+
+        return view('pendaftarans.create', compact('pelatihan'));
+    }
+
+    /**
      * Register the authenticated user to the given pelatihan.
      */
     public function store(Request $request, Pelatihan $pelatihan)
@@ -43,13 +63,50 @@ class PendaftaranController extends Controller
             return back()->with('error', 'Anda sudah terdaftar pada pelatihan ini.');
         }
 
+        $validated = $request->validate([
+            'nama' => ['required', 'string', 'max:255'],
+            'nik' => ['required', 'string', 'max:16'],
+            'kontak' => ['required', 'string', 'max:255'],
+            'profesi' => ['required', 'string', 'max:255'],
+            'instansi' => ['required', 'string', 'max:255'],
+            'surat_tugas' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:2048'],
+            'dokumen_lain' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:2048'],
+            'butuh_asrama' => ['nullable', 'boolean'],
+            'check_in' => ['required_if:butuh_asrama,true', 'nullable', 'date'],
+            'check_out' => ['required_if:butuh_asrama,true', 'nullable', 'date', 'after_or_equal:check_in'],
+        ]);
+
+        $suratTugasPath = null;
+        if ($request->hasFile('surat_tugas')) {
+            $suratTugasPath = $request->file('surat_tugas')->store('surat_tugas', 'public');
+        }
+
+        $dokumenLainPaths = [];
+        if ($request->hasFile('dokumen_lain')) {
+            $dokumenLainPaths[] = $request->file('dokumen_lain')->store('dokumen_pendaftar', 'public');
+        }
+
         Pendaftaran::create([
             'peserta_id' => $user->id,
             'pelatihan_id' => $pelatihan->id,
             'status_verifikasi' => 'pending',
+            'data_diri' => [
+                'nama' => $validated['nama'],
+                'nik' => $validated['nik'],
+                'kontak' => $validated['kontak'],
+                'profesi' => $validated['profesi'],
+                'instansi' => $validated['instansi'],
+            ],
+            'dokumen' => json_encode(array_filter([
+                'surat_tugas' => $suratTugasPath,
+                'dokumen_lain' => $dokumenLainPaths,
+                'check_in' => $validated['check_in'] ?? null,
+                'check_out' => $validated['check_out'] ?? null,
+            ])),
+            'butuh_asrama' => (bool) ($validated['butuh_asrama'] ?? false),
         ]);
 
-        return back()->with('success', 'Pendaftaran berhasil dikirim, menunggu konfirmasi panitia.');
+        return redirect()->route('pendaftarans.index')->with('success', 'Pendaftaran berhasil dikirim, menunggu konfirmasi panitia.');
     }
 
     /**
