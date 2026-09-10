@@ -7,6 +7,7 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -20,6 +21,21 @@ class User extends Authenticatable
     public function isPanitia(): bool
     {
         return $this->role === 'panitia';
+    }
+
+    /**
+     * @return HasMany<Pendaftaran, $this>
+     */
+    public function pendaftarans(): HasMany
+    {
+        return $this->hasMany(Pendaftaran::class, 'peserta_id');
+    }
+
+    public function pendaftaranPelatihan(Pelatihan $pelatihan): ?Pendaftaran
+    {
+        return $this->pendaftarans()
+            ->where('pelatihan_id', $pelatihan->id)
+            ->first();
     }
 
     /**
