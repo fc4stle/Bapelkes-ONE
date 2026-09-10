@@ -26,6 +26,8 @@ class Pendaftaran extends Model
         'check_in',
         'check_out',
         'kamar_id',
+        'kode_presensi',
+        'kode_generated_at',
     ];
 
     protected function casts(): array
@@ -36,6 +38,7 @@ class Pendaftaran extends Model
             'verified_at' => 'datetime',
             'check_in' => 'date:Y-m-d',
             'check_out' => 'date:Y-m-d',
+            'kode_generated_at' => 'datetime',
         ];
     }
 
@@ -81,6 +84,8 @@ class Pendaftaran extends Model
             'verified_by' => $panitia->id,
             'verified_at' => now(),
             'alasan_penolakan' => null,
+            'kode_presensi' => $this->generateKodePresensi(),
+            'kode_generated_at' => now(),
         ]);
     }
 
@@ -92,5 +97,10 @@ class Pendaftaran extends Model
             'verified_at' => now(),
             'alasan_penolakan' => $alasan,
         ]);
+    }
+
+    private function generateKodePresensi(): string
+    {
+        return strtoupper(substr(md5($this->id.$this->peserta_id.$this->pelatihan_id.uniqid()), 0, 16));
     }
 }

@@ -6,6 +6,10 @@ use App\Enums\StatusPelatihan;
 use App\Models\Pelatihan;
 use App\Models\Pendaftaran;
 use App\Services\KamarService;
+use BaconQrCode\Renderer\Image\SvgImageBackEnd;
+use BaconQrCode\Renderer\ImageRenderer;
+use BaconQrCode\Renderer\RendererStyle\RendererStyle;
+use BaconQrCode\Writer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -188,5 +192,32 @@ class PendaftaranController extends Controller
         $pendaftaran->delete();
 
         return back()->with('success', 'Pendaftaran berhasil dibatalkan.');
+    }
+
+    /**
+     * Show the digital participant card (kartu peserta) for verified registration.
+     */
+    public function kartu(Pendaftaran $pendaftaran)
+    {
+        // Only the owner peserta can view their own card
+        if ($pendaftaran->peserta_id !== Auth::id()) {
+            abort(403);
+        }
+
+        // Load relationships
+        $pendaftaran->load(['pelatihan', 'kamar.asrama', 'verifier']);
+
+        // Generate QR code if verified
+        $qrCode = null;
+        if ($pendaftaran->isDiverifikasi() && $pendaftaran->kode_presensi) {
+            $renderer = new ImageRenderer(
+                new RendererStyle(300),
+                new SvgImageBackEnd
+            );
+            $writer = new Writer($renderer);
+            $qrCode = $writer->writeString($pendaftaran->kode_presensi);
+        }
+
+        return view('pendaftarans.kartu', compact('pendaftaran', 'qrCode'));
     }
 }
