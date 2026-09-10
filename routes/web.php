@@ -31,6 +31,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/pelatihans/{pelatihan}/daftar', [PendaftaranController::class, 'store'])->name('pelatihans.daftar');
         Route::delete('/pendaftarans/{pendaftaran}', [PendaftaranController::class, 'destroy'])->name('pendaftarans.destroy');
         Route::get('/pendaftarans/{pendaftaran}/kartu', [PendaftaranController::class, 'kartu'])->name('pendaftarans.kartu');
+        Route::get('/pendaftarans/{pendaftaran}/sertifikat', [PendaftaranController::class, 'sertifikat'])->name('pendaftarans.sertifikat');
     });
 
     Route::patch('/pendaftarans/{pendaftaran}', [PendaftaranController::class, 'update'])
@@ -39,7 +40,10 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::middleware(['auth', 'role:panitia'])->group(function () {
+    Route::get('/panitia/dashboard', [PelatihanController::class, 'dashboard'])->name('panitia.dashboard');
     Route::get('/pelatihan/{pelatihan}/pendaftar', [PelatihanController::class, 'pendaftar'])->name('pelatihan.pendaftar');
+    Route::get('/pelatihan/{pelatihan}/presensi', [PelatihanController::class, 'presensi'])->name('pelatihan.presensi');
+    Route::post('/pelatihan/{pelatihan}/presensi', [PelatihanController::class, 'prosesPresensi'])->name('pelatihan.presensi.proses');
     Route::patch('/pendaftarans/{pendaftaran}/verifikasi', [PendaftaranController::class, 'verifikasi'])->name('pendaftarans.verifikasi');
     Route::patch('/pendaftarans/{pendaftaran}/tolak', [PendaftaranController::class, 'tolak'])->name('pendaftarans.tolak');
 });

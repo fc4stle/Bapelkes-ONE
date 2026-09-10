@@ -28,6 +28,9 @@ class Pendaftaran extends Model
         'kamar_id',
         'kode_presensi',
         'kode_generated_at',
+        'hadir_at',
+        'kode_sertifikat',
+        'sertifikat_generated_at',
     ];
 
     protected function casts(): array
@@ -39,6 +42,8 @@ class Pendaftaran extends Model
             'check_in' => 'date:Y-m-d',
             'check_out' => 'date:Y-m-d',
             'kode_generated_at' => 'datetime',
+            'hadir_at' => 'datetime',
+            'sertifikat_generated_at' => 'datetime',
         ];
     }
 
@@ -77,6 +82,37 @@ class Pendaftaran extends Model
         return $this->status_verifikasi === 'ditolak';
     }
 
+    public function isHadir(): bool
+    {
+        return $this->hadir_at !== null;
+    }
+
+    public function isSudahSertifikat(): bool
+    {
+        return $this->kode_sertifikat !== null;
+    }
+
+    public function isPelatihanSelesai(): bool
+    {
+        return $this->pelatihan && $this->pelatihan->tanggal_selesai->isPast();
+    }
+
+    public function bisaDownloadSertifikat(): bool
+    {
+        return $this->isDiverifikasi() && $this->isHadir() && $this->isPelatihanSelesai();
+    }
+
+    public function generateKodeSertifikat(): string
+    {
+        $kode = 'CERT-'.strtoupper(substr(md5($this->id.$this->peserta_id.$this->pelatihan_id.uniqid()), 0, 12));
+        $this->update([
+            'kode_sertifikat' => $kode,
+            'sertifikat_generated_at' => now(),
+        ]);
+
+        return $kode;
+    }
+
     public function verifikasi(User $panitia): void
     {
         $this->update([
@@ -96,6 +132,13 @@ class Pendaftaran extends Model
             'verified_by' => $panitia->id,
             'verified_at' => now(),
             'alasan_penolakan' => $alasan,
+        ]);
+    }
+
+    public function tandaiHadir(): void
+    {
+        $this->update([
+            'hadir_at' => now(),
         ]);
     }
 

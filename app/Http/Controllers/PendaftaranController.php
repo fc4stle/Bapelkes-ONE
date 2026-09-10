@@ -12,6 +12,7 @@ use BaconQrCode\Renderer\RendererStyle\RendererStyle;
 use BaconQrCode\Writer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 
 class PendaftaranController extends Controller
 {
@@ -219,5 +220,54 @@ class PendaftaranController extends Controller
         }
 
         return view('pendaftarans.kartu', compact('pendaftaran', 'qrCode'));
+    }
+
+    /**
+     * Show/download the sertifikat PDF for a verified and attended registration.
+     */
+    public function sertifikat(Pendaftaran $pendaftaran)
+    {
+        // Only the owner peserta can view their own sertifikat
+        if ($pendaftaran->peserta_id !== Auth::id()) {
+            abort(403);
+        }
+
+        // Check eligibility
+        if (! $pendaftaran->isDiverifikasi()) {
+            return view('pendaftarans.sertifikat_belum', [
+                'pendaftaran' => $pendaftaran,
+                'alasan' => 'Pendaftaran belum diverifikasi.',
+            ]);
+        }
+
+        if (! $pendaftaran->isHadir()) {
+            return view('pendaftarans.sertifikat_belum', [
+                'pendaftaran' => $pendaftaran,
+                'alasan' => 'Kehadiran belum tercatat. Sertifikat tersedia setelah peserta melakukan presensi.',
+            ]);
+        }
+
+        if (! $pendaftaran->isPelatihanSelesai()) {
+            return view('pendaftarans.sertifikat_belum', [
+                'pendaftaran' => $pendaftaran,
+                'alasan' => 'Pelatihan belum selesai. Sertifikat tersedia setelah pelatihan berakhir.',
+            ]);
+        }
+
+        // Load relationships
+        $pendaftaran->load(['pelatihan', 'kamar.asrama', 'verifier']);
+
+        // Generate kode_sertifikat if not exists
+        if (! $pendaftaran->isSudahSertifikat()) {
+            $pendaftaran->generateKodeSertifikat();
+            $pendaftaran->refresh();
+        }
+
+        // Generate PDF
+        $pdf = \PDF::loadView('pendaftarans.sertifikat_pdf', compact('pendaftaran'));
+
+        $filename = 'Sertifikat_'.Str::slug($pendaftaran->data_diri['nama'] ?? 'peserta').'_'.$pendaftaran->kode_sertifikat.'.pdf';
+
+        return $pdf->download($filename);
     }
 }

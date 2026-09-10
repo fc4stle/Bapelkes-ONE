@@ -7,6 +7,7 @@ use App\Enums\StatusPelatihan;
 use App\Http\Requests\StorePelatihanRequest;
 use App\Http\Requests\UpdatePelatihanRequest;
 use App\Models\Pelatihan;
+use App\Models\Pendaftaran;
 use Illuminate\Http\Request;
 
 class PelatihanController extends Controller
@@ -119,5 +120,73 @@ class PelatihanController extends Controller
         return redirect()
             ->route('pelatihans.index')
             ->with('success', 'Pelatihan berhasil dihapus.');
+    }
+
+    /**
+     * Show the presensi form for a pelatihan (panitia only).
+     */
+    public function presensi(Pelatihan $pelatihan)
+    {
+        return view('pelatihans.presensi', compact('pelatihan'));
+    }
+
+    /**
+     * Show the dashboard rekap for panitia.
+     */
+    public function dashboard()
+    {
+        $pelatihans = Pelatihan::withCount([
+            'pendaftarans as total_pendaftar',
+            'pendaftarans as terverifikasi' => fn ($q) => $q->where('status_verifikasi', 'diverifikasi'),
+            'pendaftarans as menunggu_verifikasi' => fn ($q) => $q->where('status_verifikasi', 'pending'),
+            'pendaftarans as ditolak' => fn ($q) => $q->where('status_verifikasi', 'ditolak'),
+            'pendaftarans as hadir' => fn ($q) => $q->whereNotNull('hadir_at'),
+            'pendaftarans as butuh_asrama' => fn ($q) => $q->where('butuh_asrama', true),
+            'pendaftarans as sertifikat_terunduh' => fn ($q) => $q->whereNotNull('kode_sertifikat'),
+        ])->latest()->paginate(10);
+
+        return view('pelatihans.dashboard', compact('pelatihans'));
+    }
+
+    /**
+     * Process the presensi submission (panitia only).
+     */
+    public function prosesPresensi(Request $request, Pelatihan $pelatihan)
+    {
+        $validated = $request->validate([
+            'kode_presensi' => ['required', 'string', 'max:32'],
+        ]);
+
+        $kode = strtoupper(trim($validated['kode_presensi']));
+
+        // Cari pendaftaran dengan kode ini untuk pelatihan ini
+        $pendaftaran = Pendaftaran::where('kode_presensi', $kode)
+            ->where('pelatihan_id', $pelatihan->id)
+            ->first();
+
+        // Kalau tidak ketemu di pelatihan ini, cek apakah ada di pelatihan lain
+        if (! $pendaftaran) {
+            $pendaftaranLain = Pendaftaran::where('kode_presensi', $kode)->first();
+            if ($pendaftaranLain) {
+                return back()->with('error', 'Kode presensi tidak berlaku untuk pelatihan ini. Kode ini terdaftar untuk pelatihan lain.');
+            }
+
+            return back()->with('error', 'Kode presensi tidak ditemukan.');
+        }
+
+        // Cek status verifikasi
+        if (! $pendaftaran->isDiverifikasi()) {
+            return back()->with('error', 'Pendaftaran belum diverifikasi. Tidak dapat melakukan presensi.');
+        }
+
+        // Cek apakah sudah pernah presensi
+        if ($pendaftaran->isHadir()) {
+            return back()->with('warning', "Peserta {$pendaftaran->data_diri['nama']} sudah pernah presensi pada {$pendaftaran->hadir_at->format('d M Y H:i')}.");
+        }
+
+        // Tandai hadir
+        $pendaftaran->tandaiHadir();
+
+        return back()->with('success', "Presensi berhasil! Peserta: {$pendaftaran->data_diri['nama']}.");
     }
 }
