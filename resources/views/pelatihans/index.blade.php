@@ -1,9 +1,13 @@
-@extends('layouts.app')
+<x-app-layout>
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            Daftar Pelatihan
+        </h2>
+    </x-slot>
 
-@section('title', 'Daftar Pelatihan')
-
-@section('content')
-<div class="bg-white shadow rounded-lg">
+    <div class="py-12">
+    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="bg-white shadow rounded-lg">
     <div class="px-4 py-5 sm:p-6">
         <div class="flex justify-between items-center mb-6">
             <h1 class="text-2xl font-bold text-gray-900">Daftar Pelatihan</h1>
@@ -85,5 +89,7 @@
             </div>
         @endif
     </div>
-</div>
-@endsection
+    </div>
+    </div>
+    </div>
+</x-app-layout>

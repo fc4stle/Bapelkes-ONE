@@ -3,12 +3,20 @@
 namespace Tests\Feature;
 
 use App\Models\Pelatihan;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class PelatihanTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->actingAs(User::factory()->create(['role' => 'panitia']));
+    }
 
     public function test_index_returns_200(): void
     {
