@@ -1,0 +1,62 @@
+# Dependencies
+node_modules
+vendor
+
+# Environment
+.env
+.env.backup
+.env.production
+.env.*.local
+
+# Git
+.git
+.gitattributes
+.gitignore
+
+# Docker
+.docker
+Dockerfile
+docker-compose.yml
+docker-entrypoint.sh
+
+# Laravel storage (logs, cache, sessions, views)
+storage/logs/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/testing/*
+storage/framework/views/*
+storage/pail
+bootstrap/cache/*.php
+
+# SQLite dev database
+database/*.sqlite
+database/*.sqlite-journal
+
+# Testing (not needed in production image)
+tests/
+phpunit.xml
+.phpunit.result.cache
+
+# IDE / editor
+.editorconfig
+.idea
+.vscode
+.zed
+.nova
+
+# OS / misc
+.DS_Store
+Thumbs.db
+README.md
+_ide_helper.php
+Homestead.json
+Homestead.yaml
+auth.json
+boost.json
+
+# Local dev files
+/public/hot
+/public/storage
+/public/fonts-manifest.dev.json
+.npmrc
+.mcp.json
