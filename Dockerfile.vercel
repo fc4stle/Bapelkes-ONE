@@ -40,7 +40,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         xml \
         bcmath \
         zip \
-        tokenizer \
         fileinfo \
         openssl \
         ctype \
