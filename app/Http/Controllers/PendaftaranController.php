@@ -91,12 +91,12 @@ class PendaftaranController extends Controller
 
         $suratTugasPath = null;
         if ($request->hasFile('surat_tugas')) {
-            $suratTugasPath = $request->file('surat_tugas')->store('surat_tugas', 'public');
+            $suratTugasPath = $request->file('surat_tugas')->store('surat_tugas', 'supabase');
         }
 
         $dokumenLainPaths = [];
         if ($request->hasFile('dokumen_lain')) {
-            $dokumenLainPaths[] = $request->file('dokumen_lain')->store('dokumen_pendaftar', 'public');
+            $dokumenLainPaths[] = $request->file('dokumen_lain')->store('dokumen_pendaftar', 'supabase');
         }
 
         $butuhAsrama = (bool) ($validated['butuh_asrama'] ?? false);
