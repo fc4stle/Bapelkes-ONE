@@ -4,9 +4,8 @@ vendor
 
 # Environment
 .env
-.env.backup
-.env.production
-.env.*.local
+.env.*
+!.env.example
 
 # Git
 .git
