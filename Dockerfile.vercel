@@ -24,26 +24,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libpng-dev \
     libjpeg62-turbo-dev \
     libfreetype6-dev \
-    libzip-dev \
-    libxml2-dev \
-    libonig-dev \
     libpq-dev \
     libsqlite3-dev \
     unzip \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) \
         gd \
-        pdo \
         pdo_pgsql \
         pdo_sqlite \
-        mbstring \
-        xml \
-        bcmath \
-        zip \
-        fileinfo \
-        openssl \
-        ctype \
-        json \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install Composer
@@ -59,8 +47,8 @@ RUN composer install --no-dev --optimize-autoloader --no-interaction --no-progre
 # Copy application code
 COPY . .
 
-# Regenerate autoloader with full application code (classmap-authoritative for production)
-RUN composer dump-autoload --no-dev --classmap-authoritative
+# Regenerate autoloader with full application code
+RUN composer dump-autoload --no-dev --classmap-authoritative --no-scripts
 
 # Copy built assets from Stage 1
 COPY --from=node-builder /build/public/build ./public/build
