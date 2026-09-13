@@ -47,6 +47,9 @@ RUN composer install --no-dev --optimize-autoloader --no-interaction --no-progre
 # Copy application code
 COPY . .
 
+# Remove stale Laravel cache files to prevent crash on boot
+RUN rm -f bootstrap/cache/*.php
+
 # Regenerate autoloader with full application code
 RUN composer dump-autoload --no-dev --classmap-authoritative --no-scripts
 
