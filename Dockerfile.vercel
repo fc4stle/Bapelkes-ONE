@@ -50,8 +50,8 @@ COPY . .
 # Remove stale Laravel cache files to prevent crash on boot
 RUN rm -f bootstrap/cache/*.php
 
-# Regenerate autoloader with full application code
-RUN composer dump-autoload --no-dev --classmap-authoritative --no-scripts
+# Regenerate autoloader with full application code and clean package discovery
+RUN DB_CONNECTION=sqlite DB_DATABASE=:memory: composer dump-autoload --no-dev --classmap-authoritative
 
 # Copy built assets from Stage 1
 COPY --from=node-builder /build/public/build ./public/build
