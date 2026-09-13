@@ -56,7 +56,7 @@ RUN composer dump-autoload --no-dev --classmap-authoritative --no-scripts
 # Copy built assets from Stage 1
 COPY --from=node-builder /build/public/build ./public/build
 
-# Create storage subdirectories and set permissions
+# Create storage and bootstrap cache subdirectories and set permissions
 RUN mkdir -p \
     storage/framework/cache \
     storage/framework/sessions \
@@ -64,6 +64,7 @@ RUN mkdir -p \
     storage/framework/testing \
     storage/app \
     storage/app/public \
+    bootstrap/cache \
     && chown -R www-data:www-data storage bootstrap/cache
 
 # Copy Caddyfile for FrankenPHP configuration
