@@ -51,7 +51,7 @@ COPY . .
 RUN rm -f bootstrap/cache/*.php
 
 # Regenerate autoloader with full application code
-RUN composer dump-autoload --no-dev --classmap-authoritative
+RUN composer dump-autoload --no-dev --classmap-authoritative --no-scripts
 
 # Copy built assets from Stage 1
 COPY --from=node-builder /build/public/build ./public/build
