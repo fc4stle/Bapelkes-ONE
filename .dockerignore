@@ -30,6 +30,7 @@ Thumbs.db
 .phpunit.cache
 .phpactor.json
 .phpunit.result.cache
+bootstrap/cache/*.php
 
 # Local dev overrides
 Homestead.json
