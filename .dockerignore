@@ -1,2 +1,45 @@
-*
-!.gitignore
+# Development files
+.git
+.github
+
+# Dependencies (will be installed fresh)
+node_modules
+vendor
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# IDE / editor config
+.vscode
+.idea
+.nova
+.zed
+.cursor
+.codex
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Dev cache
+.phpunit.cache
+.phpactor.json
+.phpunit.result.cache
+
+# Local dev overrides
+Homestead.json
+Homestead.yaml
+auth.json
+
+# Vercel
+.vercel
+
+# Docker files
+Dockerfile*
+docker-compose*
+.dockerignore
