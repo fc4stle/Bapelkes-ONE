@@ -51,9 +51,11 @@ COPY . .
 RUN rm -f bootstrap/cache/*.php
 
 # Regenerate autoloader with full application code and clean package discovery
-# Remove any residual dev packages that might have lingered from build cache
+# Remove any residual dev packages that lingered from build cache
 RUN rm -rf vendor/laravel/boost vendor/laravel/breeze
-RUN DB_CONNECTION=sqlite DB_DATABASE=:memory: composer dump-autoload --no-dev --classmap-authoritative
+# --no-scripts: skip post-autoload-dump (package:discover) since provider
+# classes are already purged; discovery happens at runtime in entrypoint
+RUN DB_CONNECTION=sqlite DB_DATABASE=:memory: composer dump-autoload --no-dev --classmap-authoritative --no-scripts
 
 # Copy built assets from Stage 1
 COPY --from=node-builder /build/public/build ./public/build
