@@ -44,12 +44,6 @@ WORKDIR /app
 COPY composer.json composer.lock ./
 RUN composer install --no-dev --optimize-autoloader --no-interaction --no-progress --no-scripts
 
-# DEBUG (temporary): verify --no-dev actually excludes dev packages
-RUN echo "=== DEBUG: dev packages check ===" \
-    && (test -d vendor/nunomaduro/collision && echo "❌ collision ADA (bug!)" || echo "✅ collision tidak ada") \
-    && (test -d vendor/phpunit/phpunit && echo "❌ phpunit ADA (bug!)" || echo "✅ phpunit tidak ada") \
-    && (test -d vendor/mockery/mockery && echo "❌ mockery ADA (bug!)" || echo "✅ mockery tidak ada")
-
 # Copy application code
 COPY . .
 
