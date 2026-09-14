@@ -74,6 +74,10 @@ RUN mkdir -p \
 # Copy Caddyfile for FrankenPHP configuration
 COPY --chown=www-data:www-data Caddyfile /etc/frankenphp/Caddyfile
 
+# Copy entrypoint script and make it executable
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
 # Allow non-root user to bind to privileged ports (< 1024)
 # and ensure Caddy directories are writable by www-data
 RUN setcap CAP_NET_BIND_SERVICE=+eip /usr/local/bin/frankenphp \
@@ -89,5 +93,5 @@ EXPOSE 80
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:${PORT:-80}/up || exit 1
 
-# Run FrankenPHP in production mode
-CMD ["frankenphp", "run", "--config", "/etc/frankenphp/Caddyfile"]
+# Run FrankenPHP in production mode (entrypoint handles migrations + discovery)
+CMD ["docker-entrypoint.sh"]

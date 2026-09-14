@@ -1,7 +1,10 @@
 #!/bin/sh
 set -e
 
-# Run package discovery at runtime with all env vars available
+# Run database migrations (force = non-interactive, required for production)
+php artisan migrate --force
+
+# Run package discovery with all env vars available
 php artisan package:discover --ansi || true
 
 # Start FrankenPHP
