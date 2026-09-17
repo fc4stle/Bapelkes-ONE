@@ -1,3 +1,4 @@
+/bootstrap/cache/
 *.log
 .DS_Store
 .env
@@ -25,3 +26,4 @@ _ide_helper.php
 Homestead.json
 Homestead.yaml
 Thumbs.db
+.vercel

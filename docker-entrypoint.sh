@@ -2,7 +2,11 @@
 set -e
 
 # Run database migrations (force = non-interactive, required for production)
-php artisan migrate --force
+# If DB is not accessible, log and continue (container can still serve requests)
+php artisan migrate --force || echo "⚠️  Migration failed — continuing startup"
 
-# Start PHP development server on Render's injected PORT (default 8080)
-exec php artisan serve --host=0.0.0.0 --port=${PORT:-8080}
+# Run package discovery with all env vars available
+php artisan package:discover --ansi || true
+
+# Start FrankenPHP
+exec frankenphp run --config /etc/frankenphp/Caddyfile
