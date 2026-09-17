@@ -70,11 +70,9 @@ return [
             'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', true),
             'throw' => true,
             'report' => true,
-            'options' => [
-                'http' => [
-                    'connect_timeout' => 10,
-                    'timeout' => 30,
-                ],
+            'http' => [
+                'connect_timeout' => 10,
+                'timeout' => 30,
             ],
         ],
 
