@@ -18,6 +18,7 @@ BAPELKES ONE &middot; Praktik Aplikasi Web INF60295 &middot; Universitas Negeri 
 | Nama | NIM | Kontribusi |
 |---|---|---|
 | Alysa Salsabila Irfan Putri | 24051130049 | Scope canvas, sitemap, user flow, wireframe, dokumentasi |
+| Marshall Raihan Sahirman | 24051130054 | (isi kontribusinya sesuai yang sebenarnya dikerjakan) |
 
 ## Catatan
 

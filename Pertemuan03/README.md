@@ -10,6 +10,7 @@
 | Nama | NIM |
 |---|---|
 | Alysa Salsabila Irfan Putri | 24051130049 |
+| Marshall Raihan Sahirman | 24051130054 |
 
 ## Daftar Berkas
 
