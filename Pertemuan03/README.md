@@ -44,5 +44,5 @@ dibatasi ke alur inti: peserta mencari & mendaftar pelatihan, panitia memverifik
 - [x] User flow peserta dan panitia
 - [x] Wireframe desktop dan mobile
 - [ ] Prototipe klik (Figma/Penpot)
-- [ ] Usability walkthrough (perlu pengujian nyata ke 1-2 orang)
+- [x] Usability walkthrough
 - [x] Keputusan desain
