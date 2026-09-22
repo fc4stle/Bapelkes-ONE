@@ -24,6 +24,7 @@
 | `06-wireframe-mobile.pdf` | Praktikum 4 &mdash; wireframe mobile (4 layar berpasangan) |
 | `07-usability-walkthrough.pdf` | Praktikum 5 &mdash; template hasil uji (isi setelah pengujian nyata) |
 | `08-keputusan-desain.md` | Praktikum 6 &mdash; format keputusan desain dan alasannya |
+| `09-revisi-job3-flow-institusional.pdf` | Revisi — scope canvas, sitemap, user flow, dan wireframe tambahan untuk alur institusional (Dinkes): pemesanan kolektif, MOU, dan info asrama |
 
 ## Studi Kasus
 
