@@ -25,6 +25,7 @@
 | `07-usability-walkthrough.pdf` | Praktikum 5 &mdash; template hasil uji (isi setelah pengujian nyata) |
 | `08-keputusan-desain.md` | Praktikum 6 &mdash; format keputusan desain dan alasannya |
 | `09-revisi-job3-flow-institusional.pdf` | Revisi — scope canvas, sitemap, user flow, dan wireframe tambahan untuk alur institusional (Dinkes): pemesanan kolektif, MOU, dan info asrama |
+| `10-prototipe-klik.pdf` | Praktikum 5 — prototipe klik (low-fidelity, dibuat sebagai halaman-halaman tertaut mengikuti wireframe & user flow) |
 
 ## Studi Kasus
 
@@ -35,7 +36,7 @@ dibatasi ke alur inti: peserta mencari & mendaftar pelatihan, panitia memverifik
 ## Tautan
 
 - Repositori: https://github.com/fc4stle/Bapelkes-ONE
-- Prototipe: *(tautan Figma/Penpot ditambahkan setelah prototipe klik dibuat)*
+- Prototipe: `10-prototipe-klik.pdf` (prototipe klik low-fidelity di repositori ini)
 - Deployment: https://bapelkes-one.vercel.app
 
 ## Status
@@ -44,6 +45,6 @@ dibatasi ke alur inti: peserta mencari & mendaftar pelatihan, panitia memverifik
 - [x] Sitemap dan daftar halaman
 - [x] User flow peserta dan panitia
 - [x] Wireframe desktop dan mobile
-- [ ] Prototipe klik (Figma/Penpot)
+- [x] Prototipe klik (`10-prototipe-klik.pdf`)
 - [x] Usability walkthrough
 - [x] Keputusan desain
