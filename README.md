@@ -1,3 +1,45 @@
+# Bapelkes-ONE
+
+Portal terpadu pelatihan dan layanan peserta untuk Bapelkes DIY, mengagregasi sistem BEST, Asrama, dan EPP. Tugas kuliah Praktik Aplikasi Web (INF60295), Program Studi Teknologi Informasi, Universitas Negeri Yogyakarta.
+
+## Cara Menjalankan Proyek
+
+1. Clone repositori dan masuk ke foldernya.
+2. Install dependensi:
+```bash
+   composer install
+   npm install
+```
+3. Salin file environment dan buat application key:
+```bash
+   copy .env.example .env
+   php artisan key:generate
+```
+4. Siapkan database SQLite:
+```bash
+   New-Item database\database.sqlite -ItemType File
+   php artisan migrate
+```
+5. Jalankan server dan asset bundler (dua terminal terpisah):
+```bash
+   php artisan serve
+   npm run dev
+```
+6. Buka `http://127.0.0.1:8000` di browser.
+
+## Design Token dan Dokumentasi
+
+Lihat folder `Pertemuan04/` untuk design token, inventori komponen, dan dokumentasi uji Pertemuan 4.
+
+## Kontribusi Anggota
+
+| Nama | NIM | Kontribusi |
+|---|---|---|
+| Alysa Salsabila Irfan Putri | 24051130049 | Scope canvas, sitemap, user flow, wireframe, dokumentasi |
+| Marshall Raihan Sahirman | 24051130054 | *(isi sesuai yang benar-benar dikerjakan di Pertemuan 4)* |
+
+---
+
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
 <p align="center">
