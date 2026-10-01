@@ -1,3 +1,35 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  /* warna */
+  --color-primary: #4F46E5;   /* indigo */
+  --color-accent: #D4A017;    /* emas */
+  --color-bg: #FFF8E7;        /* krem */
+  --color-text: #1F2937;
+  --color-surface: #FFFFFF;
+  --color-success: #16A34A;
+  --color-warning: #D97706;
+  --color-danger: #DC2626;
+
+  /* tipografi */
+  --fs-h1: 28px;
+  --fs-h2: 20px;
+  --fs-body: 16px;
+  --fs-label: 14px;
+  --fs-caption: 12px;
+
+  /* jarak */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+
+  /* bentuk */
+  --radius-btn: 8px;
+  --radius-card: 12px;
+  --shadow-card: 0 1px 3px rgba(0,0,0,.12);
+}
