@@ -52,3 +52,7 @@ Route::resource('pelatihans', PelatihanController::class)
     ->middleware(['auth', 'role:panitia']);
 
 require __DIR__.'/auth.php';
+
+Route::get('/komponen-uji', function () {
+    return view('komponen-uji');
+});
