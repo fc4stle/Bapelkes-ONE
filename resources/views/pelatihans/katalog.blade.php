@@ -65,8 +65,8 @@
                             @endif
 
                             @if (! $pelatihan->isFull())
-                                <a href="{{ route('pelatihan.daftar', $pelatihan) }}">
-                                    <x-primary-button type="button">Daftar</x-primary-button>
+                                <a href="{{ route('pelatihan.detail', $pelatihan) }}">
+                                    <x-primary-button type="button">Lihat Detail</x-primary-button>
                                 </a>
                             @endif
                         </div>
