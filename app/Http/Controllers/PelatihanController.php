@@ -46,6 +46,16 @@ class PelatihanController extends Controller
     }
 
     /**
+     * Show the detail of a pelatihan for peserta.
+     */
+    public function detail(Pelatihan $pelatihan)
+    {
+        $sudahDaftar = \Illuminate\Support\Facades\Auth::user()?->pendaftaranPelatihan($pelatihan);
+
+        return view('pelatihans.detail', compact('pelatihan', 'sudahDaftar'));
+    }
+
+    /**
      * Show the list of pendaftar for a pelatihan (panitia only).
      */
     public function pendaftar(Pelatihan $pelatihan)
