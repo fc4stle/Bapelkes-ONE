@@ -18,11 +18,12 @@
 | Berkas | Isi |
 |---|---|
 | `01-data-model.md` | Praktikum 1 — pemetaan field antarmuka Pertemuan 4 ke kolom database, termasuk penjelasan pemetaan studi kasus jobsheet (Room/Booking) ke entitas nyata proyek (Pelatihan/Pendaftaran/Kamar/Asrama) |
-| `02-migration-model/README.md` | Praktikum 2–3 — daftar migration & model yang sudah ada dari pertemuan sebelumnya, dan penjelasan kenapa tidak dibuat ulang |
+| `02-migration-model/README.md` | Praktikum 2–3 — keputusan tetap pakai SQLite (bukan MySQL seperti jobsheet), daftar migration & model yang sudah ada dari pertemuan sebelumnya |
 | `03-seeder.md` | Praktikum 3 — `PelatihanSeeder` (dirintis Marshall, dilengkapi Alysa) + pendaftaran `AsramaKamarSeeder` yang sebelumnya tidak terdaftar |
 | `04-crud-room/README.md` | Praktikum 4 — pemetaan CRUD "Room" ke CRUD Pelatihan (sudah ada) |
 | `05-crud-booking/README.md` | Praktikum 5–6 — CRUD Pendaftaran sisi peserta (edit/update, fitur baru) dan validasi bentrok jadwal asrama |
 | `06-test-checklist.md` | Praktikum 7 — checklist uji end-to-end 10 poin, bug ditemukan & diperbaiki |
+| `06b-bukti-database-crud.md` | Bukti tabel database sebelum/sesudah operasi CRUD lewat `tinker` (poin "I. Hasil Akhir") |
 | `07-screenshots.pdf` | Bukti uji tampilan desktop (1280px) dan mobile (390px) untuk tiap langkah alur |
 | `README.md` | Berkas ini |
 
@@ -120,4 +121,4 @@ memperbaiki bug `@stack('scripts')`; menulis test otomatis baru (`tests/Feature/
 - [x] Pengujian end-to-end desktop & mobile + perbaikan bug yang ditemukan
 - [x] Bukti uji (screenshot)
 - [x] Checklist uji & refleksi individu
-- [ ] Pull Request direview dan digabung ke `main`
+- [x] Pull Request direview dan digabung ke `main` ([PR #3](../../pull/3))
