@@ -102,19 +102,13 @@ class PendaftaranController extends Controller
         $butuhAsrama = (bool) ($validated['butuh_asrama'] ?? false);
         $checkIn = $validated['check_in'] ?? null;
         $checkOut = $validated['check_out'] ?? null;
-        $kamarId = null;
-        $pesanAsrama = null;
-
-        if ($butuhAsrama && $checkIn && $checkOut) {
-            $kamar = $this->kamarService->alokasikanKamar($checkIn, $checkOut);
-
-            if ($kamar) {
-                $kamarId = $kamar->id;
-                $pesanAsrama = "Pendaftaran berhasil dikirim. Kamar {$kamar->nomor_kamar} di {$kamar->asrama->nama} telah dialokasikan untuk Anda.";
-            } else {
-                $pesanAsrama = 'Pendaftaran berhasil dikirim, tetapi asrama sudah penuh untuk tanggal tersebut. Anda tetap terdaftar tanpa kamar.';
-            }
-        }
+        [$kamarId, $pesanAsrama] = $this->alokasikanKamarJikaPerlu(
+            $butuhAsrama,
+            $checkIn,
+            $checkOut,
+            'Pendaftaran berhasil dikirim. Kamar {kamar} di {asrama} telah dialokasikan untuk Anda.',
+            'Pendaftaran berhasil dikirim, tetapi asrama sudah penuh untuk tanggal tersebut. Anda tetap terdaftar tanpa kamar.'
+        );
 
         Pendaftaran::create([
             'peserta_id' => $user->id,
@@ -140,6 +134,129 @@ class PendaftaranController extends Controller
         $successMessage = $pesanAsrama ?? 'Pendaftaran berhasil dikirim, menunggu konfirmasi panitia.';
 
         return redirect()->route('pendaftarans.index')->with('success', $successMessage);
+    }
+
+    /**
+     * Show the edit form for the authenticated peserta's own registration.
+     */
+    public function edit(Pendaftaran $pendaftaran)
+    {
+        if ($pendaftaran->peserta_id !== Auth::id()) {
+            abort(403);
+        }
+
+        if (! $pendaftaran->isPending()) {
+            return back()->with('error', 'Pendaftaran yang sudah diverifikasi atau ditolak tidak dapat diubah.');
+        }
+
+        $pelatihan = $pendaftaran->pelatihan;
+
+        return view('pendaftarans.edit', compact('pendaftaran', 'pelatihan'));
+    }
+
+    /**
+     * Update the authenticated peserta's own registration (data diri, dokumen, asrama).
+     */
+    public function updateSelf(Request $request, Pendaftaran $pendaftaran)
+    {
+        if ($pendaftaran->peserta_id !== Auth::id()) {
+            abort(403);
+        }
+
+        if (! $pendaftaran->isPending()) {
+            return back()->with('error', 'Pendaftaran yang sudah diverifikasi atau ditolak tidak dapat diubah.');
+        }
+
+        $validated = $request->validate([
+            'nama' => ['required', 'string', 'max:255'],
+            'nik' => ['required', 'string', 'max:16'],
+            'kontak' => ['required', 'string', 'max:255'],
+            'profesi' => ['required', 'string', 'max:255'],
+            'instansi' => ['required', 'string', 'max:255'],
+            'surat_tugas' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:2048'],
+            'dokumen_lain' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:2048'],
+            'butuh_asrama' => ['nullable', 'boolean'],
+            'check_in' => ['required_if:butuh_asrama,true', 'nullable', 'date'],
+            'check_out' => ['required_if:butuh_asrama,true', 'nullable', 'date', 'after_or_equal:check_in'],
+        ]);
+
+        $dokumen = json_decode($pendaftaran->dokumen ?? '{}', true) ?: [];
+
+        if ($request->hasFile('surat_tugas')) {
+            $dokumen['surat_tugas'] = $request->file('surat_tugas')->store('surat_tugas', 'supabase');
+        }
+
+        if ($request->hasFile('dokumen_lain')) {
+            $dokumen['dokumen_lain'] = [$request->file('dokumen_lain')->store('dokumen_pendaftar', 'supabase')];
+        }
+
+        $butuhAsrama = (bool) ($validated['butuh_asrama'] ?? false);
+        $checkIn = $validated['check_in'] ?? null;
+        $checkOut = $validated['check_out'] ?? null;
+
+        // Lepas alokasi kamar saat ini dulu, supaya kapasitas kamar lama tidak
+        // ikut dihitung sebagai "terisi oleh diri sendiri" saat realokasi di bawah.
+        if ($pendaftaran->kamar_id) {
+            $pendaftaran->update(['kamar_id' => null]);
+        }
+
+        [$kamarId, $pesanAsrama] = $this->alokasikanKamarJikaPerlu(
+            $butuhAsrama,
+            $checkIn,
+            $checkOut,
+            'Pendaftaran berhasil diperbarui. Kamar {kamar} di {asrama} telah dialokasikan untuk Anda.',
+            'Pendaftaran berhasil diperbarui, tetapi asrama sudah penuh untuk tanggal tersebut. Anda tetap terdaftar tanpa kamar.'
+        );
+
+        $pendaftaran->update([
+            'data_diri' => [
+                'nama' => $validated['nama'],
+                'nik' => $validated['nik'],
+                'kontak' => $validated['kontak'],
+                'profesi' => $validated['profesi'],
+                'instansi' => $validated['instansi'],
+            ],
+            'dokumen' => json_encode(array_filter($dokumen)),
+            'butuh_asrama' => $butuhAsrama,
+            'check_in' => $checkIn,
+            'check_out' => $checkOut,
+            'kamar_id' => $kamarId,
+        ]);
+
+        $successMessage = $pesanAsrama ?? 'Pendaftaran berhasil diperbarui.';
+
+        return redirect()->route('pendaftarans.index')->with('success', $successMessage);
+    }
+
+    /**
+     * Cari dan alokasikan kamar jika peserta butuh asrama, atau kembalikan null bila tidak.
+     *
+     * @return array{0: int|null, 1: string|null} [kamar_id, pesan]
+     */
+    private function alokasikanKamarJikaPerlu(
+        bool $butuhAsrama,
+        ?string $checkIn,
+        ?string $checkOut,
+        string $pesanBerhasil,
+        string $pesanPenuh
+    ): array {
+        if (! $butuhAsrama || ! $checkIn || ! $checkOut) {
+            return [null, null];
+        }
+
+        $kamar = $this->kamarService->alokasikanKamar($checkIn, $checkOut);
+
+        if (! $kamar) {
+            return [null, $pesanPenuh];
+        }
+
+        $pesan = str_replace(
+            ['{kamar}', '{asrama}'],
+            [$kamar->nomor_kamar, $kamar->asrama->nama],
+            $pesanBerhasil
+        );
+
+        return [$kamar->id, $pesan];
     }
 
     /**

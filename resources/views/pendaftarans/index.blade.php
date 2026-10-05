@@ -62,11 +62,14 @@
                             {{ $pendaftaran->pelatihan->tanggal_mulai->format('d M Y') }} - {{ $pendaftaran->pelatihan->tanggal_selesai->format('d M Y') }}
                         </div>
                         @if ($pendaftaran->status_verifikasi === 'pending')
-                            <form action="{{ route('pendaftarans.destroy', $pendaftaran) }}" method="POST" class="mt-[var(--sp-2)]" onsubmit="return confirm('Yakin ingin membatalkan pendaftaran ini?')">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="text-sm text-[var(--color-danger)] hover:opacity-75">Batalkan</button>
-                            </form>
+                            <div class="mt-[var(--sp-2)] flex items-center gap-[var(--sp-3)]">
+                                <a href="{{ route('pendaftarans.edit', $pendaftaran) }}" class="text-sm text-[var(--color-primary)] hover:opacity-75">Ubah</a>
+                                <form action="{{ route('pendaftarans.destroy', $pendaftaran) }}" method="POST" onsubmit="return confirm('Yakin ingin membatalkan pendaftaran ini?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="text-sm text-[var(--color-danger)] hover:opacity-75">Batalkan</button>
+                                </form>
+                            </div>
                         @endif
                     </div>
                 @endforeach
@@ -105,11 +108,14 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                     @if ($pendaftaran->status_verifikasi === 'pending')
-                                        <form action="{{ route('pendaftarans.destroy', $pendaftaran) }}" method="POST" class="inline" onsubmit="return confirm('Yakin ingin membatalkan pendaftaran ini?')">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="text-[var(--color-danger)] hover:opacity-75">Batalkan</button>
-                                        </form>
+                                        <div class="inline-flex items-center gap-[var(--sp-3)]">
+                                            <a href="{{ route('pendaftarans.edit', $pendaftaran) }}" class="text-[var(--color-primary)] hover:opacity-75">Ubah</a>
+                                            <form action="{{ route('pendaftarans.destroy', $pendaftaran) }}" method="POST" class="inline" onsubmit="return confirm('Yakin ingin membatalkan pendaftaran ini?')">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="text-[var(--color-danger)] hover:opacity-75">Batalkan</button>
+                                            </form>
+                                        </div>
                                     @else
                                         <span class="text-gray-400">-</span>
                                     @endif
