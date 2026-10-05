@@ -42,7 +42,38 @@
                 </div>
             </div>
         @else
-            <div class="overflow-x-auto">
+            {{-- Tampilan kartu untuk mobile: tabel lebar meluber di layar sempit, jadi di bawah sm: breakpoint diganti kartu bertumpuk --}}
+            <div class="space-y-[var(--sp-3)] sm:hidden">
+                @foreach ($pendaftarans as $pendaftaran)
+                    @php
+                        $statusMap = [
+                            'pending' => 'pending',
+                            'diverifikasi' => 'approved',
+                            'ditolak' => 'rejected',
+                        ];
+                        $badgeStatus = $statusMap[$pendaftaran->status_verifikasi] ?? 'pending';
+                    @endphp
+                    <div class="border border-gray-200 rounded-[var(--radius-card)] p-[var(--sp-4)]">
+                        <div class="flex items-start justify-between gap-[var(--sp-2)]">
+                            <div class="text-sm font-medium text-[var(--color-text)]">{{ $pendaftaran->pelatihan->nama }}</div>
+                            <x-status-badge :status="$badgeStatus" />
+                        </div>
+                        <div class="mt-[var(--sp-1)] text-sm text-gray-500">
+                            {{ $pendaftaran->pelatihan->tanggal_mulai->format('d M Y') }} - {{ $pendaftaran->pelatihan->tanggal_selesai->format('d M Y') }}
+                        </div>
+                        @if ($pendaftaran->status_verifikasi === 'pending')
+                            <form action="{{ route('pendaftarans.destroy', $pendaftaran) }}" method="POST" class="mt-[var(--sp-2)]" onsubmit="return confirm('Yakin ingin membatalkan pendaftaran ini?')">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="text-sm text-[var(--color-danger)] hover:opacity-75">Batalkan</button>
+                            </form>
+                        @endif
+                    </div>
+                @endforeach
+            </div>
+
+            {{-- Tampilan tabel untuk sm ke atas --}}
+            <div class="hidden sm:block overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>

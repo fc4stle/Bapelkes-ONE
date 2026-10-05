@@ -6,7 +6,7 @@
         {{-- Buttons --}}
         <section class="space-y-[var(--sp-4)]">
             <h2 class="text-[var(--fs-h2)] font-semibold text-[var(--color-text)]">Tombol</h2>
-            <div class="flex gap-[var(--sp-3)] items-center">
+            <div class="flex flex-wrap gap-[var(--sp-3)] items-center">
                 <x-primary-button>Simpan</x-primary-button>
                 <x-secondary-button>Batal</x-secondary-button>
                 <x-danger-button>Hapus</x-danger-button>
@@ -17,7 +17,7 @@
         {{-- Status Badge --}}
         <section class="space-y-[var(--sp-4)]">
             <h2 class="text-[var(--fs-h2)] font-semibold text-[var(--color-text)]">Status Badge</h2>
-            <div class="flex gap-[var(--sp-3)]">
+            <div class="flex flex-wrap gap-[var(--sp-3)]">
                 <x-status-badge status="pending" />
                 <x-status-badge status="approved" />
                 <x-status-badge status="rejected" />
