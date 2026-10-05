@@ -46,6 +46,7 @@ Aplikasi dapat diakses di `http://127.0.0.1:8000`.
 | [`Pertemuan02/`](Pertemuan02) | Problem vision, persona, user story, acceptance criteria, backlog |
 | [`Pertemuan03/`](Pertemuan03) | Scope canvas, sitemap, user flow, wireframe, prototipe klik |
 | [`Pertemuan04/`](Pertemuan04) | Design token, inventori komponen, bukti uji, keputusan implementasi |
+| [`Pertemuan05/`](Pertemuan05) | Pemetaan model data, migration, seeder, CRUD Pelatihan & Pendaftaran, validasi bentrok jadwal asrama |
 
 ## Kontribusi Pertemuan 4 (Design System & Implementasi Antarmuka Awal)
 
@@ -53,6 +54,13 @@ Aplikasi dapat diakses di `http://127.0.0.1:8000`.
 |---|---|---|
 | Marshall Raihan Sahirman | Design token (`01-design-tokens.md`, CSS variables), komponen Card & Status Badge, halaman Beranda/Katalog/Detail/Form Pendaftaran | [edc4806](../../commit/edc4806), [a6979a3](../../commit/a6979a3), [a1a286a](../../commit/a1a286a), [7b790c6](../../commit/7b790c6), [3047b04](../../commit/3047b04), [2e92d9d](../../commit/2e92d9d) |
 | Alysa Salsabila Irfan Putri | Uji responsif desktop/mobile & perbaikan (tabel "Pendaftaran Saya" dan tombol halaman uji komponen yang meluber di 390px), bukti uji (`03-ui-screenshots.pdf`), checklist uji (`04-test-checklist.md`), keputusan implementasi (`05-keputusan-implementasi.md`), `Pertemuan04/README.md`, dan dokumentasi README ini | lihat riwayat commit branch `feature/ui-pertemuan-4` setelah 2e92d9d |
+
+## Kontribusi Pertemuan 5 (Basis Data, Model, Migration, Seeder, dan CRUD)
+
+| Anggota | Bagian Pekerjaan | Tautan Commit |
+|---|---|---|
+| Marshall Raihan Sahirman | Merintis `PelatihanSeeder` awal | [5ce97b5](../../commit/5ce97b5) |
+| Alysa Salsabila Irfan Putri | Melengkapi `PelatihanSeeder` + pendaftaran `AsramaKamarSeeder` yang belum terdaftar, CRUD pengajuan sisi peserta (edit/update, baru), validasi bentrok jadwal asrama pada jalur edit, perbaikan bug `@stack('scripts')` yang ditemukan saat pengujian, test otomatis baru, dan seluruh dokumentasi `Pertemuan05/` | lihat riwayat commit branch `feature/database-crud` setelah 5ce97b5 |
 
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
