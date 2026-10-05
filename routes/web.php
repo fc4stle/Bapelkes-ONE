@@ -30,6 +30,8 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:peserta')->group(function () {
         Route::get('/pelatihan/{pelatihan}/daftar', [PendaftaranController::class, 'create'])->name('pelatihan.daftar');
         Route::post('/pelatihans/{pelatihan}/daftar', [PendaftaranController::class, 'store'])->name('pelatihans.daftar');
+        Route::get('/pendaftarans/{pendaftaran}/edit', [PendaftaranController::class, 'edit'])->name('pendaftarans.edit');
+        Route::put('/pendaftarans/{pendaftaran}', [PendaftaranController::class, 'updateSelf'])->name('pendaftarans.updateSelf');
         Route::delete('/pendaftarans/{pendaftaran}', [PendaftaranController::class, 'destroy'])->name('pendaftarans.destroy');
         Route::get('/pendaftarans/{pendaftaran}/kartu', [PendaftaranController::class, 'kartu'])->name('pendaftarans.kartu');
         Route::get('/pendaftarans/{pendaftaran}/sertifikat', [PendaftaranController::class, 'sertifikat'])->name('pendaftarans.sertifikat');
