@@ -150,7 +150,7 @@ class PelatihanKatalogTest extends TestCase
         $response->assertSee('Penuh');
     }
 
-    public function test_katalog_daftar_button_links_to_form(): void
+    public function test_katalog_detail_button_links_to_detail_page(): void
     {
         $pelatihan = Pelatihan::factory()->create([
             'nama' => 'Pelatihan Tersedia',
@@ -161,7 +161,7 @@ class PelatihanKatalogTest extends TestCase
         $response = $this->get(route('pelatihan.katalog'));
 
         $response->assertStatus(200);
-        $response->assertSee(route('pelatihan.daftar', $pelatihan));
+        $response->assertSee(route('pelatihan.detail', $pelatihan));
     }
 
     public function test_katalog_shows_empty_state_when_no_results(): void
