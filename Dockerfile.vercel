@@ -50,7 +50,11 @@ COPY . .
 # Remove stale Laravel cache files to prevent crash on boot
 RUN rm -f bootstrap/cache/*.php
 
-RUN DB_CONNECTION=sqlite DB_DATABASE=:memory: composer dump-autoload --no-dev --classmap-authoritative
+# --no-scripts: skip the post-autoload-dump hook (artisan package:discover).
+# That hook boots the full Laravel app, which has no APP_KEY or real .env yet
+# at build time and can fail the build; discovery already runs safely at
+# container startup in docker-entrypoint.sh.
+RUN DB_CONNECTION=sqlite DB_DATABASE=:memory: composer dump-autoload --no-dev --classmap-authoritative --no-scripts
 
 # Copy built assets from Stage 1
 COPY --from=node-builder /build/public/build ./public/build
