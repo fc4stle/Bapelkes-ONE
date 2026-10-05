@@ -84,8 +84,8 @@ class SertifikatTest extends TestCase
         $pelatihanAktif = Pelatihan::factory()->create([
             'status' => 'dibuka',
             'kuota' => 10,
-            'tanggal_mulai' => '2026-10-01',
-            'tanggal_selesai' => '2026-10-03',
+            'tanggal_mulai' => now()->addDays(10)->toDateString(),
+            'tanggal_selesai' => now()->addDays(12)->toDateString(),
         ]);
 
         $pendaftaran = Pendaftaran::factory()->create([
