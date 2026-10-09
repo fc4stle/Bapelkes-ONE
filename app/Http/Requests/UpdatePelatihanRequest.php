@@ -28,6 +28,7 @@ class UpdatePelatihanRequest extends FormRequest
         return [
             'nama' => ['sometimes', 'required', 'string', 'max:255'],
             'deskripsi' => ['nullable', 'string'],
+            'persyaratan' => ['nullable', 'string', 'max:2000'],
             'tanggal_mulai' => ['sometimes', 'required', 'date'],
             'tanggal_selesai' => ['sometimes', 'required', 'date', 'after_or_equal:tanggal_mulai'],
             'lokasi' => ['sometimes', 'required', 'string', 'max:255'],

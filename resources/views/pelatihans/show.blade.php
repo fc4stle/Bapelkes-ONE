@@ -30,6 +30,11 @@
                 <dd class="mt-1 text-sm text-gray-900">{{ $pelatihan->deskripsi ?? '-' }}</dd>
             </div>
 
+            <div class="sm:col-span-2">
+                <dt class="text-sm font-medium text-gray-500">Persyaratan</dt>
+                <dd class="mt-1 text-sm text-gray-900">{{ $pelatihan->persyaratan ?? '-' }}</dd>
+            </div>
+
             <div>
                 <dt class="text-sm font-medium text-gray-500">Tanggal Mulai</dt>
                 <dd class="mt-1 text-sm text-gray-900">{{ $pelatihan->tanggal_mulai->format('d F Y') }}</dd>
