@@ -61,6 +61,12 @@
                         <div class="mt-[var(--sp-1)] text-sm text-gray-500">
                             {{ $pendaftaran->pelatihan->tanggal_mulai->format('d M Y') }} - {{ $pendaftaran->pelatihan->tanggal_selesai->format('d M Y') }}
                         </div>
+                        @if ($pendaftaran->status_verifikasi === 'ditolak' && $pendaftaran->alasan_penolakan)
+                            <div class="mt-[var(--sp-2)] p-[var(--sp-3)] bg-red-50 rounded-[var(--radius-btn)] border border-red-200">
+                                <p class="text-xs font-semibold text-[var(--color-danger)]">Alasan Penolakan:</p>
+                                <p class="text-xs text-red-700 mt-[var(--sp-1)]">{{ $pendaftaran->alasan_penolakan }}</p>
+                            </div>
+                        @endif
                         @if ($pendaftaran->status_verifikasi === 'pending')
                             <div class="mt-[var(--sp-2)] flex items-center gap-[var(--sp-3)]">
                                 <a href="{{ route('pendaftarans.edit', $pendaftaran) }}" class="text-sm text-[var(--color-primary)] hover:opacity-75">Ubah</a>
@@ -121,6 +127,14 @@
                                     @endif
                                 </td>
                             </tr>
+                            @if ($pendaftaran->status_verifikasi === 'ditolak' && $pendaftaran->alasan_penolakan)
+                                <tr class="bg-red-50">
+                                    <td colspan="4" class="px-6 py-4">
+                                        <p class="text-xs font-semibold text-[var(--color-danger)] mb-[var(--sp-1)]">Alasan Penolakan:</p>
+                                        <p class="text-xs text-red-700">{{ $pendaftaran->alasan_penolakan }}</p>
+                                    </td>
+                                </tr>
+                            @endif
                         @endforeach
                     </tbody>
                 </table>
