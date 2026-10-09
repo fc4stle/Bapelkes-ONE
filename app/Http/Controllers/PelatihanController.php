@@ -9,6 +9,7 @@ use App\Http\Requests\UpdatePelatihanRequest;
 use App\Models\Pelatihan;
 use App\Models\Pendaftaran;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class PelatihanController extends Controller
 {
@@ -50,7 +51,7 @@ class PelatihanController extends Controller
      */
     public function detail(Pelatihan $pelatihan)
     {
-        $sudahDaftar = \Illuminate\Support\Facades\Auth::user()?->pendaftaranPelatihan($pelatihan);
+        $sudahDaftar = Auth::user()?->pendaftaranPelatihan($pelatihan);
 
         return view('pelatihans.detail', compact('pelatihan', 'sudahDaftar'));
     }
@@ -66,6 +67,91 @@ class PelatihanController extends Controller
             ->paginate(15);
 
         return view('pelatihans.pendaftar', compact('pelatihan', 'pendaftarans'));
+    }
+
+    /**
+     * Export pendaftar to CSV (panitia only).
+     */
+    public function exportPendaftar(Pelatihan $pelatihan)
+    {
+        $fileName = 'pendaftar-'.str($pelatihan->nama)->slug('-').'-'.now()->format('Y-m-d').'.csv';
+
+        return response()->streamDownload(function () use ($pelatihan) {
+            $output = fopen('php://output', 'w');
+
+            // BOM UTF-8 agar terbuka benar di Excel
+            fprintf($output, chr(0xEF).chr(0xBB).chr(0xBF));
+
+            // Header CSV
+            fputcsv($output, [
+                'No',
+                'Nama',
+                'Email',
+                'Instansi/Asal',
+                'No HP',
+                'Status Verifikasi',
+                'Alasan Penolakan',
+                'Kehadiran',
+                'Butuh Asrama',
+                'Sertifikat Diunduh',
+                'Tanggal Daftar',
+            ]);
+
+            // Data pendaftar dengan eager loading
+            $pendaftarans = $pelatihan->pendaftarans()
+                ->with('peserta')
+                ->orderByDesc('created_at')
+                ->cursor();
+
+            $no = 1;
+            foreach ($pendaftarans as $pendaftaran) {
+                $dataDiri = $pendaftaran->data_diri ?? [];
+                $nama = $this->escapeForCSV($dataDiri['nama'] ?? '-');
+                $email = $pendaftaran->peserta?->email ?? '-';
+                $instansi = $this->escapeForCSV($dataDiri['instansi'] ?? '-');
+                $kontak = $this->escapeForCSV($dataDiri['kontak'] ?? '-');
+                $statusVerifikasi = $this->escapeForCSV($pendaftaran->status_verifikasi ?? '-');
+                $alasanPenolakan = $this->escapeForCSV($pendaftaran->alasan_penolakan ?? '-');
+                $kehadiran = $pendaftaran->hadir_at ? $pendaftaran->hadir_at->format('d-m-Y H:i') : 'Belum Hadir';
+                $butuhAsrama = $pendaftaran->butuh_asrama ? 'Ya' : 'Tidak';
+                $sertifikatDiunduh = $pendaftaran->kode_sertifikat ? 'Ya' : 'Tidak';
+                $tanggalDaftar = $pendaftaran->created_at->format('d-m-Y H:i');
+
+                fputcsv($output, [
+                    $no,
+                    $nama,
+                    $email,
+                    $instansi,
+                    $kontak,
+                    $statusVerifikasi,
+                    $alasanPenolakan,
+                    $kehadiran,
+                    $butuhAsrama,
+                    $sertifikatDiunduh,
+                    $tanggalDaftar,
+                ]);
+
+                $no++;
+            }
+
+            fclose($output);
+        }, $fileName, [
+            'Content-Type' => 'text/csv; charset=utf-8',
+            'Content-Disposition' => 'attachment; filename="'.$fileName.'"',
+        ]);
+    }
+
+    /**
+     * Escape cell content for CSV to prevent injection.
+     */
+    private function escapeForCSV(string $value): string
+    {
+        // Cegah CSV injection dengan memberi awalan tanda petik tunggal
+        if (in_array($value[0] ?? '', ['=', '+', '-', '@'], true)) {
+            return '\''.$value;
+        }
+
+        return $value;
     }
 
     /**

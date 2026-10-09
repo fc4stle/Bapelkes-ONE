@@ -45,6 +45,7 @@ Route::middleware('auth')->group(function () {
 Route::middleware(['auth', 'role:panitia'])->group(function () {
     Route::get('/panitia/dashboard', [PelatihanController::class, 'dashboard'])->name('panitia.dashboard');
     Route::get('/pelatihan/{pelatihan}/pendaftar', [PelatihanController::class, 'pendaftar'])->name('pelatihan.pendaftar');
+    Route::get('/pelatihan/{pelatihan}/pendaftar/export', [PelatihanController::class, 'exportPendaftar'])->name('pelatihan.pendaftar.export');
     Route::get('/pelatihan/{pelatihan}/presensi', [PelatihanController::class, 'presensi'])->name('pelatihan.presensi');
     Route::post('/pelatihan/{pelatihan}/presensi', [PelatihanController::class, 'prosesPresensi'])->name('pelatihan.presensi.proses');
     Route::patch('/pendaftarans/{pendaftaran}/verifikasi', [PendaftaranController::class, 'verifikasi'])->name('pendaftarans.verifikasi');
