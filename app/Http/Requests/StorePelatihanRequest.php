@@ -28,6 +28,7 @@ class StorePelatihanRequest extends FormRequest
         return [
             'nama' => ['required', 'string', 'max:255'],
             'deskripsi' => ['nullable', 'string'],
+            'persyaratan' => ['nullable', 'string', 'max:2000'],
             'tanggal_mulai' => ['required', 'date'],
             'tanggal_selesai' => ['required', 'date', 'after_or_equal:tanggal_mulai'],
             'lokasi' => ['required', 'string', 'max:255'],

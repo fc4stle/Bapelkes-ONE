@@ -21,6 +21,13 @@
                         <p class="mt-[var(--sp-3)] text-[var(--fs-body)] text-gray-600">{{ $pelatihan->deskripsi }}</p>
                     @endif
 
+                    @if ($pelatihan->persyaratan)
+                        <div class="mt-[var(--sp-6)]">
+                            <h3 class="text-[var(--fs-body)] font-semibold text-[var(--color-text)]">Persyaratan</h3>
+                            <p class="mt-[var(--sp-2)] text-[var(--fs-body)] text-gray-600">{{ $pelatihan->persyaratan }}</p>
+                        </div>
+                    @endif
+
                     <dl class="mt-[var(--sp-6)] grid grid-cols-1 sm:grid-cols-2 gap-[var(--sp-4)] text-[var(--fs-body)]">
                         <div>
                             <dt class="text-[var(--fs-caption)] text-gray-500">Tanggal</dt>

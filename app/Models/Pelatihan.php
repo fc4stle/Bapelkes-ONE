@@ -20,6 +20,7 @@ class Pelatihan extends Model
     protected $fillable = [
         'nama',
         'deskripsi',
+        'persyaratan',
         'tanggal_mulai',
         'tanggal_selesai',
         'lokasi',
