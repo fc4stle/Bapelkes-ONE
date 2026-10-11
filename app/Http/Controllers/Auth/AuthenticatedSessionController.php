@@ -28,6 +28,17 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        $user = $request->user();
+        $intendedUrl = session()->pull('url.intended');
+
+        if ($intendedUrl) {
+            return redirect($intendedUrl);
+        }
+
+        if ($user->isPanitia()) {
+            return redirect()->intended(route('panitia.dashboard', absolute: false));
+        }
+
         return redirect()->intended(route('dashboard', absolute: false));
     }
 

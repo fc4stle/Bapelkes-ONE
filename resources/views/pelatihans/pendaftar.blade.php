@@ -19,12 +19,26 @@
                         <p class="mt-1 text-sm text-gray-500">
                             Kuota: {{ $pelatihan->jumlahPendaftar() }} / {{ $pelatihan->kuota }}
                         </p>
-                        <div class="mt-4">
+                        <div class="mt-4 flex gap-3">
+                            <a href="{{ route('pelatihan.presensi', $pelatihan) }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                                <svg class="mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M10.5 1.5H5.75A2.25 2.25 0 003.5 3.75v12.5A2.25 2.25 0 005.75 18.5h8.5a2.25 2.25 0 002.25-2.25V6.5m-11-3v3m8-3v3m-8 3.75h8m-8 3h8m-8 3h5" />
+                                </svg>
+                                Presensi
+                            </a>
                             <a href="{{ route('pelatihan.pendaftar.export', $pelatihan) }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                                 <svg class="mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                                     <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
                                 </svg>
                                 Unduh CSV
+                            </a>
+                        </div>
+                        <div class="mt-2">
+                            <a href="{{ route('panitia.dashboard') }}" class="inline-flex items-center text-sm text-gray-600 hover:text-gray-900">
+                                <svg class="mr-1 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+                                </svg>
+                                Kembali ke Rekap Panitia
                             </a>
                         </div>
                     </div>
