@@ -73,6 +73,8 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                     <a href="{{ route('pelatihans.show', $pelatihan) }}" class="text-indigo-600 hover:text-indigo-900 mr-3">Lihat</a>
+                                    <a href="{{ route('pelatihan.pendaftar', $pelatihan) }}" class="text-blue-600 hover:text-blue-900 mr-3">Pendaftar</a>
+                                    <a href="{{ route('pelatihan.presensi', $pelatihan) }}" class="text-green-600 hover:text-green-900 mr-3">Presensi</a>
                                     <a href="{{ route('pelatihans.edit', $pelatihan) }}" class="text-yellow-600 hover:text-yellow-900 mr-3">Edit</a>
                                     <form action="{{ route('pelatihans.destroy', $pelatihan) }}" method="POST" class="inline" onsubmit="return confirm('Yakin ingin menghapus pelatihan ini?')">
                                         @csrf

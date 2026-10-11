@@ -38,7 +38,7 @@
                                     @foreach ($pelatihans as $pelatihan)
                                         <tr>
                                             <td class="px-4 py-4">
-                                                <div class="text-sm font-medium text-gray-900">{{ $pelatihan->nama }}</div>
+                                                <a href="{{ route('pelatihan.pendaftar', $pelatihan) }}" class="text-indigo-600 hover:text-indigo-900 font-medium">{{ $pelatihan->nama }}</a>
                                                 <div class="text-xs text-gray-500">{{ $pelatihan->tanggal_mulai->format('d M Y') }} - {{ $pelatihan->tanggal_selesai->format('d M Y') }}</div>
                                             </td>
                                             <td class="px-4 py-4 text-center text-sm text-gray-900 font-bold">{{ $pelatihan->total_pendaftar }}</td>
