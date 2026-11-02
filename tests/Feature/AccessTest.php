@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Kamar;
 use App\Models\Pelatihan;
 use App\Models\Pendaftaran;
 use App\Models\User;
@@ -399,5 +400,60 @@ class AccessTest extends TestCase
         $response = $this->actingAs($panitia)->get(route('panitia.dashboard'));
 
         $response->assertStatus(200);
+    }
+
+    /**
+     * 23. Pendaftaran ditolak tidak dihitung dalam kuota kamar
+     */
+    public function test_rejected_pendaftaran_does_not_count_toward_quota(): void
+    {
+        $pelatihan = Pelatihan::factory()->create(['kuota' => 3]);
+        $kamar = Kamar::factory()->create(['kapasitas' => 2]);
+
+        // Peserta 1: registrasi dan diverifikasi (check_in 2026-01-10)
+        $peserta1 = User::factory()->create(['role' => 'peserta']);
+        $pendaftaran1 = Pendaftaran::factory()->create([
+            'peserta_id' => $peserta1->id,
+            'pelatihan_id' => $pelatihan->id,
+            'kamar_id' => $kamar->id,
+            'status_verifikasi' => 'diverifikasi',
+            'check_in' => '2026-01-10',
+            'check_out' => '2026-01-12',
+        ]);
+
+        // Peserta 2: registrasi dan DITOLAK (check_in 2026-01-10)
+        $peserta2 = User::factory()->create(['role' => 'peserta']);
+        $pendaftaran2 = Pendaftaran::factory()->create([
+            'peserta_id' => $peserta2->id,
+            'pelatihan_id' => $pelatihan->id,
+            'kamar_id' => $kamar->id,
+            'status_verifikasi' => 'ditolak',
+            'check_in' => '2026-01-10',
+            'check_out' => '2026-01-12',
+        ]);
+
+        // Peserta 3: registrasi pending (check_in 2026-01-10)
+        // Kamar kapasitas 2, tapi peserta1 (count=1) + peserta2 (count=0, ditolak) = count 1
+        // Jadi peserta3 masih bisa assign ke kamar yang sama
+        $peserta3 = User::factory()->create(['role' => 'peserta']);
+        $pendaftaran3 = Pendaftaran::factory()->create([
+            'peserta_id' => $peserta3->id,
+            'pelatihan_id' => $pelatihan->id,
+            'status_verifikasi' => 'pending',
+            'check_in' => '2026-01-10',
+            'check_out' => '2026-01-12',
+        ]);
+
+        // Verify kamar tersedia untuk tanggal tersebut
+        // Count (status != 'ditolak' AND date overlap) = peserta1 only = 1
+        // Kapasitas 2, jadi tersedia
+        $this->assertTrue($kamar->tersediaUntukTanggal('2026-01-10', '2026-01-12'));
+
+        // Peserta 3 dapat assign ke kamar yang sama (peserta2 ditolak tidak dihitung)
+        $pendaftaran3->update(['kamar_id' => $kamar->id]);
+        $this->assertDatabaseHas('pendaftarans', [
+            'kamar_id' => $kamar->id,
+            'id' => $pendaftaran3->id,
+        ]);
     }
 }
