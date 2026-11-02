@@ -141,13 +141,7 @@ class PendaftaranController extends Controller
      */
     public function edit(Pendaftaran $pendaftaran)
     {
-        if ($pendaftaran->peserta_id !== Auth::id()) {
-            abort(403);
-        }
-
-        if (! $pendaftaran->isPending()) {
-            return back()->with('error', 'Pendaftaran yang sudah diverifikasi atau ditolak tidak dapat diubah.');
-        }
+        $this->authorize('update', $pendaftaran);
 
         $pelatihan = $pendaftaran->pelatihan;
 
@@ -159,13 +153,7 @@ class PendaftaranController extends Controller
      */
     public function updateSelf(Request $request, Pendaftaran $pendaftaran)
     {
-        if ($pendaftaran->peserta_id !== Auth::id()) {
-            abort(403);
-        }
-
-        if (! $pendaftaran->isPending()) {
-            return back()->with('error', 'Pendaftaran yang sudah diverifikasi atau ditolak tidak dapat diubah.');
-        }
+        $this->authorize('update', $pendaftaran);
 
         $validated = $request->validate([
             'nama' => ['required', 'string', 'max:255'],
@@ -279,6 +267,8 @@ class PendaftaranController extends Controller
      */
     public function verifikasi(Pendaftaran $pendaftaran)
     {
+        $this->authorize('verify', $pendaftaran);
+
         $pendaftaran->verifikasi(Auth::user());
 
         return back()->with('success', 'Pendaftaran berhasil diverifikasi.');
@@ -289,6 +279,8 @@ class PendaftaranController extends Controller
      */
     public function tolak(Request $request, Pendaftaran $pendaftaran)
     {
+        $this->authorize('reject', $pendaftaran);
+
         $validated = $request->validate([
             'alasan_penolakan' => ['required', 'string', 'min:3', 'max:1000'],
         ]);
@@ -303,9 +295,7 @@ class PendaftaranController extends Controller
      */
     public function destroy(Pendaftaran $pendaftaran)
     {
-        if ($pendaftaran->peserta_id !== Auth::id()) {
-            abort(403);
-        }
+        $this->authorize('delete', $pendaftaran);
 
         $pendaftaran->delete();
 
@@ -317,10 +307,7 @@ class PendaftaranController extends Controller
      */
     public function kartu(Pendaftaran $pendaftaran)
     {
-        // Only the owner peserta can view their own card
-        if ($pendaftaran->peserta_id !== Auth::id()) {
-            abort(403);
-        }
+        $this->authorize('view', $pendaftaran);
 
         // Load relationships
         $pendaftaran->load(['pelatihan', 'kamar.asrama', 'verifier']);
@@ -344,10 +331,7 @@ class PendaftaranController extends Controller
      */
     public function sertifikat(Pendaftaran $pendaftaran)
     {
-        // Only the owner peserta can view their own sertifikat
-        if ($pendaftaran->peserta_id !== Auth::id()) {
-            abort(403);
-        }
+        $this->authorize('view', $pendaftaran);
 
         // Check eligibility
         if (! $pendaftaran->isDiverifikasi()) {

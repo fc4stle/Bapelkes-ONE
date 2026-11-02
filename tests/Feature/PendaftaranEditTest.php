@@ -73,10 +73,11 @@ class PendaftaranEditTest extends TestCase
             'status_verifikasi' => 'diverifikasi',
         ]);
 
+        // GET edit form → 403 Forbidden (Policy enforcement)
         $editResponse = $this->actingAs($peserta)->get(route('pendaftarans.edit', $pendaftaran));
-        $editResponse->assertRedirect();
-        $editResponse->assertSessionHas('error');
+        $editResponse->assertStatus(403);
 
+        // PUT update → 403 Forbidden (Policy enforcement)
         $updateResponse = $this->actingAs($peserta)->put(route('pendaftarans.updateSelf', $pendaftaran), [
             'nama' => 'Mencoba Ubah',
             'nik' => '3333333333333333',
@@ -84,8 +85,7 @@ class PendaftaranEditTest extends TestCase
             'profesi' => 'Bidan',
             'instansi' => 'RS Coba',
         ]);
-        $updateResponse->assertRedirect();
-        $updateResponse->assertSessionHas('error');
+        $updateResponse->assertStatus(403);
 
         $this->assertNotSame('Mencoba Ubah', $pendaftaran->refresh()->data_diri['nama'] ?? null);
     }
