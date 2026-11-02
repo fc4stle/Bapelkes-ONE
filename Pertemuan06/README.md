@@ -6,7 +6,7 @@ Implementasi praktik web Pertemuan 6 untuk Bapelkes-ONE: role-based access contr
 
 Memahami dan menerapkan:
 1. **Autentikasi (Authentication)**: Login/register dengan Laravel Breeze, default role peserta
-2. **Otorisasi (Authorization)**: Policy untuk kontrol akses berbasis role (peserta, panitia, admin)
+2. **Otorisasi (Authorization)**: Policy untuk kontrol akses berbasis role (peserta, panitia)
 3. **Middleware**: Role middleware untuk protect route tertentu
 4. **Authorization methods**: `$this->authorize()` vs `Gate::authorize()`
 5. **Testing**: Feature test untuk verify RBAC behavior dengan SQLite in-memory
@@ -16,16 +16,17 @@ Memahami dan menerapkan:
 ### Authentication & Users
 - **Model**: `app/Models/User.php`
   - Field: `id, name, email, password, role, created_at, updated_at`
-  - Roles: `peserta` (default), `panitia`, `admin`
+  - Roles: `peserta` (default), `panitia`
   - Relasi: `hasMany('pendaftarans')` via foreign key `peserta_id`
 
 - **Migration**: `database/migrations/2026_09_10_082046_add_role_to_users_table.php`
-  - Kolom: `role enum('peserta', 'panitia', 'admin') default='peserta'`
+  - Kolom: `role enum('peserta', 'panitia') default='peserta'`
 
 - **Seeder**: `database/seeders/DatabaseSeeder.php`
   - Akun uji via `updateOrCreate()`:
-    - Email: `panitia@bapelkes.test` (role='panitia', password: [generated])
-    - Email: `peserta@bapelkes.test` (role='peserta', password: [generated])
+    - Email: `panitia@test.local` (role='panitia', password: `password`)
+    - Email: `peserta@test.local` (role='peserta', password: `password`)
+  - **Catatan**: Password untuk latihan lokal saja; jangan gunakan di server sungguhan.
 
 ### Authorization & Policies
 - **Policy**: `app/Policies/PendaftaranPolicy.php`
@@ -34,7 +35,7 @@ Memahami dan menerapkan:
   - Panitia: akses full; verify/reject panitia-only
 
 - **Controller**: `app/Http/Controllers/PendaftaranController.php`
-  - Menggunakan `$this->authorize('action', $model)` di methods: edit, updateSelf, destroy, kartu, sertifikat, verifikasi
+  - Menggunakan `$this->authorize('action', $model)` di methods: edit, updateSelf, destroy, kartu, sertifikat, verifikasi, tolak
 
 ### Middleware & Routes
 - **Middleware**: `app/Http/Middleware/RoleMiddleware.php`
@@ -56,9 +57,9 @@ Memahami dan menerapkan:
   - Relasi: `hasMany(Pendaftaran)`, `hasMany(Kamar)` (untuk asrama)
 
 ### Testing
-- **Test file**: `tests/Feature/AccessTest.php` (22 test cases)
+- **Test file**: `tests/Feature/AccessTest.php` (23 test cases)
   - Setup: `RefreshDatabase` trait (SQLite in-memory)
-  - Coverage: Guest access, registration, login, peseta CRUD, panitia approval, role-based forbidden
+  - Coverage: Guest access, registration, login, peserta CRUD, panitia approval, role-based forbidden, kuota-ditolak
 
 ## Cara Menjalankan
 
@@ -101,7 +102,7 @@ vendor/bin/phpunit
 vendor/bin/phpunit tests/Feature/AccessTest.php
 
 # Dengan output verbose
-vendor/bin/phpunit tests/Feature/AccessTest.php -v
+vendor/bin/phpunit tests/Feature/AccessTest.php --verbose
 
 # Code style check (Pint)
 ./vendor/bin/pint tests/Feature/AccessTest.php --test
@@ -113,20 +114,20 @@ Gunakan akun ini untuk login manual di http://localhost:8000/login:
 
 | Role | Email | Password |
 |------|-------|----------|
-| Panitia | `panitia@bapelkes.test` | Lihat di `DatabaseSeeder.php` |
-| Peserta | `peserta@bapelkes.test` | Lihat di `DatabaseSeeder.php` |
+| Panitia | `panitia@test.local` | `password` |
+| Peserta | `peserta@test.local` | `password` |
 
-**Catatan**: Password diisi via `updateOrCreate()` saat `php artisan db:seed`. Cek file seeder untuk nilai aktual.
+**Catatan**: Password untuk testing lokal saja. Jangan gunakan di environment production.
 
 ## File Implementasi & Changes
 
 | File | Tipe | Perubahan |
-|------|------|-----------|
+|------|------|-----------:|
 | `app/Http/Controllers/Controller.php` | Edit | + `use AuthorizesRequests` trait |
-| `app/Http/Controllers/PendaftaranController.php` | Edit | + `$this->authorize()` calls di 6 methods |
+| `app/Http/Controllers/PendaftaranController.php` | Edit | + `$this->authorize()` calls di 7 methods |
 | `app/Policies/PendaftaranPolicy.php` | New | Policy dengan 5 authorization methods |
 | `database/seeders/DatabaseSeeder.php` | Edit | Replace `factory()` dengan `updateOrCreate()` untuk panitia + peserta |
-| `tests/Feature/AccessTest.php` | New | 22 feature test scenarios (6 panitia, 8 peserta, 5 guest, 3 logout) |
+| `tests/Feature/AccessTest.php` | New | 23 feature test scenarios (6 panitia, 8 peserta, 5 guest, 3 logout, 1 kuota) |
 | `Pertemuan06/01-matriks-akses.md` | New | Access matrix dokumentasi |
 | `Pertemuan06/06-test-checklist.md` | New | Test results checklist |
 | `Pertemuan06/README.md` | New | File ini — dokumentasi lengkap |
@@ -144,15 +145,15 @@ Sesuai conventional commit (English):
    - Enable $this->authorize() in all child controllers
 
 3. refactor: implement authorization checks in PendaftaranController
-   - Add $this->authorize() calls to edit, updateSelf, destroy, kartu, sertifikat, verifikasi methods
+   - Add $this->authorize() calls to edit, updateSelf, destroy, kartu, sertifikat, verifikasi, tolak methods
 
 4. refactor: update DatabaseSeeder with updateOrCreate for test accounts
-   - Panitia account: panitia@bapelkes.test
-   - Peserta account: peserta@bapelkes.test
+   - Panitia account: panitia@test.local
+   - Peserta account: peserta@test.local
    - Prevent duplicates on re-run
 
-5. test: add AccessTest with 22 RBAC scenarios
-   - Guest redirects, registration, login, peseta CRUD, panitia approval
+5. test: add AccessTest with 23 RBAC scenarios
+   - Guest redirects, registration, login, peserta CRUD, panitia approval, kuota-ditolak
    - All tests pass with SQLite in-memory
 
 6. docs: add Pertemuan06 documentation
@@ -163,18 +164,18 @@ Sesuai conventional commit (English):
 
 ## Hasil Verifikasi
 
-### PHPUnit (22/22 passed)
+### PHPUnit (23/23 passed)
 ```
 PHPUnit 12.5.35 by Sebastian Bergmann and contributors.
 
 Runtime:       PHP 8.5.4
 Configuration: /home/lenovo/projects/Bapelkes-ONE/phpunit.xml
 
-......................                                            22 / 22 (100%)
+............................                                        23 / 23 (100%)
 
-Time: 00:00.999, Memory: 58.50 MB
+Time: 00:00.960, Memory: 58.50 MB
 
-OK (22 tests, 59 assertions)
+OK (23 tests, 61 assertions)
 ```
 
 ### Pint (code style)

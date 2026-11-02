@@ -65,13 +65,13 @@
 | Fitur | Path | Method | Akses | Keterangan |
 |-------|------|--------|-------|-----------|
 | **Kelola Pelatihan** |
-| Daftar Pelatihan | `/pelatihans` | GET | ✓ BOLEH | List semua pelatihan (admin) |
+| Daftar Pelatihan | `/pelatihans` | GET | ✓ BOLEH | List semua pelatihan (panitia) |
 | Buat Pelatihan | `/pelatihans/create` | GET | ✓ BOLEH | Form input pelatihan baru |
 | Simpan Pelatihan | `/pelatihans` | POST | ✓ BOLEH | Validasi, simpan ke DB |
 | Edit Pelatihan | `/pelatihans/{id}/edit` | GET | ✓ BOLEH | Form ubah pelatihan |
 | Perbarui Pelatihan | `/pelatihans/{id}` | PUT | ✓ BOLEH | Update: nama, jadwal, kuota, metode, status |
 | Hapus Pelatihan | `/pelatihans/{id}` | DELETE | ✓ BOLEH | Soft delete pelatihan |
-| Lihat Detail Pelatihan | `/pelatihans/{id}` | GET | ✓ BOLEH | Detail pelatihan (admin view) |
+| Lihat Detail Pelatihan | `/pelatihans/{id}` | GET | ✓ BOLEH | Detail pelatihan (panitia) |
 | **Daftar Pendaftar & Verifikasi** |
 | Dashboard Panitia | `/panitia/dashboard` | GET | ✓ BOLEH | Rekap semua pelatihan + peserta |
 | Daftar Pendaftar (Pelatihan) | `/pelatihan/{id}/pendaftar` | GET | ✓ BOLEH | List peserta yang daftar pelatihan ini |

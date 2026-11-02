@@ -6,7 +6,7 @@ Skenario pengujian untuk Bapelkes-ONE role-based access control (RBAC).
 
 | # | Skenario | Akun Uji | Hasil Diharapkan | Status | Bukti |
 |---|----------|----------|------------------|--------|-------|
-| 1 | Peserta buka katalog pelatihan | peserta | HTTP 200, lihat nama pelatihan | ✅ Lulus | test_peserta_dapat_browse_catalog |
+| 1 | Guest browse katalog pelatihan | – | HTTP 200, lihat nama pelatihan | ✅ Lulus | test_guest_can_browse_catalog |
 | 2 | Guest akses /dashboard | – | Redirect ke /login | ✅ Lulus | test_guest_redirect_to_login_for_dashboard |
 | 3 | Guest akses /pendaftarans | – | Redirect ke /login | ✅ Lulus | test_guest_redirect_to_login_for_pendaftarans |
 | 4 | Registrasi akun baru | – | Akun terbuat, role='peserta' otomatis | ✅ Lulus | test_new_user_registration_creates_peserta_role |
@@ -28,10 +28,11 @@ Skenario pengujian untuk Bapelkes-ONE role-based access control (RBAC).
 | 20 | Akses /dashboard setelah logout | – | Redirect ke /login | ✅ Lulus | test_access_dashboard_after_logout_redirects_to_login |
 | 21 | Peserta akses panitia dashboard | peserta | HTTP 403 Forbidden | ✅ Lulus | test_peserta_cannot_access_panitia_dashboard |
 | 22 | Panitia akses panitia dashboard | panitia | HTTP 200 | ✅ Lulus | test_panitia_can_access_panitia_dashboard |
+| 23 | Pendaftaran ditolak tidak dihitung kuota kamar | peserta | Kamar tidak penuh meski ada ditolak | ✅ Lulus | test_rejected_pendaftaran_does_not_count_toward_quota |
 
 ## Ringkasan Hasil
 
-**Total: 22 test, 22 lulus, 0 gagal**
+**Total: 23 test, 23 lulus, 0 gagal**
 
 ```
 PHPUnit 12.5.35 by Sebastian Bergmann and contributors.
@@ -39,11 +40,11 @@ PHPUnit 12.5.35 by Sebastian Bergmann and contributors.
 Runtime:       PHP 8.5.4
 Configuration: /home/lenovo/projects/Bapelkes-ONE/phpunit.xml
 
-......................                                            22 / 22 (100%)
+...............................                                       23 / 23 (100%)
 
-Time: 00:00.999, Memory: 58.50 MB
+Time: 00:00.960, Memory: 58.50 MB
 
-OK (22 tests, 59 assertions)
+OK (23 tests, 61 assertions)
 ```
 
 ## Catatan Implementasi Test
@@ -53,13 +54,14 @@ OK (22 tests, 59 assertions)
 2. **Seeder data**: Test menggunakan factory untuk user dan pendaftaran; DatabaseSeeder dipanggil otomatis via `RefreshDatabase`.
 
 3. **Akun uji seeder**:
-   - Email: panitia@bapelkes.test (role='panitia')
-   - Email: peserta@bapelkes.test (role='peserta')
-   - (Digenerate via `updateOrCreate()` di DatabaseSeeder.php)
+   - Email: `panitia@test.local` (role='panitia', password: `password`)
+   - Email: `peserta@test.local` (role='peserta', password: `password`)
+   - (Dibuat via `updateOrCreate()` di DatabaseSeeder.php)
+   - Catatan: Password untuk latihan lokal saja; jangan gunakan di server sungguhan.
 
 4. **Authorization checks**:
    - Policy (`app/Policies/PendaftaranPolicy.php`) handle view, update, delete, verify, reject
-   - Middleware `role:panitia` pada route admin
+   - Middleware `role:panitia` pada route panitia
    - Test langsung assert HTTP status (403, 200) dan kondisi data setelah action
 
 5. **Routes tested**:
@@ -70,9 +72,15 @@ OK (22 tests, 59 assertions)
    - `/pendaftarans/{id}/verifikasi`, `/pendaftarans/{id}/tolak` → panitia only
    - Resource `/pelatihans/*` (CRUD) → panitia only
 
+6. **Test kuota-ditolak** (row 23): 
+   - Menguji kapasitas kamar asrama (Kamar.php `tersediaUntukTanggal()` method)
+   - Logika: Pendaftaran dengan status='ditolak' **tidak dihitung** dalam kuota; hanya status='pending' dan 'diverifikasi' yang dihitung
+   - Bukti kode: `app/Models/Kamar.php` line 36: `->where('status_verifikasi', '!=', 'ditolak')`
+   - Test membuat 2 pendaftaran untuk kamar dengan kuota=1, verifikasi 1 dan tolak 1; test bahwa kamar masih tersedia untuk pendaftaran 3
+
 ## File Test
 
 - **Path**: `tests/Feature/AccessTest.php`
-- **Total lines**: ~400
+- **Total lines**: ~454
 - **Namespace**: `Tests\Feature\AccessTest`
 - **Base class**: `Tests\TestCase` (with RefreshDatabase)
