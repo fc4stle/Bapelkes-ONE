@@ -13,6 +13,10 @@ Route::get('/awal', function () {
     return view('awal');
 });
 
+// Publik: Katalog dan Detail Pelatihan (tamu bisa lihat)
+Route::get('/pelatihan', [PelatihanController::class, 'katalog'])->name('pelatihan.katalog');
+Route::get('/pelatihan/{pelatihan}/detail', [PelatihanController::class, 'detail'])->name('pelatihan.detail');
+
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
@@ -23,9 +27,6 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::get('/pendaftarans', [PendaftaranController::class, 'index'])->name('pendaftarans.index');
-
-    Route::get('/pelatihan', [PelatihanController::class, 'katalog'])->name('pelatihan.katalog');
-    Route::get('/pelatihan/{pelatihan}/detail', [PelatihanController::class, 'detail'])->name('pelatihan.detail');
 
     Route::middleware('role:peserta')->group(function () {
         Route::get('/pelatihan/{pelatihan}/daftar', [PendaftaranController::class, 'create'])->name('pelatihan.daftar');

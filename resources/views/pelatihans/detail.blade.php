@@ -52,15 +52,25 @@
                             <x-secondary-button type="button">Kembali</x-secondary-button>
                         </a>
 
-                        @if ($sudahDaftar)
-                            <span class="text-[var(--fs-caption)] text-gray-500">Anda sudah terdaftar pada pelatihan ini.</span>
-                        @elseif ($pelatihan->isFull())
-                            <x-primary-button type="button" disabled>Kuota Penuh</x-primary-button>
+                        @auth
+                            @if ($sudahDaftar)
+                                <span class="text-[var(--fs-caption)] text-gray-500">Anda sudah terdaftar pada pelatihan ini.</span>
+                            @elseif ($pelatihan->isFull())
+                                <x-primary-button type="button" disabled>Kuota Penuh</x-primary-button>
+                            @else
+                                <a href="{{ route('pelatihan.daftar', $pelatihan) }}">
+                                    <x-primary-button type="button">Ajukan Pendaftaran</x-primary-button>
+                                </a>
+                            @endif
                         @else
-                            <a href="{{ route('pelatihan.daftar', $pelatihan) }}">
-                                <x-primary-button type="button">Ajukan Pendaftaran</x-primary-button>
-                            </a>
-                        @endif
+                            @if ($pelatihan->isFull())
+                                <x-primary-button type="button" disabled>Kuota Penuh</x-primary-button>
+                            @else
+                                <a href="{{ route('login') }}">
+                                    <x-primary-button type="button">Masuk untuk Mendaftar</x-primary-button>
+                                </a>
+                            @endif
+                        @endauth
                     </div>
 
                 </div>

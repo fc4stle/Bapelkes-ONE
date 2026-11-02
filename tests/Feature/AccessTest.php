@@ -18,19 +18,30 @@ class AccessTest extends TestCase
      */
     public function test_guest_can_browse_catalog(): void
     {
-        // Katalog route requires auth, so guest must login first or we test the public show route
-        // For now, test that authenticated user can see catalog
-        $peserta = User::factory()->create(['role' => 'peserta']);
         $pelatihan = Pelatihan::factory()->create(['status' => 'dibuka']);
 
-        $response = $this->actingAs($peserta)->get(route('pelatihan.katalog'));
+        $response = $this->get(route('pelatihan.katalog'));
 
         $response->assertStatus(200);
         $response->assertSee($pelatihan->nama);
     }
 
     /**
-     * 2. Guest redirect ke login untuk /dashboard
+     * 2. Guest dapat membuka detail pelatihan
+     */
+    public function test_guest_can_view_pelatihan_detail(): void
+    {
+        $pelatihan = Pelatihan::factory()->create(['status' => 'dibuka', 'deskripsi' => 'Uraian Detail Pelatihan']);
+
+        $response = $this->get(route('pelatihan.detail', $pelatihan));
+
+        $response->assertStatus(200);
+        $response->assertSee($pelatihan->nama);
+        $response->assertSee('Masuk untuk Mendaftar');
+    }
+
+    /**
+     * 3. Guest redirect ke login untuk /dashboard
      */
     public function test_guest_redirect_to_login_for_dashboard(): void
     {

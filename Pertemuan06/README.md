@@ -44,7 +44,8 @@ Memahami dan menerapkan:
 
 - **Routes** (`routes/web.php`):
   - Public: `/` (home), `/awal`
-  - Auth required: `/dashboard`, `/pelatihan` (katalog), `/pendaftarans` (list)
+  - Public (no auth): `/`, `/register`, `/login`, `/pelatihan` (katalog), `/pelatihan/{id}/detail`
+  - Auth required: `/dashboard`, `/pendaftarans` (list)
   - Peserta only: `/pelatihan/{id}/daftar`, `/pendaftarans/{id}/edit|delete|updateSelf`, `/pendaftarans/{id}/kartu|sertifikat`
   - Panitia only: `/panitia/dashboard`, `/pelatihan/{id}/pendaftar`, `/pendaftarans/{id}/verifikasi|tolak`, Resource `/pelatihans` (CRUD)
 

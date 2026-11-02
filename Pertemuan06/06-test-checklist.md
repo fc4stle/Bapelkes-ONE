@@ -6,8 +6,9 @@ Skenario pengujian untuk Bapelkes-ONE role-based access control (RBAC).
 
 | # | Skenario | Akun Uji | Hasil Diharapkan | Status | Bukti |
 |---|----------|----------|------------------|--------|-------|
-| 1 | Guest browse katalog pelatihan | – | HTTP 200, lihat nama pelatihan | ✅ Lulus | test_guest_can_browse_catalog |
-| 2 | Guest akses /dashboard | – | Redirect ke /login | ✅ Lulus | test_guest_redirect_to_login_for_dashboard |
+|| 1 | Guest browse katalog pelatihan | (tidak perlu login) | HTTP 200, lihat nama pelatihan | ✅ Lulus | test_guest_can_browse_catalog |
+|| 1b | Guest akses detail pelatihan | (tidak perlu login) | HTTP 200, lihat nama & tombol login | ✅ Lulus | test_guest_can_view_pelatihan_detail |
+|| 2 | Guest akses /dashboard | – | Redirect ke /login | ✅ Lulus | test_guest_redirect_to_login_for_dashboard |
 | 3 | Guest akses /pendaftarans | – | Redirect ke /login | ✅ Lulus | test_guest_redirect_to_login_for_pendaftarans |
 | 4 | Registrasi akun baru | – | Akun terbuat, role='peserta' otomatis | ✅ Lulus | test_new_user_registration_creates_peserta_role |
 | 5 | Login password salah | user | Redirect + error message, tidak login | ✅ Lulus | test_login_with_wrong_password_fails |
@@ -32,7 +33,7 @@ Skenario pengujian untuk Bapelkes-ONE role-based access control (RBAC).
 
 ## Ringkasan Hasil
 
-**Total: 23 test, 23 lulus, 0 gagal**
+**Total: 24 test, 24 lulus, 0 gagal**
 
 ```
 PHPUnit 12.5.35 by Sebastian Bergmann and contributors.
@@ -65,9 +66,9 @@ OK (23 tests, 61 assertions)
    - Test langsung assert HTTP status (403, 200) dan kondisi data setelah action
 
 5. **Routes tested**:
-   - `/pelatihan` → `pelatihan.katalog` (authenticated)
+   - `/pelatihan` → `pelatihan.katalog` (publik, tidak perlu login)
+   - `/pelatihan/{id}/detail` → publik, tidak perlu login
    - `/dashboard`, `/pendaftarans` → middleware auth
-   - `/pelatihan/{id}/detail`, `/pelatihan/{id}/daftar` → authenticated
    - `/pelatihan/{id}/pendaftar` → panitia only
    - `/pendaftarans/{id}/verifikasi`, `/pendaftarans/{id}/tolak` → panitia only
    - Resource `/pelatihans/*` (CRUD) → panitia only
