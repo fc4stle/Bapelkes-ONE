@@ -128,6 +128,6 @@ class NavigationFlowTest extends TestCase
         $response = $this->actingAs($peserta)
             ->get('/');
 
-        $response->assertSee('Cari Pelatihan');
+        $response->assertSee('Cari pelatihan');
     }
 }
