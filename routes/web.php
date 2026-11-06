@@ -9,10 +9,6 @@ Route::get('/', function () {
     return view('beranda');
 });
 
-Route::get('/awal', function () {
-    return view('awal');
-});
-
 // Publik: Katalog dan Detail Pelatihan (tamu bisa lihat)
 Route::get('/pelatihan', [PelatihanController::class, 'katalog'])->name('pelatihan.katalog');
 Route::get('/pelatihan/{pelatihan}/detail', [PelatihanController::class, 'detail'])->name('pelatihan.detail');
@@ -57,7 +53,3 @@ Route::resource('pelatihans', PelatihanController::class)
     ->middleware(['auth', 'role:panitia']);
 
 require __DIR__.'/auth.php';
-
-Route::get('/komponen-uji', function () {
-    return view('komponen-uji');
-});

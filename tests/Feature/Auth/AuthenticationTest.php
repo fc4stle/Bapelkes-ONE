@@ -42,6 +42,33 @@ class AuthenticationTest extends TestCase
         $this->assertGuest();
     }
 
+    public function test_login_screen_shows_error_message_on_failed_login(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->post('/login', [
+            'email' => $user->email,
+            'password' => 'wrong-password',
+        ]);
+
+        // On failed login, Laravel redirects back to the referring page (or /login if no referrer)
+        // The error message should be visible when we follow the redirect and fetch /login
+        $this->get('/login')->assertSee('Login gagal. Email atau kata sandi salah. Silakan periksa kembali.');
+    }
+
+    public function test_login_screen_preserves_email_on_failed_login(): void
+    {
+        $user = User::factory()->create();
+        $email = $user->email;
+
+        $this->post('/login', [
+            'email' => $email,
+            'password' => 'wrong-password',
+        ]);
+
+        $this->get('/login')->assertSee(e($email));
+    }
+
     public function test_users_can_logout(): void
     {
         $user = User::factory()->create();

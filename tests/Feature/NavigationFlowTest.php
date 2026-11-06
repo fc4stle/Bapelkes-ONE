@@ -128,6 +128,24 @@ class NavigationFlowTest extends TestCase
         $response = $this->actingAs($peserta)
             ->get('/');
 
-        $response->assertSee('Cari Pelatihan');
+        $response->assertSee('Cari pelatihan');
+    }
+
+    public function test_beranda_shows_open_training_with_correct_quota_badge(): void
+    {
+        $training = Pelatihan::factory()->create(['status' => 'dibuka']);
+
+        $response = $this->get('/');
+
+        $response->assertSee($training->nama);
+        $response->assertSee('Sisa');
+        $response->assertDontSee('Menunggu Verifikasi');
+    }
+
+    public function test_beranda_shows_empty_state_when_no_training_open(): void
+    {
+        $response = $this->get('/');
+
+        $response->assertSee('Belum ada pelatihan yang dibuka.');
     }
 }

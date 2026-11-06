@@ -23,6 +23,11 @@ class User extends Authenticatable
         return $this->role === 'panitia';
     }
 
+    public function isPeserta(): bool
+    {
+        return $this->role === 'peserta';
+    }
+
     /**
      * @return HasMany<Pendaftaran, $this>
      */
