@@ -62,4 +62,37 @@ class PendaftaranPolicy
     {
         return $user->isPanitia();
     }
+
+    /**
+     * Determine whether the user can fill TIYAS evaluation.
+     * Peserta hanya bisa isi miliknya, hanya jika:
+     * - peserta pemilik pendaftaran
+     * - status verifikasi = diverifikasi
+     * - pelatihan status = selesai
+     * - belum ada tiyasResponse untuk pendaftaran ini
+     */
+    public function isiTiyas(User $user, Pendaftaran $pendaftaran): bool
+    {
+        if ($user->isPanitia()) {
+            return false; // Panitia tidak boleh isi
+        }
+
+        if ($user->id !== $pendaftaran->peserta_id) {
+            return false; // Bukan miliknya
+        }
+
+        if (!$pendaftaran->isDiverifikasi()) {
+            return false; // Belum diverifikasi
+        }
+
+        if (!$pendaftaran->isPelatihanSelesai()) {
+            return false; // Pelatihan belum selesai
+        }
+
+        if ($pendaftaran->tiyasResponse()->exists()) {
+            return false; // Sudah pernah isi
+        }
+
+        return true;
+    }
 }

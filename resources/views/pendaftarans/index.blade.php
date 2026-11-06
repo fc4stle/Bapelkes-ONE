@@ -76,6 +76,16 @@
                                     <button type="submit" class="text-sm text-[var(--color-danger)] hover:opacity-75">Batalkan</button>
                                 </form>
                             </div>
+                        @elseif ($pendaftaran->status_verifikasi === 'diverifikasi' && $pendaftaran->pelatihan->status === 'selesai')
+                            @if ($pendaftaran->tiyasResponse()->exists())
+                                <div class="mt-[var(--sp-2)]">
+                                    <span class="inline-block px-2 py-1 text-xs font-semibold text-white rounded" style="background-color: var(--color-success);">Evaluasi sudah diisi</span>
+                                </div>
+                            @else
+                                <div class="mt-[var(--sp-2)]">
+                                    <a href="{{ route('tiyas.form', $pendaftaran) }}" class="text-sm text-[var(--color-primary)] hover:opacity-75">Isi Evaluasi TIYAS</a>
+                                </div>
+                            @endif
                         @endif
                     </div>
                 @endforeach
@@ -122,6 +132,12 @@
                                                 <button type="submit" class="text-[var(--color-danger)] hover:opacity-75">Batalkan</button>
                                             </form>
                                         </div>
+                                    @elseif ($pendaftaran->status_verifikasi === 'diverifikasi' && $pendaftaran->pelatihan->status === 'selesai')
+                                        @if ($pendaftaran->tiyasResponse()->exists())
+                                            <span class="inline-block px-2 py-1 text-xs font-semibold text-white rounded" style="background-color: var(--color-success);">Evaluasi sudah diisi</span>
+                                        @else
+                                            <a href="{{ route('tiyas.form', $pendaftaran) }}" class="text-[var(--color-primary)] hover:opacity-75">Isi Evaluasi TIYAS</a>
+                                        @endif
                                     @else
                                         <span class="text-gray-400">-</span>
                                     @endif
