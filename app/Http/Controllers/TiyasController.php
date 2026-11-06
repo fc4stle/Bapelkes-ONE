@@ -83,7 +83,7 @@ class TiyasController extends Controller
      */
     public function hasil(Pelatihan $pelatihan): View
     {
-        $this->authorize('viewTiyasHasil');
+        // Middleware 'role:panitia' sudah mengecek akses
 
         // Ambil semua peserta diverifikasi dengan pelatihan ini
         $pendaftarans = Pendaftaran::where('pelatihan_id', $pelatihan->id)
