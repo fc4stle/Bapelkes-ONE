@@ -113,9 +113,13 @@
                             </p>
                             <p class="text-sm mb-4" style="color: #666;">
                                 <strong>Sisa Kuota:</strong>
-                                <x-status-badge :variant="$training->isFull() ? 'unavailable' : 'normal'">
-                                    {{ $training->sisaKuota() }} / {{ $training->kuota }} tersedia
-                                </x-status-badge>
+                                <span class="inline-block rounded-full text-xs font-semibold px-3 py-1" style="@if($training->isFull()) background-color: var(--color-danger); @else background-color: var(--color-success); @endif color: white;">
+                                    @if($training->isFull())
+                                        Kuota penuh
+                                    @else
+                                        Sisa {{ $training->sisaKuota() }} dari {{ $training->kuota }}
+                                    @endif
+                                </span>
                             </p>
                             <a href="{{ route('pelatihan.detail', $training) }}" class="inline-block px-4 py-2 rounded-[var(--radius-btn)] text-white font-semibold" style="background-color: var(--color-primary);">
                                 Lihat Detail
