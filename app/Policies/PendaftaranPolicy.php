@@ -85,8 +85,8 @@ class PendaftaranPolicy
             return false; // Belum diverifikasi
         }
 
-        if (! $pendaftaran->isPelatihanSelesai()) {
-            return false; // Pelatihan belum selesai
+        if ($pendaftaran->pelatihan->status->value !== 'selesai') {
+            return false; // Pelatihan status harus 'selesai'
         }
 
         if ($pendaftaran->tiyasResponse()->exists()) {

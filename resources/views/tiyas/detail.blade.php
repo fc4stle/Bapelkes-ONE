@@ -38,9 +38,30 @@
                             </div>
                         @endforeach
                     </div>
+                    
+                    <!-- Skor Per Dimensi -->
+                    @if (isset($skorDimensi) && !empty($skorDimensi))
+                        <div class="mt-6 pt-6 border-t">
+                            <h4 class="text-md font-semibold text-gray-900 mb-4">Skor Per Dimensi</h4>
+                            <div class="space-y-4">
+                                @foreach ($skorDimensi as $konstruk => $dimensis)
+                                    <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                                        <p class="text-sm font-medium text-gray-700 mb-3">{{ $config['konstruk'][$konstruk]['nama'] }}</p>
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                            @foreach ($dimensis as $namaDimensi => $skorDim)
+                                                <div class="flex justify-between items-center bg-white p-2 rounded">
+                                                    <span class="text-sm text-gray-600">{{ $namaDimensi }}</span>
+                                                    <span class="font-medium" style="color: var(--color-primary);">{{ number_format($skorDim, 2) }}</span>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
                 </div>
 
-                <!-- Interpretasi -->
                 <div class="mb-6 p-4 rounded-lg" style="background-color: var(--color-bg);">
                     <h3 class="font-semibold text-gray-900 mb-2">Interpretasi</h3>
                     <p class="text-gray-800">{{ $interpretasi }}</p>

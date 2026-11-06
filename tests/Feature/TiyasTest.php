@@ -14,14 +14,88 @@ class TiyasTest extends TestCase
     use RefreshDatabase;
 
     /**
-     * Test: peserta bisa isi form TIYAS jika pelatihan selesai + diverifikasi.
+     * Test feature: halaman pendaftarans.index peserta menampilkan "Isi Evaluasi TIYAS"
+     * untuk pendaftaran diverifikasi + pelatihan status selesai.
      */
-    public function test_peserta_bisa_akses_form_tiyas()
+    public function test_pendaftarans_index_menampilkan_tombol_isi_tiyas()
     {
         $peserta = User::factory()->create(['role' => 'peserta']);
         $pelatihan = Pelatihan::factory()->create([
             'status' => 'selesai',
-            'tanggal_selesai' => now()->subDay(), // Sudah lewat
+            'tanggal_selesai' => now()->subDay(),
+        ]);
+        $pendaftaran = Pendaftaran::factory()->create([
+            'peserta_id' => $peserta->id,
+            'pelatihan_id' => $pelatihan->id,
+            'status_verifikasi' => 'diverifikasi',
+        ]);
+
+        $this->actingAs($peserta)
+            ->get(route('pendaftarans.index'))
+            ->assertOk()
+            ->assertSeeText('Isi Evaluasi TIYAS');
+    }
+
+    /**
+     * Test feature: halaman pendaftarans.index peserta menampilkan "Evaluasi sudah diisi"
+     * setelah ada TiyasResponse.
+     */
+    public function test_pendaftarans_index_menampilkan_evaluasi_sudah_diisi()
+    {
+        $peserta = User::factory()->create(['role' => 'peserta']);
+        $pelatihan = Pelatihan::factory()->create([
+            'status' => 'selesai',
+            'tanggal_selesai' => now()->subDay(),
+        ]);
+        $pendaftaran = Pendaftaran::factory()->create([
+            'peserta_id' => $peserta->id,
+            'pelatihan_id' => $pelatihan->id,
+            'status_verifikasi' => 'diverifikasi',
+        ]);
+
+        // Buat TiyasResponse (tanpa peserta_id)
+        TiyasResponse::factory()->create([
+            'pendaftaran_id' => $pendaftaran->id,
+        ]);
+
+        $this->actingAs($peserta)
+            ->get(route('pendaftarans.index'))
+            ->assertOk()
+            ->assertSeeText('Evaluasi sudah diisi');
+    }
+
+    /**
+     * Test feature: halaman pendaftarans.index TIDAK menampilkan tombol TIYAS
+     * jika pelatihan status 'dibuka'.
+     */
+    public function test_pendaftarans_index_tidak_tampil_jika_status_dibuka()
+    {
+        $peserta = User::factory()->create(['role' => 'peserta']);
+        $pelatihan = Pelatihan::factory()->create([
+            'status' => 'dibuka',
+            'tanggal_selesai' => now()->addDays(7),
+        ]);
+        $pendaftaran = Pendaftaran::factory()->create([
+            'peserta_id' => $peserta->id,
+            'pelatihan_id' => $pelatihan->id,
+            'status_verifikasi' => 'diverifikasi',
+        ]);
+
+        $this->actingAs($peserta)
+            ->get(route('pendaftarans.index'))
+            ->assertOk()
+            ->assertDontSeeText('Isi Evaluasi TIYAS');
+    }
+
+    /**
+     * Test: peserta bisa isi TIYAS jika pelatihan status 'selesai' meskipun tanggal_selesai masa depan.
+     */
+    public function test_peserta_bisa_isi_status_selesai_tanggal_masa_depan()
+    {
+        $peserta = User::factory()->create(['role' => 'peserta']);
+        $pelatihan = Pelatihan::factory()->create([
+            'status' => 'selesai',
+            'tanggal_selesai' => now()->addDays(7), // Masa depan, tapi status selesai
         ]);
         $pendaftaran = Pendaftaran::factory()->create([
             'peserta_id' => $peserta->id,
@@ -33,6 +107,27 @@ class TiyasTest extends TestCase
             ->get(route('tiyas.form', $pendaftaran))
             ->assertOk()
             ->assertViewIs('tiyas.form');
+    }
+
+    /**
+     * Test: peserta 403 jika pelatihan status 'dibuka' meski tanggal_selesai masa lalu.
+     */
+    public function test_peserta_403_status_dibuka_tanggal_masa_lalu()
+    {
+        $peserta = User::factory()->create(['role' => 'peserta']);
+        $pelatihan = Pelatihan::factory()->create([
+            'status' => 'dibuka',
+            'tanggal_selesai' => now()->subDay(), // Masa lalu, tapi status dibuka
+        ]);
+        $pendaftaran = Pendaftaran::factory()->create([
+            'peserta_id' => $peserta->id,
+            'pelatihan_id' => $pelatihan->id,
+            'status_verifikasi' => 'diverifikasi',
+        ]);
+
+        $this->actingAs($peserta)
+            ->get(route('tiyas.form', $pendaftaran))
+            ->assertForbidden();
     }
 
     /**

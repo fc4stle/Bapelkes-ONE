@@ -32,7 +32,7 @@ class TiyasScorer
             $skor[$kodeKonstruk]['skor'] = count($validJawaban) > 0
                 ? round(array_sum($validJawaban) / count($validJawaban), 2)
                 : 0;
-            $skor[$kodeKonstruk]['kategori'] = $this->getKategori($skor[$kodeKonstruk]['skor']);
+            $skor[$kodeKonstruk]['kategori'] = $this->kategori($skor[$kodeKonstruk]['skor']);
         }
 
         return $skor;
@@ -41,7 +41,7 @@ class TiyasScorer
     /**
      * Tentukan kategori skor berdasarkan batas di config('tiyas.kategori').
      */
-    private function getKategori(float $skor): string
+    public function kategori(float $skor): string
     {
         $config = config('tiyas');
 
@@ -52,6 +52,40 @@ class TiyasScorer
         }
 
         return 'Tinggi'; // Default jika > batas tertinggi
+    }
+
+    /**
+     * Hitung skor per dimensi.
+     * Input: array jawaban dengan key = kode butir (e.g., "TC1"), value = 1-4
+     * Output: array dengan struktur [kodeKonstruk => [namaDimensi => skorRataRata (2 desimal)]
+     */
+    public function hitungSkorDimensi(array $jawaban): array
+    {
+        $config = config('tiyas');
+        $skor = [];
+
+        // Hitung rata-rata per dimensi untuk setiap konstruk
+        foreach ($config['konstruk'] as $kodeKonstruk => $konstruk) {
+            $skor[$kodeKonstruk] = [];
+
+            foreach ($konstruk['dimensi'] as $namaDimensi => $butirs) {
+                $nilai = [];
+
+                // Kumpulkan jawaban untuk dimensi ini
+                foreach ($butirs as $kode => $text) {
+                    if (isset($jawaban[$kode])) {
+                        $nilai[] = (int) $jawaban[$kode];
+                    }
+                }
+
+                // Hitung rata-rata
+                $skor[$kodeKonstruk][$namaDimensi] = count($nilai) > 0
+                    ? round(array_sum($nilai) / count($nilai), 2)
+                    : 0;
+            }
+        }
+
+        return $skor;
     }
 
     /**

@@ -109,14 +109,19 @@ class TiyasController extends Controller
         // Hitung rata-rata skor per konstruk
         $skorTotal = ['TC' => [], 'TE' => [], 'ITT' => [], 'YB' => []];
         $dataPerPeserta = [];
+        $skorDimensiSemuaPeserta = []; // Kumpulkan skor dimensi per peserta
 
         foreach ($responses as $response) {
             $skor = $scorer->hitungSkor($response->jawaban);
+            $skorDim = $scorer->hitungSkorDimensi($response->jawaban);
 
             // Kumpulkan skor untuk rata-rata
             foreach ($skor as $konstruk => $data) {
                 $skorTotal[$konstruk][] = $data['skor'];
             }
+
+            // Kumpulkan skor dimensi
+            $skorDimensiSemuaPeserta[] = $skorDim;
 
             // Data per peserta
             $dataPerPeserta[] = [
@@ -139,8 +144,32 @@ class TiyasController extends Controller
         foreach ($skorRataRata as $konstruk => $nilai) {
             $skorRataRataKategori[$konstruk] = [
                 'skor' => $nilai,
-                'kategori' => $this->getKategori($nilai),
+                'kategori' => $scorer->kategori($nilai),
             ];
+        }
+
+        // Hitung rata-rata per dimensi dari semua peserta
+        $rataRataDimensi = [];
+        if (! empty($skorDimensiSemuaPeserta)) {
+            foreach ($config['konstruk'] as $kodeKonstruk => $konstruk) {
+                $rataRataDimensi[$kodeKonstruk] = [];
+
+                foreach ($konstruk['dimensi'] as $namaDimensi => $butirs) {
+                    $nilaiDimensi = [];
+
+                    // Kumpulkan nilai dimensi dari semua peserta
+                    foreach ($skorDimensiSemuaPeserta as $skorDim) {
+                        if (isset($skorDim[$kodeKonstruk][$namaDimensi])) {
+                            $nilaiDimensi[] = $skorDim[$kodeKonstruk][$namaDimensi];
+                        }
+                    }
+
+                    // Hitung rata-rata dimensi
+                    $rataRataDimensi[$kodeKonstruk][$namaDimensi] = count($nilaiDimensi) > 0
+                        ? round(array_sum($nilaiDimensi) / count($nilaiDimensi), 2)
+                        : 0;
+                }
+            }
         }
 
         return view('tiyas.hasil', [
@@ -151,6 +180,7 @@ class TiyasController extends Controller
                 ->count(),
             'skorRataRata' => $skorRataRataKategori,
             'dataPerPeserta' => $dataPerPeserta,
+            'rataRataDimensi' => $rataRataDimensi,
             'config' => $config,
         ]);
     }
@@ -163,11 +193,13 @@ class TiyasController extends Controller
         // Middleware 'role:panitia' sudah mengecek akses
         $scorer = new TiyasScorer;
         $skor = $scorer->hitungSkor($tiyasResponse->jawaban);
+        $skorDimensi = $scorer->hitungSkorDimensi($tiyasResponse->jawaban);
         $interpretasi = $scorer->interpretasi($skor);
 
         return view('tiyas.detail', [
             'tiyasResponse' => $tiyasResponse,
             'skor' => $skor,
+            'skorDimensi' => $skorDimensi,
             'interpretasi' => $interpretasi,
             'config' => config('tiyas'),
         ]);
@@ -270,21 +302,5 @@ class TiyasController extends Controller
         }, 'tiyas_export_'.now()->format('Y-m-d_H-i-s').'.csv', [
             'Content-Type' => 'text/csv; charset=UTF-8',
         ]);
-    }
-
-    /**
-     * Helper: tentukan kategori dari skor.
-     */
-    private function getKategori(float $skor): string
-    {
-        $config = config('tiyas');
-
-        foreach ($config['kategori'] as $kategori) {
-            if ($skor <= $kategori['maks']) {
-                return $kategori['label'];
-            }
-        }
-
-        return 'Tinggi';
     }
 }

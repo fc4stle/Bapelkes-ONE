@@ -82,6 +82,41 @@
                         </a>
                     </div>
                 </x-card>
+
+                <!-- Tabel Rata-rata Per Dimensi -->
+                @if (isset($rataRataDimensi) && !empty($rataRataDimensi))
+                    <x-card class="mt-6">
+                        <h2 class="text-xl font-semibold text-gray-900 mb-4">Rata-rata Per Dimensi</h2>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead style="background-color: var(--color-bg);">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Konstruk</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Dimensi</th>
+                                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider">Rata-rata</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200">
+                                    @foreach ($rataRataDimensi as $kodeKonstruk => $dimensis)
+                                        @php $isFirstRow = true; @endphp
+                                        @foreach ($dimensis as $namaDimensi => $rataRata)
+                                            <tr class="hover:bg-gray-50">
+                                                @if ($isFirstRow)
+                                                    <td rowspan="{{ count($dimensis) }}" class="px-6 py-4 font-medium text-gray-900 align-top">
+                                                        {{ $config['konstruk'][$kodeKonstruk]['nama'] }}
+                                                    </td>
+                                                    @php $isFirstRow = false; @endphp
+                                                @endif
+                                                <td class="px-6 py-4 text-sm text-gray-700">{{ $namaDimensi }}</td>
+                                                <td class="px-6 py-4 text-center text-sm font-medium" style="color: var(--color-primary);">{{ number_format($rataRata, 2) }}</td>
+                                            </tr>
+                                        @endforeach
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </x-card>
+                @endif
             @endif
 
             <!-- Kembali -->
