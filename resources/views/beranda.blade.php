@@ -1,41 +1,135 @@
 <x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-[var(--color-text)] leading-tight">
-            Beranda
-        </h2>
-    </x-slot>
+    <!-- Hero Section -->
+    <section class="py-20 px-4" style="background: linear-gradient(135deg, var(--color-primary) 0%, rgba(79, 70, 229, 0.8) 100%);">
+        <div class="max-w-5xl mx-auto text-center text-white">
+            <h1 class="text-5xl font-bold mb-4">Bapelkes ONE</h1>
+            <p class="text-xl mb-8">Portal terpadu pelatihan dan layanan peserta Bapelkes DIY</p>
 
-    <div class="py-12">
-        <div class="max-w-5xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-[var(--color-surface)] shadow rounded-[var(--radius-card)] p-[var(--sp-8)] text-center">
-                <h1 class="text-[var(--fs-h1)] font-bold text-[var(--color-text)]">Selamat Datang di Bapelkes ONE</h1>
-                <p class="mt-[var(--sp-2)] text-[var(--fs-body)] text-gray-500">
-                    Portal terpadu pelatihan dan layanan peserta Bapelkes DIY.
-                </p>
-
+            <div class="flex flex-wrap gap-4 justify-center">
                 @auth
                     @if (auth()->user()->isPanitia())
-                        <div class="mt-[var(--sp-6)] flex flex-col sm:flex-row gap-[var(--sp-3)] justify-center max-w-xl mx-auto">
-                            <a href="{{ route('panitia.dashboard') }}" class="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                                Rekap Panitia
-                            </a>
-                            <a href="{{ route('pelatihans.index') }}" class="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                                Kelola Pelatihan
-                            </a>
-                        </div>
+                        <a href="{{ route('panitia.dashboard') }}" class="px-8 py-3 rounded-[var(--radius-btn)] text-white font-semibold" style="background-color: var(--color-accent);">
+                            Rekap Panitia
+                        </a>
+                        <a href="{{ route('pelatihans.index') }}" class="px-8 py-3 rounded-[var(--radius-btn)] text-white font-semibold border-2 border-white bg-transparent">
+                            Kelola Pelatihan
+                        </a>
                     @else
-                        <form method="GET" action="{{ route('pelatihan.katalog') }}" class="mt-[var(--sp-6)] flex flex-col sm:flex-row gap-[var(--sp-3)] max-w-xl mx-auto">
-                            <x-text-input type="text" name="q" placeholder="Cari pelatihan..." class="flex-1" />
-                            <x-primary-button type="submit">Cari Pelatihan</x-primary-button>
-                        </form>
+                        <a href="{{ route('pelatihan.katalog') }}" class="px-8 py-3 rounded-[var(--radius-btn)] text-white font-semibold" style="background-color: var(--color-accent);">
+                            Lihat Katalog
+                        </a>
+                        <a href="{{ route('pendaftarans.index') }}" class="px-8 py-3 rounded-[var(--radius-btn)] text-white font-semibold border-2 border-white bg-transparent">
+                            Pendaftaran Saya
+                        </a>
                     @endif
                 @else
-                    <form method="GET" action="{{ route('pelatihan.katalog') }}" class="mt-[var(--sp-6)] flex flex-col sm:flex-row gap-[var(--sp-3)] max-w-xl mx-auto">
-                        <x-text-input type="text" name="q" placeholder="Cari pelatihan..." class="flex-1" />
-                        <x-primary-button type="submit">Cari Pelatihan</x-primary-button>
-                    </form>
+                    <a href="{{ route('pelatihan.katalog') }}" class="px-8 py-3 rounded-[var(--radius-btn)] text-white font-semibold" style="background-color: var(--color-accent);">
+                        Lihat Katalog
+                    </a>
+                    <a href="{{ route('register') }}" class="px-8 py-3 rounded-[var(--radius-btn)] text-white font-semibold border-2 border-white bg-transparent">
+                        Daftar Akun
+                    </a>
                 @endauth
             </div>
         </div>
-    </div>
+    </section>
+
+    <!-- Search Section -->
+    @if (!auth()->check() || auth()->user()->isPeserta())
+        <section class="py-12 px-4" style="background-color: var(--color-surface);">
+            <div class="max-w-5xl mx-auto">
+                <form method="GET" action="{{ route('pelatihan.katalog') }}" class="flex flex-col sm:flex-row gap-3">
+                    <input type="text" name="q" placeholder="Cari pelatihan..." class="flex-1 px-4 py-3 rounded-[var(--radius-btn)] border-2" style="border-color: #e5e7eb; color: var(--color-text);">
+                    <button type="submit" class="px-6 py-3 rounded-[var(--radius-btn)] text-white font-semibold" style="background-color: var(--color-primary);">
+                        Cari
+                    </button>
+                </form>
+            </div>
+        </section>
+    @endif
+
+    <!-- How to Register Section -->
+    <section class="py-16 px-4">
+        <div class="max-w-5xl mx-auto">
+            <h2 class="text-3xl font-bold text-center mb-12" style="color: var(--color-text);">Cara Mendaftar</h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Step 1 -->
+                <div class="text-center">
+                    <div class="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center text-white text-2xl font-bold" style="background-color: var(--color-primary);">
+                        1
+                    </div>
+                    <h3 class="text-xl font-bold mb-2" style="color: var(--color-text);">Buat Akun</h3>
+                    <p style="color: #666;">Daftar dengan email dan kata sandi Anda. Akun baru akan langsung berperan sebagai peserta.</p>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="text-center">
+                    <div class="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center text-white text-2xl font-bold" style="background-color: var(--color-accent);">
+                        2
+                    </div>
+                    <h3 class="text-xl font-bold mb-2" style="color: var(--color-text);">Pilih Pelatihan</h3>
+                    <p style="color: #666;">Lihat katalog pelatihan yang tersedia dan pilih yang sesuai dengan kebutuhan Anda, lalu isi formulir pendaftaran.</p>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="text-center">
+                    <div class="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center text-white text-2xl font-bold" style="background-color: var(--color-success);">
+                        3
+                    </div>
+                    <h3 class="text-xl font-bold mb-2" style="color: var(--color-text);">Tunggu Verifikasi</h3>
+                    <p style="color: #666;">Panitia akan memverifikasi pendaftaran Anda. Setelah disetujui, Anda dapat mengunduh kartu peserta.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Open Trainings Section -->
+    <section class="py-16 px-4" style="background-color: var(--color-surface);">
+        <div class="max-w-5xl mx-auto">
+            <h2 class="text-3xl font-bold text-center mb-12" style="color: var(--color-text);">Pelatihan yang Sedang Dibuka</h2>
+
+            @php
+                $trainings = \App\Models\Pelatihan::where('status', 'dibuka')
+                    ->orderBy('tanggal_mulai', 'asc')
+                    ->limit(3)
+                    ->get();
+            @endphp
+
+            @if ($trainings->isEmpty())
+                <div class="text-center py-12">
+                    <p style="color: #999; font-size: 18px;">Belum ada pelatihan yang dibuka.</p>
+                </div>
+            @else
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    @foreach ($trainings as $training)
+                        <x-card>
+                            <h3 class="text-lg font-bold mb-2" style="color: var(--color-text);">{{ $training->nama }}</h3>
+                            <p class="text-sm mb-4" style="color: #666;">
+                                <strong>Tanggal:</strong> {{ $training->tanggal_mulai->format('d M Y') }} - {{ $training->tanggal_selesai->format('d M Y') }}
+                            </p>
+                            <p class="text-sm mb-4" style="color: #666;">
+                                <strong>Lokasi:</strong> {{ $training->lokasi }}
+                            </p>
+                            <p class="text-sm mb-4" style="color: #666;">
+                                <strong>Sisa Kuota:</strong>
+                                <x-status-badge :variant="$training->isFull() ? 'unavailable' : 'normal'">
+                                    {{ $training->sisaKuota() }} / {{ $training->kuota }} tersedia
+                                </x-status-badge>
+                            </p>
+                            <a href="{{ route('pelatihan.detail', $training) }}" class="inline-block px-4 py-2 rounded-[var(--radius-btn)] text-white font-semibold" style="background-color: var(--color-primary);">
+                                Lihat Detail
+                            </a>
+                        </x-card>
+                    @endforeach
+                </div>
+            @endif
+
+            <div class="text-center mt-12">
+                <a href="{{ route('pelatihan.katalog') }}" class="text-lg font-semibold" style="color: var(--color-primary);">
+                    Lihat Semua Pelatihan →
+                </a>
+            </div>
+        </div>
+    </section>
 </x-app-layout>
