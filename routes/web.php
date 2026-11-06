@@ -52,7 +52,7 @@ Route::middleware(['auth', 'role:panitia'])->group(function () {
     Route::patch('/pendaftarans/{pendaftaran}/tolak', [PendaftaranController::class, 'tolak'])->name('pendaftarans.tolak');
     Route::get('/pelatihans/{pelatihan}/tiyas', [TiyasController::class, 'hasil'])->name('tiyas.hasil');
     Route::get('/tiyas/{tiyasResponse}', [TiyasController::class, 'detail'])->name('tiyas.detail');
-    Route::post('/tiyas/{tiyasResponse}/catatan', [TiyasController::class, 'simpanCatatan'])->name('tiyas.simpanCatatan');
+    Route::patch('/tiyas/{tiyasResponse}/catatan', [TiyasController::class, 'catatan'])->name('tiyas.catatan');
     Route::get('/pelatihans/{pelatihan}/tiyas/export', [TiyasController::class, 'export'])->name('tiyas.export');
 });
 

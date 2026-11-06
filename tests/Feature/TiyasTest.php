@@ -2,8 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Models\Pendaftaran;
 use App\Models\Pelatihan;
+use App\Models\Pendaftaran;
 use App\Models\TiyasResponse;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;

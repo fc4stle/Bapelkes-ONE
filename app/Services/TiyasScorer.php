@@ -7,74 +7,64 @@ class TiyasScorer
     /**
      * Hitung skor rata-rata per konstruk dan dimensi.
      * Input: array jawaban dengan key = kode butir (e.g., "TC1"), value = 1-4
-     * Output: array skor dengan struktur:
-     *   [
-     *     'TC' => ['skor' => 3.50, 'kategori' => 'Tinggi'],
-     *     'TE' => ['skor' => 2.75, 'kategori' => 'Sedang'],
-     *     ...
-     *   ]
+     * Output: array dengan key = konstruk (TC, TE, ITT, YB), value = ['skor' => float, 'kategori' => string]
      */
     public function hitungSkor(array $jawaban): array
     {
         $config = config('tiyas');
-        $skorKonstruk = [];
+        $skor = [];
 
-        // Kelompokkan jawaban per konstruk (TC, TE, ITT, YB)
-        foreach ($config['bagian'] as $bagian) {
-            $kode_bagian = $bagian['kode'];
-            foreach ($bagian['dimensi'] as $dimensi) {
-                foreach ($dimensi['butir'] as $butir) {
-                    $kode_butir = $butir['kode'];
-                    $konstruk = substr($kode_butir, 0, -1); // Ambil prefix (TC, TE, ITT, YB)
+        // Hitung rata-rata per konstruk
+        foreach ($config['konstruk'] as $kodeKonstruk => $konstruk) {
+            $butirs = [];
 
-                    if (!isset($skorKonstruk[$konstruk])) {
-                        $skorKonstruk[$konstruk] = [];
-                    }
-
-                    if (isset($jawaban[$kode_butir])) {
-                        $skorKonstruk[$konstruk][] = (int) $jawaban[$kode_butir];
+            // Ambil semua butir dalam konstruk ini
+            foreach ($konstruk['dimensi'] as $dimensi) {
+                foreach ($dimensi as $kode => $text) {
+                    if (isset($jawaban[$kode])) {
+                        $butirs[$kode] = (int) $jawaban[$kode];
                     }
                 }
             }
+
+            // Hitung rata-rata
+            $validJawaban = array_filter($butirs, fn ($j) => $j !== null && $j > 0);
+            $skor[$kodeKonstruk]['skor'] = count($validJawaban) > 0
+                ? round(array_sum($validJawaban) / count($validJawaban), 2)
+                : 0;
+            $skor[$kodeKonstruk]['kategori'] = $this->getKategori($skor[$kodeKonstruk]['skor']);
         }
 
-        // Hitung rata-rata per konstruk dan tentukan kategori
-        $hasil = [];
-        foreach ($skorKonstruk as $konstruk => $nilai) {
-            if (empty($nilai)) {
-                $hasil[$konstruk] = ['skor' => 0.0, 'kategori' => 'Tidak Ada Data'];
-            } else {
-                $skor = round(array_sum($nilai) / count($nilai), 2);
-                $kategori = $this->tentukanKategori($skor, $config);
-                $hasil[$konstruk] = ['skor' => $skor, 'kategori' => $kategori];
-            }
-        }
-
-        return $hasil;
+        return $skor;
     }
 
     /**
-     * Tentukan kategori berdasarkan skor dan config tiyas.kategori.
+     * Tentukan kategori skor berdasarkan batas di config('tiyas.kategori').
      */
-    private function tentukanKategori(float $skor, array $config): string
+    private function getKategori(float $skor): string
     {
-        $kategori = $config['kategori'];
+        $config = config('tiyas');
 
-        foreach ($kategori as $cat) {
-            if ($skor >= $cat['min'] && $skor <= $cat['max']) {
-                return $cat['label'];
+        foreach ($config['kategori'] as $kategori) {
+            if ($skor <= $kategori['maks']) {
+                return $kategori['label'];
             }
         }
 
-        return 'Tidak Terdefinisi';
+        return 'Tinggi'; // Default jika > batas tertinggi
     }
 
     /**
-     * Interpretasi hasil berdasarkan skor konstruk.
-     * Aturan:
+     * Interpretasi hasil TIYAS berdasarkan skor konstruk.
+     * Input: array $skorKonstruk = ['TC' => [...], 'TE' => [...], 'ITT' => [...], 'YB' => [...]
+     *        setiap item = ['skor' => float, 'kategori' => string]
+     *
+     * Aturan interpretasi:
      * a) YB Tinggi: "Hasil pelatihan sudah diterapkan di tempat kerja."
-     * b) ITT Sedang/Tinggi dan YB Rendah: "Niat menerapkan sudah ada, tetapi perilaku belum muncul..."
-     * c) TC atau TE Rendah: "Dukungan tempat kerja masih rendah..."
+     * b) ITT Sedang/Tinggi dan YB Rendah: "Niat menerapkan sudah ada, tetapi perilaku belum muncul.
+     *    Periksa dukungan tempat kerja (TC dan TE)."
+     * c) TC atau TE Rendah: "Dukungan tempat kerja masih rendah. Perlu tindak lanjut dari
+     *    atasan atau instansi."
      * d) Selain itu: "Penerapan hasil pelatihan perlu dipantau."
      */
     public function interpretasi(array $skorKonstruk): string
@@ -101,7 +91,7 @@ class TiyasScorer
             return 'Dukungan tempat kerja masih rendah. Perlu tindak lanjut dari atasan atau instansi.';
         }
 
-        // d) Selain itu
+        // d) Default
         return 'Penerapan hasil pelatihan perlu dipantau.';
     }
 }

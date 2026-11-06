@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Pendaftaran;
 use App\Models\Pelatihan;
+use App\Models\Pendaftaran;
 use App\Models\TiyasResponse;
 use App\Services\TiyasScorer;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
@@ -41,13 +41,19 @@ class TiyasController extends Controller
 
         // Susun aturan validasi berdasarkan config
         $rules = [];
-        $rules['identitas'] = 'required|string|in:'.implode(',', array_column($config['identitas'], 'kode'));
+
+        // Validasi identitas (harus sesuai pilihan dari config)
+        $rules['asal_instansi'] = 'required|string|in:'.implode(',', $config['identitas']['asal_instansi']);
+        $rules['asal_kabupaten'] = 'required|string|in:'.implode(',', $config['identitas']['asal_kabupaten']);
+        $rules['jenis_profesi'] = 'required|string|in:'.implode(',', $config['identitas']['jenis_profesi']);
+        $rules['masa_kerja'] = 'required|string|in:'.implode(',', $config['identitas']['masa_kerja']);
+        $rules['waktu_sejak_selesai'] = 'required|string|in:'.implode(',', $config['identitas']['waktu_sejak_selesai']);
 
         // Validasi 65 butir (1-4)
-        foreach ($config['bagian'] as $bagian) {
-            foreach ($bagian['dimensi'] as $dimensi) {
-                foreach ($dimensi['butir'] as $butir) {
-                    $rules[$butir['kode']] = 'required|integer|between:1,4';
+        foreach ($config['konstruk'] as $kodeKonstruk => $konstruk) {
+            foreach ($konstruk['dimensi'] as $dimensi) {
+                foreach ($dimensi as $kode => $text) {
+                    $rules[$kode] = 'required|integer|between:1,4';
                 }
             }
         }
@@ -55,13 +61,21 @@ class TiyasController extends Controller
         $validated = $request->validate($rules);
 
         // Pisahkan identitas dan jawaban
-        $identitas = ['pilihan' => $validated['identitas']];
-        $jawaban = [];
+        $identitas = [
+            'asal_instansi' => $validated['asal_instansi'],
+            'asal_kabupaten' => $validated['asal_kabupaten'],
+            'jenis_profesi' => $validated['jenis_profesi'],
+            'masa_kerja' => $validated['masa_kerja'],
+            'waktu_sejak_selesai' => $validated['waktu_sejak_selesai'],
+        ];
 
-        foreach ($config['bagian'] as $bagian) {
-            foreach ($bagian['dimensi'] as $dimensi) {
-                foreach ($dimensi['butir'] as $butir) {
-                    $jawaban[$butir['kode']] = (int) $validated[$butir['kode']];
+        $jawaban = [];
+        foreach ($config['konstruk'] as $kodeKonstruk => $konstruk) {
+            foreach ($konstruk['dimensi'] as $dimensi) {
+                foreach ($dimensi as $kode => $text) {
+                    if (isset($validated[$kode])) {
+                        $jawaban[$kode] = (int) $validated[$kode];
+                    }
                 }
             }
         }
@@ -84,76 +98,70 @@ class TiyasController extends Controller
     public function hasil(Pelatihan $pelatihan): View
     {
         // Middleware 'role:panitia' sudah mengecek akses
-
-        // Ambil semua peserta diverifikasi dengan pelatihan ini
-        $pendaftarans = Pendaftaran::where('pelatihan_id', $pelatihan->id)
-            ->where('status_verifikasi', 'diverifikasi')
-            ->get();
-
-        // Hitung statistik
-        $jumlahTerverifikasi = $pendaftarans->count();
-        $jumlahSudahMengisi = $pendaftarans->filter(fn ($p) => $p->tiyasResponse()->exists())->count();
+        $config = config('tiyas');
+        $scorer = new TiyasScorer;
 
         // Ambil semua TiyasResponse untuk pelatihan ini
-        $tiyasResponses = TiyasResponse::whereIn('pendaftaran_id', $pendaftarans->pluck('id'))->get();
+        $responses = TiyasResponse::whereHas('pendaftaran', function ($q) use ($pelatihan) {
+            $q->where('pelatihan_id', $pelatihan->id);
+        })->with('pendaftaran.peserta')->get();
 
-        // Hitung skor rata-rata per konstruk
-        $scorer = new TiyasScorer();
-        $skorOverall = ['TC' => [], 'TE' => [], 'ITT' => [], 'YB' => []];
+        // Hitung rata-rata skor per konstruk
+        $skorTotal = ['TC' => [], 'TE' => [], 'ITT' => [], 'YB' => []];
+        $dataPerPeserta = [];
 
-        foreach ($tiyasResponses as $response) {
+        foreach ($responses as $response) {
             $skor = $scorer->hitungSkor($response->jawaban);
-            foreach ($skorOverall as $konstruk => &$daftarSkor) {
-                $daftarSkor[] = $skor[$konstruk]['skor'];
+
+            // Kumpulkan skor untuk rata-rata
+            foreach ($skor as $konstruk => $data) {
+                $skorTotal[$konstruk][] = $data['skor'];
             }
-        }
 
-        // Rata-rata dari rata-rata
-        $skorAkhir = [];
-        foreach ($skorOverall as $konstruk => $daftarSkor) {
-            if (empty($daftarSkor)) {
-                $skorAkhir[$konstruk] = ['skor' => 0.0, 'kategori' => 'Tidak Ada Data'];
-            } else {
-                $rataRata = round(array_sum($daftarSkor) / count($daftarSkor), 2);
-                $config = config('tiyas');
-                $kategori = $this->tentukanKategori($rataRata, $config);
-                $skorAkhir[$konstruk] = ['skor' => $rataRata, 'kategori' => $kategori];
-            }
-        }
-
-        // Tabel per dimensi rata-rata
-        $tabelDimensi = $this->hitungRataRataDimensi($tiyasResponses, $scorer);
-
-        // Data untuk tabel per peserta
-        $tabelPeserta = [];
-        foreach ($tiyasResponses as $response) {
-            $skor = $scorer->hitungSkor($response->jawaban);
-            $tabelPeserta[] = [
-                'peserta' => $response->pendaftaran->peserta,
-                'tiyas_response' => $response,
+            // Data per peserta
+            $dataPerPeserta[] = [
+                'id' => $response->id,
+                'nama' => $response->pendaftaran->peserta->name,
                 'skor' => $skor,
+            ];
+        }
+
+        // Hitung rata-rata skor
+        $skorRataRata = [];
+        foreach ($skorTotal as $konstruk => $nilai) {
+            $skorRataRata[$konstruk] = count($nilai) > 0
+                ? round(array_sum($nilai) / count($nilai), 2)
+                : 0;
+        }
+
+        // Tentukan kategori untuk skor rata-rata
+        $skorRataRataKategori = [];
+        foreach ($skorRataRata as $konstruk => $nilai) {
+            $skorRataRataKategori[$konstruk] = [
+                'skor' => $nilai,
+                'kategori' => $this->getKategori($nilai),
             ];
         }
 
         return view('tiyas.hasil', [
             'pelatihan' => $pelatihan,
-            'jumlahTerverifikasi' => $jumlahTerverifikasi,
-            'jumlahSudahMengisi' => $jumlahSudahMengisi,
-            'skorAkhir' => $skorAkhir,
-            'tabelDimensi' => $tabelDimensi,
-            'tabelPeserta' => $tabelPeserta,
-            'config' => config('tiyas'),
+            'totalResponses' => count($responses),
+            'totalDiverifikasi' => $pelatihan->pendaftarans()
+                ->where('status_verifikasi', 'diverifikasi')
+                ->count(),
+            'skorRataRata' => $skorRataRataKategori,
+            'dataPerPeserta' => $dataPerPeserta,
+            'config' => $config,
         ]);
     }
 
     /**
-     * Tampilkan detail TIYAS response untuk panitia.
+     * Tampilkan detail TIYAS untuk satu peserta (panitia).
      */
     public function detail(TiyasResponse $tiyasResponse): View
     {
-        $this->authorize('viewTiyasDetail');
-
-        $scorer = new TiyasScorer();
+        // Middleware 'role:panitia' sudah mengecek akses
+        $scorer = new TiyasScorer;
         $skor = $scorer->hitungSkor($tiyasResponse->jawaban);
         $interpretasi = $scorer->interpretasi($skor);
 
@@ -166,161 +174,117 @@ class TiyasController extends Controller
     }
 
     /**
-     * Simpan catatan supervisor dan rekan kerja (panitia only).
+     * Simpan catatan supervisor dan rekan kerja.
      */
-    public function simpanCatatan(Request $request, TiyasResponse $tiyasResponse): RedirectResponse
+    public function catatan(Request $request, TiyasResponse $tiyasResponse): RedirectResponse
     {
-        $this->authorize('viewTiyasDetail');
-
+        // Middleware 'role:panitia' sudah mengecek akses
         $validated = $request->validate([
             'catatan_supervisor' => 'nullable|string|max:2000',
             'catatan_rekan_kerja' => 'nullable|string|max:2000',
         ]);
 
-        $tiyasResponse->update($validated);
+        $tiyasResponse->update([
+            'catatan_supervisor' => $validated['catatan_supervisor'] ?? null,
+            'catatan_rekan_kerja' => $validated['catatan_rekan_kerja'] ?? null,
+        ]);
 
-        return back()->with('success', 'Catatan berhasil disimpan.');
+        return redirect()->back()->with('success', 'Catatan berhasil disimpan.');
     }
 
     /**
-     * Export TIYAS ke CSV untuk panitia.
+     * Export data TIYAS ke CSV.
      */
     public function export(Pelatihan $pelatihan): StreamedResponse
     {
-        $this->authorize('viewTiyasHasil');
+        // Middleware 'role:panitia' sudah mengecek akses
+        $config = config('tiyas');
+        $scorer = new TiyasScorer;
 
         // Ambil semua TiyasResponse untuk pelatihan ini
-        $pendaftarans = Pendaftaran::where('pelatihan_id', $pelatihan->id)
-            ->where('status_verifikasi', 'diverifikasi')
-            ->get();
+        $responses = TiyasResponse::whereHas('pendaftaran', function ($q) use ($pelatihan) {
+            $q->where('pelatihan_id', $pelatihan->id);
+        })->with('pendaftaran.peserta')->get();
 
-        $tiyasResponses = TiyasResponse::whereIn('pendaftaran_id', $pendaftarans->pluck('id'))
-            ->with('pendaftaran.peserta')
-            ->get();
+        // Buat header CSV
+        $headers = ['Nama', 'Email'];
 
-        $scorer = new TiyasScorer();
-        $config = config('tiyas');
+        // Tambah kolom identitas
+        foreach ($config['identitas'] as $fieldName => $options) {
+            $headers[] = ucfirst(str_replace('_', ' ', $fieldName));
+        }
 
-        return response()->streamDownload(function () use ($tiyasResponses, $scorer, $config) {
-            $file = fopen('php://output', 'w');
-
-            // BOM untuk UTF-8 Excel
-            fwrite($file, "\xEF\xBB\xBF");
-
-            // Header
-            $headers = ['Nama', 'Email'];
-
-            // Identitas columns
-            foreach ($config['identitas'] as $ident) {
-                $headers[] = $ident['label'];
-            }
-
-            // 65 kolom butir
-            foreach ($config['bagian'] as $bagian) {
-                foreach ($bagian['dimensi'] as $dimensi) {
-                    foreach ($dimensi['butir'] as $butir) {
-                        $headers[] = $butir['kode'];
-                    }
+        // Tambah kolom untuk 65 butir
+        foreach ($config['konstruk'] as $kodeKonstruk => $konstruk) {
+            foreach ($konstruk['dimensi'] as $dimensi) {
+                foreach ($dimensi as $kode => $text) {
+                    $headers[] = $kode;
                 }
             }
+        }
 
-            // Rata-rata per konstruk
-            $headers[] = 'Rata-Rata TC';
-            $headers[] = 'Rata-Rata TE';
-            $headers[] = 'Rata-Rata ITT';
-            $headers[] = 'Rata-Rata YB';
+        // Tambah kolom rata-rata konstruk
+        $headers[] = 'TC';
+        $headers[] = 'TE';
+        $headers[] = 'ITT';
+        $headers[] = 'YB';
 
-            fputcsv($file, $headers);
+        return response()->streamDownload(function () use ($responses, $config, $scorer, $headers) {
+            $fp = fopen('php://output', 'w');
 
-            // Data rows
-            foreach ($tiyasResponses as $response) {
+            // Tulis header
+            fputcsv($fp, $headers);
+
+            // Tulis data
+            foreach ($responses as $response) {
+                $skor = $scorer->hitungSkor($response->jawaban);
                 $row = [
                     $response->pendaftaran->peserta->name,
                     $response->pendaftaran->peserta->email,
                 ];
 
-                // Identitas values (sesuai urutan header)
-                foreach ($config['identitas'] as $ident) {
-                    $row[] = $response->identitas['pilihan'] ?? '';
+                // Tambah identitas
+                foreach (array_keys($config['identitas']) as $fieldName) {
+                    $row[] = $response->identitas[$fieldName] ?? '';
                 }
 
-                // 65 jawaban
-                foreach ($config['bagian'] as $bagian) {
-                    foreach ($bagian['dimensi'] as $dimensi) {
-                        foreach ($dimensi['butir'] as $butir) {
-                            $row[] = $response->jawaban[$butir['kode']] ?? '';
+                // Tambah jawaban 65 butir
+                foreach ($config['konstruk'] as $kodeKonstruk => $konstruk) {
+                    foreach ($konstruk['dimensi'] as $dimensi) {
+                        foreach ($dimensi as $kode => $text) {
+                            $row[] = $response->jawaban[$kode] ?? '';
                         }
                     }
                 }
 
-                // Rata-rata per konstruk
-                $skor = $scorer->hitungSkor($response->jawaban);
-                foreach (['TC', 'TE', 'ITT', 'YB'] as $konstruk) {
-                    $row[] = $skor[$konstruk]['skor'] ?? '';
-                }
+                // Tambah rata-rata skor
+                $row[] = $skor['TC']['skor'] ?? '';
+                $row[] = $skor['TE']['skor'] ?? '';
+                $row[] = $skor['ITT']['skor'] ?? '';
+                $row[] = $skor['YB']['skor'] ?? '';
 
-                fputcsv($file, $row);
+                fputcsv($fp, $row);
             }
 
-            fclose($file);
-        }, "tiyas-{$pelatihan->id}-".date('Y-m-d').".csv");
+            fclose($fp);
+        }, 'tiyas_export_'.now()->format('Y-m-d_H-i-s').'.csv', [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+        ]);
     }
 
     /**
      * Helper: tentukan kategori dari skor.
      */
-    private function tentukanKategori(float $skor, array $config): string
-    {
-        foreach ($config['kategori'] as $cat) {
-            if ($skor >= $cat['min'] && $skor <= $cat['max']) {
-                return $cat['label'];
-            }
-        }
-
-        return 'Tidak Terdefinisi';
-    }
-
-    /**
-     * Helper: hitung rata-rata per dimensi dari semua responden.
-     */
-    private function hitungRataRataDimensi($tiyasResponses, $scorer): array
+    private function getKategori(float $skor): string
     {
         $config = config('tiyas');
-        $dimensiData = [];
 
-        foreach ($config['bagian'] as $bagian) {
-            foreach ($bagian['dimensi'] as $dimensi) {
-                $kode_dimensi = $dimensi['kode'];
-                $butirsPerDimensi = [];
-
-                foreach ($dimensi['butir'] as $butir) {
-                    $butirsPerDimensi[] = $butir['kode'];
-                }
-
-                // Kumpulkan semua nilai butir ini
-                $semuaNilai = [];
-                foreach ($tiyasResponses as $response) {
-                    foreach ($butirsPerDimensi as $kode) {
-                        if (isset($response->jawaban[$kode])) {
-                            $semuaNilai[] = (int) $response->jawaban[$kode];
-                        }
-                    }
-                }
-
-                if (!empty($semuaNilai)) {
-                    $rataRata = round(array_sum($semuaNilai) / count($semuaNilai), 2);
-                } else {
-                    $rataRata = 0.0;
-                }
-
-                $dimensiData[] = [
-                    'kode' => $kode_dimensi,
-                    'label' => $dimensi['label'],
-                    'rata_rata' => $rataRata,
-                ];
+        foreach ($config['kategori'] as $kategori) {
+            if ($skor <= $kategori['maks']) {
+                return $kategori['label'];
             }
         }
 
-        return $dimensiData;
+        return 'Tinggi';
     }
 }

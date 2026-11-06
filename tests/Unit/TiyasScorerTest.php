@@ -12,7 +12,7 @@ class TiyasScorerTest extends TestCase
      */
     public function test_all_max_scores_returns_all_four()
     {
-        $scorer = new TiyasScorer();
+        $scorer = new TiyasScorer;
         $jawaban = $this->generateAllScores(4);
 
         $hasil = $scorer->hitungSkor($jawaban);
@@ -28,7 +28,7 @@ class TiyasScorerTest extends TestCase
      */
     public function test_all_min_scores_returns_all_one()
     {
-        $scorer = new TiyasScorer();
+        $scorer = new TiyasScorer;
         $jawaban = $this->generateAllScores(1);
 
         $hasil = $scorer->hitungSkor($jawaban);
@@ -44,7 +44,7 @@ class TiyasScorerTest extends TestCase
      */
     public function test_mixed_scores_calculates_average()
     {
-        $scorer = new TiyasScorer();
+        $scorer = new TiyasScorer;
         $jawaban = $this->generateMixedScores();
 
         $hasil = $scorer->hitungSkor($jawaban);
@@ -64,7 +64,7 @@ class TiyasScorerTest extends TestCase
      */
     public function test_interpretation_rule_a_yb_tinggi()
     {
-        $scorer = new TiyasScorer();
+        $scorer = new TiyasScorer;
 
         // Semua 4 => YB Tinggi
         $jawaban = $this->generateAllScores(4);
@@ -81,7 +81,7 @@ class TiyasScorerTest extends TestCase
      */
     public function test_interpretation_rule_b_itt_high_yb_low()
     {
-        $scorer = new TiyasScorer();
+        $scorer = new TiyasScorer;
         $config = config('tiyas');
 
         // Buat jawaban: ITT semua 3 (Sedang), YB semua 1 (Rendah), TC TE acak
@@ -113,7 +113,7 @@ class TiyasScorerTest extends TestCase
      */
     public function test_interpretation_rule_c_tc_te_low()
     {
-        $scorer = new TiyasScorer();
+        $scorer = new TiyasScorer;
         $config = config('tiyas');
 
         // Buat jawaban: TC semua 1 (Rendah), sisanya 3
@@ -139,7 +139,7 @@ class TiyasScorerTest extends TestCase
      */
     public function test_interpretation_rule_d_default()
     {
-        $scorer = new TiyasScorer();
+        $scorer = new TiyasScorer;
         $config = config('tiyas');
 
         // Buat skor di mana tidak ada kondisi a, b, c yang terpenuhi

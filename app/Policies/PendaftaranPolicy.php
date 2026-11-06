@@ -81,11 +81,11 @@ class PendaftaranPolicy
             return false; // Bukan miliknya
         }
 
-        if (!$pendaftaran->isDiverifikasi()) {
+        if (! $pendaftaran->isDiverifikasi()) {
             return false; // Belum diverifikasi
         }
 
-        if (!$pendaftaran->isPelatihanSelesai()) {
+        if (! $pendaftaran->isPelatihanSelesai()) {
             return false; // Pelatihan belum selesai
         }
 
