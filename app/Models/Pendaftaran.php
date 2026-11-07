@@ -185,8 +185,8 @@ class Pendaftaran extends Model
             ];
         }
 
-        // c) diverifikasi, pelatihan selesai, dan sudah hadir
-        if ($this->isDiverifikasi() && $this->pelatihan->status->value === 'selesai' && $this->isHadir()) {
+        // c) diverifikasi, pelatihan selesai (tanpa syarat hadir)
+        if ($this->isDiverifikasi() && $this->pelatihan->status->value === 'selesai') {
             $aksi = [];
 
             if ($this->bisaDownloadSertifikat()) {
@@ -214,8 +214,8 @@ class Pendaftaran extends Model
             ];
         }
 
-        // d) diverifikasi, belum hadir
-        if ($this->isDiverifikasi() && ! $this->isHadir()) {
+        // d) diverifikasi, belum hadir, pelatihan BELUM selesai
+        if ($this->isDiverifikasi() && ! $this->isHadir() && $this->pelatihan->status->value !== 'selesai') {
             return [
                 'judul' => 'Pendaftaran terverifikasi',
                 'deskripsi' => 'Tunjukkan kartu peserta saat hari pertama ('.$this->pelatihan->tanggal_mulai->translatedFormat('d M Y').').',
@@ -226,8 +226,8 @@ class Pendaftaran extends Model
             ];
         }
 
-        // e) diverifikasi dan sudah hadir (pelatihan belum/sedang berlangsung)
-        if ($this->isDiverifikasi() && $this->isHadir()) {
+        // e) diverifikasi, sudah hadir, pelatihan BELUM selesai
+        if ($this->isDiverifikasi() && $this->isHadir() && $this->pelatihan->status->value !== 'selesai') {
             return [
                 'judul' => 'Anda sudah hadir',
                 'deskripsi' => 'Pelatihan berlangsung sampai '.$this->pelatihan->tanggal_selesai->translatedFormat('d M Y').'.',

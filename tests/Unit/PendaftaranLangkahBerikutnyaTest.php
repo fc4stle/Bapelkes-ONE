@@ -83,8 +83,13 @@ class PendaftaranLangkahBerikutnyaTest extends TestCase
 
         $langkah = $pendaftaran->langkahBerikutnya();
 
-        // Karena pelatihan selesai TAPI belum hadir, masuk aturan d (belum hadir)
-        $this->assertEquals('Pendaftaran terverifikasi', $langkah['judul']);
+        // Sekarang aturan c tidak ada syarat hadir, jadi selesai + belum hadir masuk aturan c
+        $this->assertEquals('Pelatihan selesai', $langkah['judul']);
+        $this->assertEquals('sukses', $langkah['tone']);
+        // Sertifikat tidak muncul karena belum hadir (bisaDownloadSertifikat butuh hadir)
+        // TIYAS muncul karena belum ada tiyasResponse
+        $this->assertCount(1, $langkah['aksi']);
+        $this->assertEquals('Isi Evaluasi TIYAS', $langkah['aksi'][0]['label']);
     }
 
     public function test_c_selesai_hadir_dapat_sertifikat(): void
@@ -220,13 +225,22 @@ class PendaftaranLangkahBerikutnyaTest extends TestCase
             'status_verifikasi' => 'diverifikasi',
             'verified_by' => $this->panitia->id,
             'verified_at' => now(),
-            'hadir_at' => null, // Belum hadir, jadi masuk aturan d bukan c
+            'hadir_at' => null, // Belum hadir => bisaDownloadSertifikat() = false
+        ]);
+
+        // Buat TIYAS response agar tidak ada aksi TIYAS
+        TiyasResponse::factory()->create([
+            'pendaftaran_id' => $pendaftaran->id,
+            'submitted_at' => now(),
         ]);
 
         $langkah = $pendaftaran->langkahBerikutnya();
 
-        // Masuk aturan d (belum hadir), bukan c
-        $this->assertEquals('Pendaftaran terverifikasi', $langkah['judul']);
+        // Selesai + belum hadir + TIYAS sudah ada => tanpa aksi
+        $this->assertEquals('Pelatihan selesai', $langkah['judul']);
+        $this->assertEquals('sukses', $langkah['tone']);
+        $this->assertEquals('Terima kasih telah mengikuti pelatihan.', $langkah['deskripsi']);
+        $this->assertEmpty($langkah['aksi']);
     }
 
     public function test_d_diverifikasi_belum_hadir(): void

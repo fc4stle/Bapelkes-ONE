@@ -231,6 +231,31 @@ class DashboardTest extends TestCase
         $response->assertSee('Pelatihan Anda telah selesai');
     }
 
+    public function test_langkah_berikutnya_c_selesai_belum_hadir_tampil_tiyas(): void
+    {
+        $pelatihan = Pelatihan::factory()->create([
+            'status' => 'selesai',
+            'tanggal_mulai' => '2026-10-01',
+            'tanggal_selesai' => '2026-10-05',
+        ]);
+
+        $pendaftaran = Pendaftaran::factory()->create([
+            'peserta_id' => $this->peserta->id,
+            'pelatihan_id' => $pelatihan->id,
+            'status_verifikasi' => 'diverifikasi',
+            'verified_by' => $this->panitia->id,
+            'verified_at' => now(),
+            'hadir_at' => null, // Belum hadir
+        ]);
+
+        $response = $this->actingAs($this->peserta)->get(route('dashboard'));
+
+        $response->assertStatus(200);
+        $response->assertSee('Pelatihan selesai');
+        // Karena belum hadir, bisaDownloadSertifikat() false, jadi hanya TIYAS
+        $response->assertSee('Isi Evaluasi TIYAS');
+    }
+
     public function test_langkah_berikutnya_d_belum_hadir(): void
     {
         $pendaftaran = Pendaftaran::factory()->create([
