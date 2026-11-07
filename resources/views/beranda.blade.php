@@ -8,7 +8,7 @@
 
                 <div class="flex flex-col sm:flex-row gap-4 justify-center">
                     @auth
-                        @if (auth()->user()->isPanitia())
+                        @if (auth()->user()->isStaf())
                             <a href="{{ route('panitia.dashboard') }}" class="w-full sm:w-auto px-8 py-3 rounded-[var(--radius-btn)] text-white font-semibold text-center" style="background-color: var(--color-primary);">
                                 Rekap Panitia
                             </a>

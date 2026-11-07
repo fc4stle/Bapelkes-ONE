@@ -9,11 +9,11 @@ class PendaftaranPolicy
 {
     /**
      * Determine whether the user can view the pendaftaran.
-     * Peserta hanya bisa lihat miliknya; panitia lihat semua.
+     * Peserta hanya bisa lihat miliknya; staf (panitia/admin) lihat semua.
      */
     public function view(User $user, Pendaftaran $pendaftaran): bool
     {
-        if ($user->isPanitia()) {
+        if ($user->isStaf()) {
             return true;
         }
 
@@ -22,12 +22,12 @@ class PendaftaranPolicy
 
     /**
      * Determine whether the user can update the pendaftaran.
-     * Peserta hanya bisa ubah miliknya dan hanya saat status pending; panitia tidak bisa ubah data diri (hanya verifikasi).
+     * Peserta hanya bisa ubah miliknya dan hanya saat status pending; staf (panitia/admin) tidak bisa ubah data diri (hanya verifikasi).
      */
     public function update(User $user, Pendaftaran $pendaftaran): bool
     {
-        if ($user->isPanitia()) {
-            // Panitia tidak bisa ubah via updateSelf (hanya bisa verifikasi/tolak)
+        if ($user->isStaf()) {
+            // Staf tidak bisa ubah via updateSelf (hanya bisa verifikasi/tolak)
             return false;
         }
 
@@ -40,7 +40,7 @@ class PendaftaranPolicy
      */
     public function delete(User $user, Pendaftaran $pendaftaran): bool
     {
-        if ($user->isPanitia()) {
+        if ($user->isStaf()) {
             return false;
         }
 
@@ -48,19 +48,19 @@ class PendaftaranPolicy
     }
 
     /**
-     * Determine whether the user can verify the pendaftaran (panitia only).
+     * Determine whether the user can verify the pendaftaran (staf only).
      */
     public function verify(User $user, Pendaftaran $pendaftaran): bool
     {
-        return $user->isPanitia();
+        return $user->isStaf();
     }
 
     /**
-     * Determine whether the user can reject the pendaftaran (panitia only).
+     * Determine whether the user can reject the pendaftaran (staf only).
      */
     public function reject(User $user, Pendaftaran $pendaftaran): bool
     {
-        return $user->isPanitia();
+        return $user->isStaf();
     }
 
     /**
@@ -73,8 +73,8 @@ class PendaftaranPolicy
      */
     public function isiTiyas(User $user, Pendaftaran $pendaftaran): bool
     {
-        if ($user->isPanitia()) {
-            return false; // Panitia tidak boleh isi
+        if ($user->isStaf()) {
+            return false; // Staf tidak boleh isi
         }
 
         if ($user->id !== $pendaftaran->peserta_id) {

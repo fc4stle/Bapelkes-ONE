@@ -11,8 +11,8 @@ class DashboardController extends Controller
     {
         $user = $request->user();
 
-        // Redirect panitia ke panitia.dashboard
-        if ($user->isPanitia()) {
+        // Redirect staf (panitia/admin) ke panitia.dashboard
+        if ($user->isStaf()) {
             return redirect()->route('panitia.dashboard');
         }
 

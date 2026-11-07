@@ -21,19 +21,25 @@
                             Dashboard
                         </x-nav-link>
 
-                        @if (auth()->user()->isPanitia())
-                            <x-nav-link :href="route('panitia.dashboard')" :active="request()->routeIs('panitia.dashboard')">
-                                Rekap Panitia
-                            </x-nav-link>
+                    @if (auth()->user()->isStaf())
+                        <x-nav-link :href="route('panitia.dashboard')" :active="request()->routeIs('panitia.dashboard')">
+                            Rekap Panitia
+                        </x-nav-link>
 
-                            <x-nav-link :href="route('pelatihans.index')" :active="request()->routeIs('pelatihans.index', 'pelatihans.show', 'pelatihans.create', 'pelatihans.edit')">
-                                Kelola Pelatihan
-                            </x-nav-link>
-                        @else
-                            <x-nav-link :href="route('pendaftarans.index')" :active="request()->routeIs('pendaftarans.index', 'pendaftarans.edit', 'pelatihan.daftar')">
-                                Pendaftaran Saya
+                        <x-nav-link :href="route('pelatihans.index')" :active="request()->routeIs('pelatihans.index', 'pelatihans.show', 'pelatihans.create', 'pelatihans.edit')">
+                            Kelola Pelatihan
+                        </x-nav-link>
+
+                        @if (auth()->user()->isAdmin())
+                            <x-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')">
+                                Kelola Pengguna
                             </x-nav-link>
                         @endif
+                    @else
+                        <x-nav-link :href="route('pendaftarans.index')" :active="request()->routeIs('pendaftarans.index', 'pendaftarans.edit', 'pelatihan.daftar')">
+                            Pendaftaran Saya
+                        </x-nav-link>
+                    @endif
                     @endauth
                 </div>
             </div>
@@ -53,6 +59,8 @@
 
                             @if (auth()->user()->isPanitia())
                                 <span class="ms-2 inline-block px-2 py-1 text-xs font-semibold rounded-full" style="background-color: #fdf2f4; color: #7A1F2B;">Panitia</span>
+                            @elseif (auth()->user()->isAdmin())
+                                <span class="ms-2 inline-block px-2 py-1 text-xs font-semibold rounded-full" style="background-color: #fdf2f4; color: #7A1F2B;">Admin</span>
                             @else
                                 <span class="ms-2 inline-block px-2 py-1 text-xs font-semibold rounded-full" style="background-color: #f0fdf4; color: #15803d;">Peserta</span>
                             @endif
@@ -109,7 +117,7 @@
                     Dashboard
                 </x-responsive-nav-link>
 
-                @if (auth()->user()->isPanitia())
+                @if (auth()->user()->isStaf())
                     <x-responsive-nav-link :href="route('panitia.dashboard')" :active="request()->routeIs('panitia.dashboard')">
                         Rekap Panitia
                     </x-responsive-nav-link>
@@ -117,6 +125,12 @@
                     <x-responsive-nav-link :href="route('pelatihans.index')" :active="request()->routeIs('pelatihans.index', 'pelatihans.show', 'pelatihans.create', 'pelatihans.edit')">
                         Kelola Pelatihan
                     </x-responsive-nav-link>
+
+                    @if (auth()->user()->isAdmin())
+                        <x-responsive-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')">
+                            Kelola Pengguna
+                        </x-responsive-nav-link>
+                    @endif
                 @else
                     <x-responsive-nav-link :href="route('pendaftarans.index')" :active="request()->routeIs('pendaftarans.index', 'pendaftarans.edit', 'pelatihan.daftar')">
                         Pendaftaran Saya

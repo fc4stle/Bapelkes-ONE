@@ -36,6 +36,16 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
+        // Akun uji: Admin
+        User::updateOrCreate(
+            ['email' => 'admin@test.local'],
+            [
+                'name' => 'Admin Test',
+                'password' => Hash::make('password'),
+                'role' => 'admin',
+            ]
+        );
+
         $this->call([
             AsramaKamarSeeder::class,
             PelatihanSeeder::class,
