@@ -18,7 +18,7 @@
                 <h2 class="text-2xl font-bold text-gray-900 mb-1">Evaluasi TIYAS</h2>
                 <p class="text-gray-600 mb-6">Pengisian Kuesioner Model TIYAS (Training Implementation and Yielded Behavior Evaluation System)</p>
 
-                <form action="{{ route('tiyas.simpan', $pendaftaran) }}" method="POST" class="space-y-8" @submit="submitting = true" @submit.prevent="if(!submitting) $el.submit()">
+                <form action="{{ route('tiyas.simpan', $pendaftaran) }}" method="POST" class="space-y-8" @submit="submitting = true">
                     @csrf
 
                     <!-- Info Peserta (Read-only) -->
@@ -42,7 +42,7 @@
                         <div class="space-y-4">
                             <div>
                                 <label for="asal_instansi" class="block text-sm font-medium text-gray-700 mb-2">Asal Instansi *</label>
-                                <select name="asal_instansi" id="asal_instansi" class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
+                                <select name="asal_instansi" id="asal_instansi" class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-[var(--color-primary)] focus:ring-[var(--color-primary)]" required>
                                     <option value="">-- Pilih --</option>
                                     @foreach ($config['identitas']['asal_instansi'] as $option)
                                         <option value="{{ $option }}" @if (old('asal_instansi') === $option) selected @endif>{{ $option }}</option>
@@ -53,7 +53,7 @@
 
                             <div>
                                 <label for="asal_kabupaten" class="block text-sm font-medium text-gray-700 mb-2">Asal Kabupaten/Kota *</label>
-                                <select name="asal_kabupaten" id="asal_kabupaten" class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
+                                <select name="asal_kabupaten" id="asal_kabupaten" class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-[var(--color-primary)] focus:ring-[var(--color-primary)]" required>
                                     <option value="">-- Pilih --</option>
                                     @foreach ($config['identitas']['asal_kabupaten'] as $option)
                                         <option value="{{ $option }}" @if (old('asal_kabupaten') === $option) selected @endif>{{ $option }}</option>
@@ -64,7 +64,7 @@
 
                             <div>
                                 <label for="jenis_profesi" class="block text-sm font-medium text-gray-700 mb-2">Jenis Profesi *</label>
-                                <select name="jenis_profesi" id="jenis_profesi" class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
+                                <select name="jenis_profesi" id="jenis_profesi" class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-[var(--color-primary)] focus:ring-[var(--color-primary)]" required>
                                     <option value="">-- Pilih --</option>
                                     @foreach ($config['identitas']['jenis_profesi'] as $option)
                                         <option value="{{ $option }}" @if (old('jenis_profesi') === $option) selected @endif>{{ $option }}</option>
@@ -75,7 +75,7 @@
 
                             <div>
                                 <label for="masa_kerja" class="block text-sm font-medium text-gray-700 mb-2">Masa Kerja *</label>
-                                <select name="masa_kerja" id="masa_kerja" class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
+                                <select name="masa_kerja" id="masa_kerja" class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-[var(--color-primary)] focus:ring-[var(--color-primary)]" required>
                                     <option value="">-- Pilih --</option>
                                     @foreach ($config['identitas']['masa_kerja'] as $option)
                                         <option value="{{ $option }}" @if (old('masa_kerja') === $option) selected @endif>{{ $option }}</option>
@@ -86,7 +86,7 @@
 
                             <div>
                                 <label for="waktu_sejak_selesai" class="block text-sm font-medium text-gray-700 mb-2">Waktu Sejak Pelatihan Selesai *</label>
-                                <select name="waktu_sejak_selesai" id="waktu_sejak_selesai" class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
+                                <select name="waktu_sejak_selesai" id="waktu_sejak_selesai" class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-[var(--color-primary)] focus:ring-[var(--color-primary)]" required>
                                     <option value="">-- Pilih --</option>
                                     @foreach ($config['identitas']['waktu_sejak_selesai'] as $option)
                                         <option value="{{ $option }}" @if (old('waktu_sejak_selesai') === $option) selected @endif>{{ $option }}</option>

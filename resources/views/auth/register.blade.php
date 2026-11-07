@@ -5,7 +5,7 @@
         Akun baru otomatis berperan sebagai peserta.
     </p>
 
-    <form method="POST" action="{{ route('register') }}" @submit="submitting = true" x-data="{ submitting: false }" @submit.prevent="if(!submitting) $el.submit()">
+    <form method="POST" action="{{ route('register') }}" @submit="submitting = true" x-data="{ submitting: false }">
         @csrf
 
         <!-- Name -->

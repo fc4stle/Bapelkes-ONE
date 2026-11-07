@@ -15,7 +15,7 @@
     <!-- Session Status -->
     <x-auth-session-status class="mb-4" :status="session('status')" />
 
-    <form method="POST" action="{{ route('login') }}" @submit="submitting = true" x-data="{ submitting: false }" @submit.prevent="if(!submitting) $el.submit()">
+    <form method="POST" action="{{ route('login') }}" @submit="submitting = true" x-data="{ submitting: false }">
         @csrf
 
         <!-- Email Address -->

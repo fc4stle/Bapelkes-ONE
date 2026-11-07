@@ -1,4 +1,4 @@
-<form action="{{ $action }}" method="POST" class="space-y-6" @submit="submitting = true" x-data="{ submitting: false }" @submit.prevent="if(!submitting) $el.submit()">
+<form action="{{ $action }}" method="POST" class="space-y-6" @submit="submitting = true" x-data="{ submitting: false }">
     @csrf
     @if ($method === 'PUT')
         @method('PUT')

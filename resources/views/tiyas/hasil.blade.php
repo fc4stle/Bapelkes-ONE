@@ -65,7 +65,7 @@
                                         <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-700">{{ number_format($data['skor']['ITT']['skor'], 2) }} <span class="text-xs text-gray-500">({{ $data['skor']['ITT']['kategori'] }})</span></td>
                                         <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-700">{{ number_format($data['skor']['YB']['skor'], 2) }} <span class="text-xs text-gray-500">({{ $data['skor']['YB']['kategori'] }})</span></td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                            <a href="{{ route('tiyas.detail', $data['id']) }}" class="text-indigo-600 hover:text-indigo-900">
+                                            <a href="{{ route('tiyas.detail', $data['id']) }}" class="text-[var(--color-primary)] hover:opacity-80">
                                                 Detail
                                             </a>
                                         </td>
@@ -121,7 +121,7 @@
 
             <!-- Kembali -->
             <div class="mt-6">
-                <a href="{{ route('pelatihans.index') }}" class="text-indigo-600 hover:text-indigo-900">
+                <a href="{{ route('pelatihans.index') }}" class="text-[var(--color-primary)] hover:opacity-80">
                     ← Kembali ke Pelatihan
                 </a>
             </div>
