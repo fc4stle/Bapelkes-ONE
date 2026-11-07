@@ -38,14 +38,14 @@
                                     @foreach ($pelatihans as $pelatihan)
                                         <tr>
                                             <td class="px-4 py-4">
-                                                <a href="{{ route('pelatihan.pendaftar', $pelatihan) }}" class="text-indigo-600 hover:text-indigo-900 font-medium">{{ $pelatihan->nama }}</a>
+                                                <a href="{{ route('pelatihan.pendaftar', $pelatihan) }}" class="font-medium" style="color: var(--color-primary);">{{ $pelatihan->nama }}</a>
                                                 <div class="text-xs text-gray-500">{{ $pelatihan->tanggal_mulai->format('d M Y') }} - {{ $pelatihan->tanggal_selesai->format('d M Y') }}</div>
                                             </td>
                                             <td class="px-4 py-4 text-center text-sm text-gray-900 font-bold">{{ $pelatihan->total_pendaftar }}</td>
                                             <td class="px-4 py-4 text-center text-sm text-green-600 font-medium">{{ $pelatihan->terverifikasi }}</td>
                                             <td class="px-4 py-4 text-center text-sm text-yellow-600 font-medium">{{ $pelatihan->menunggu_verifikasi }}</td>
                                             <td class="px-4 py-4 text-center text-sm text-red-600 font-medium">{{ $pelatihan->ditolak }}</td>
-                                            <td class="px-4 py-4 text-center text-sm text-blue-600 font-medium">{{ $pelatihan->hadir }}</td>
+                                            <td class="px-4 py-4 text-center text-sm font-medium" style="color: var(--color-primary);">{{ $pelatihan->hadir }}</td>
                                             <td class="px-4 py-4 text-center text-sm text-gray-600">{{ $pelatihan->butuh_asrama }}</td>
                                             <td class="px-4 py-4 text-center text-sm text-gray-600">{{ $pelatihan->sertifikat_terunduh }}</td>
                                         </tr>

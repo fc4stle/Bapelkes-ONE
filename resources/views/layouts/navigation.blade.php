@@ -52,7 +52,7 @@
                             <div>{{ Auth::user()->name }}</div>
 
                             @if (auth()->user()->isPanitia())
-                                <span class="ms-2 inline-block px-2 py-1 text-xs font-semibold rounded-full" style="background-color: #f0f9ff; color: #0369a1;">Panitia</span>
+                                <span class="ms-2 inline-block px-2 py-1 text-xs font-semibold rounded-full" style="background-color: #fdf2f4; color: #7A1F2B;">Panitia</span>
                             @else
                                 <span class="ms-2 inline-block px-2 py-1 text-xs font-semibold rounded-full" style="background-color: #f0fdf4; color: #15803d;">Peserta</span>
                             @endif

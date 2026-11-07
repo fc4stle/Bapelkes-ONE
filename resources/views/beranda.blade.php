@@ -66,7 +66,7 @@
 
                     <!-- Step 2 -->
                     <div class="text-center">
-                        <div class="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center text-white text-2xl font-bold" style="background-color: var(--color-accent);">
+                        <div class="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center text-2xl font-bold" style="background-color: var(--color-accent); color: var(--color-text);">
                             2
                         </div>
                         <h3 class="text-xl font-bold mb-2" style="color: var(--color-text);">Pilih Pelatihan</h3>
@@ -75,7 +75,7 @@
 
                     <!-- Step 3 -->
                     <div class="text-center">
-                        <div class="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center text-white text-2xl font-bold" style="background-color: var(--color-success);">
+                        <div class="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center text-white text-2xl font-bold" style="background-color: #5C3D2E;">
                             3
                         </div>
                         <h3 class="text-xl font-bold mb-2" style="color: var(--color-text);">Tunggu Verifikasi</h3>

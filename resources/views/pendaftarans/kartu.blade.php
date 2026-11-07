@@ -55,13 +55,13 @@
                 </div>
             @elseif ($pendaftaran->isDiverifikasi())
                 <div class="bg-white shadow rounded-lg overflow-hidden">
-                    <div class="bg-indigo-600 px-6 py-4">
+                    <div class="text-white" style="background-color: var(--color-primary); px-6 py-4">
                         <div class="flex items-center justify-between">
                             <div>
                                 <h3 class="text-lg font-semibold text-white">Kartu Peserta Digital</h3>
-                                <p class="text-indigo-100 text-sm">Bapelkes Dinkes DIY</p>
+                                <p class="text-white text-sm">Bapelkes Dinkes DIY</p>
                             </div>
-                            <svg class="h-8 w-8 text-indigo-200" fill="currentColor" viewBox="0 0 24 24">
+                            <svg class="h-8 w-8 opacity-80" style="color: white;" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M3 5a2 2 0 012-2h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5zm10.7 12.7L9 13l-2.7 2.7-1.4-1.4L9 10.2l6.1 6.1-1.4 1.4z"/>
                             </svg>
                         </div>
@@ -70,8 +70,8 @@
                     <div class="px-6 py-6">
                         <div class="flex items-start space-x-6">
                             <div class="flex-shrink-0">
-                                <div class="h-20 w-20 rounded-full bg-indigo-100 flex items-center justify-center">
-                                    <span class="text-2xl font-bold text-indigo-600">
+                                <div class="h-20 w-20 rounded-full bg-gray-100 flex items-center justify-center">
+                                    <span class="text-2xl font-bold text-[var(--color-primary)]">
                                         {{ strtoupper(substr($pendaftaran->data_diri['nama'] ?? 'P', 0, 1)) }}
                                     </span>
                                 </div>
