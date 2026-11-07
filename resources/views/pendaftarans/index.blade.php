@@ -6,7 +6,7 @@
     </x-slot>
 
     <div class="py-12">
-    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center mb-[var(--sp-6)]">
             <h1 class="text-[var(--fs-h1)] font-bold text-[var(--color-text)]">Pendaftaran Saya</h1>
             <a href="{{ route('pelatihan.katalog') }}">

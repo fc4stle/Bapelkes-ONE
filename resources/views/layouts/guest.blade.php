@@ -23,7 +23,7 @@
                 </a>
             </div>
 
-            <div class="w-full sm:max-w-md mt-6 px-6 py-4 rounded-[var(--radius-card)] p-[var(--sp-6)] overflow-hidden" style="background-color: var(--color-surface); box-shadow: var(--shadow-card);">
+            <div class="w-full sm:max-w-md mt-6 px-4 sm:px-6 py-4 rounded-[var(--radius-card)] p-[var(--sp-6)] overflow-hidden" style="background-color: var(--color-surface); box-shadow: var(--shadow-card);">
                 {{ $slot }}
             </div>
         </div>

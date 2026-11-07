@@ -6,7 +6,7 @@
     </x-slot>
 
     <div class="py-12">
-    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Filter Card -->
         <div class="bg-white shadow rounded-[var(--radius-card)] p-4 sm:p-6 mb-6 border border-gray-200">
             <form method="GET" action="{{ route('pelatihan.katalog') }}" class="flex flex-col gap-4 sm:flex-row sm:items-end">
