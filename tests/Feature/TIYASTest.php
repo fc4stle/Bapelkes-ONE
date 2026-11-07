@@ -49,11 +49,10 @@ class TIYASTest extends TestCase
     public function test_tiyas_submit_returns_success_message(): void
     {
         $response = $this->post(route('tiyas.store'), [
-            'jawaban' => array_fill(1, 65, 'setuju')
+            'jawaban' => array_fill(1, 65, 'setuju'),
         ]);
 
         $response->assertRedirect();
         $response->assertSessionHas('success', 'TIYAS berhasil disimpan!');
     }
 }
-
