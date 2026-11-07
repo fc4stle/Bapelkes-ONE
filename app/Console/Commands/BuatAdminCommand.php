@@ -18,15 +18,16 @@ class BuatAdminCommand extends Command
     public function handle()
     {
         $email = $this->ask('Email:');
-        $name = $this->ask('Nama:');
-        $password = $this->secret('Password:');
 
-        // Validasi
+        // Validasi email duplikat lebih dulu
         if (User::where('email', $email)->exists()) {
             $this->error("Email $email sudah terdaftar.");
 
             return 1;
         }
+
+        $name = $this->ask('Nama:');
+        $password = $this->secret('Password:');
 
         if (strlen($password) < 8) {
             $this->error('Password minimal 8 karakter.');
