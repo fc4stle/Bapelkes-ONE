@@ -4,7 +4,8 @@
 
 :root {
   /* warna */
-  --color-primary: #4F46E5;   /* indigo */
+  --color-primary: #7A1F2B;   /* marun */
+  --color-primary-hover: #5E1722;  /* marun gelap */
   --color-accent: #D4A017;    /* emas */
   --color-bg: #FFF8E7;        /* krem */
   --color-text: #1F2937;

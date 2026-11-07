@@ -20,7 +20,7 @@
             box-sizing: border-box;
             position: relative;
             background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-            border: 20px solid #4f46e5;
+            border: 20px solid #7A1F2B;
         }
         .header {
             text-align: center;
@@ -34,7 +34,7 @@
         }
         .header h2 {
             font-size: 36px;
-            color: #4f46e5;
+            color: #7A1F2B;
             margin: 10px 0;
             text-transform: uppercase;
         }
@@ -52,14 +52,14 @@
             font-weight: bold;
             color: #1e293b;
             margin: 20px 0;
-            border-bottom: 2px solid #4f46e5;
+            border-bottom: 2px solid #7A1F2B;
             display: inline-block;
             padding-bottom: 10px;
         }
         .pelatihan {
             font-size: 22px;
             font-weight: bold;
-            color: #4f46e5;
+            color: #7A1F2B;
             margin: 15px 0;
         }
         .footer {
@@ -84,7 +84,7 @@
         }
         .stempel p {
             font-size: 12px;
-            color: #4f46e5;
+            color: #7A1F2B;
             margin: 0;
         }
         .watermark {
@@ -93,7 +93,7 @@
             left: 50%;
             transform: translate(-50%, -50%);
             font-size: 100px;
-            color: rgba(79, 70, 229, 0.03);
+            color: rgba(122, 31, 43, 0.03);
             pointer-events: none;
             font-weight: bold;
         }

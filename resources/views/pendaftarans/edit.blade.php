@@ -73,14 +73,14 @@
                             <div class="space-y-[var(--sp-4)]">
                                 <div>
                                     <x-input-label for="surat_tugas" value="Surat Tugas (opsional, biarkan kosong untuk tetap pakai berkas lama)" />
-                                    <input type="file" name="surat_tugas" id="surat_tugas" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-[var(--radius-btn)] file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-[var(--color-primary)] hover:file:bg-indigo-100">
+                                    <input type="file" name="surat_tugas" id="surat_tugas" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-[var(--radius-btn)] file:border-0 file:text-sm file:font-semibold file:text-[var(--color-primary)] hover:file:opacity-80" style="--file-bg: var(--color-bg);">
                                     <p class="mt-1 text-[var(--fs-caption)] text-gray-500">PDF, JPG, PNG (maks. 2MB)</p>
                                     <x-input-error :messages="$errors->get('surat_tugas')" class="mt-1" />
                                 </div>
 
                                 <div>
                                     <x-input-label for="dokumen_lain" value="Dokumen Persyaratan Lain (opsional, biarkan kosong untuk tetap pakai berkas lama)" />
-                                    <input type="file" name="dokumen_lain" id="dokumen_lain" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-[var(--radius-btn)] file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-[var(--color-primary)] hover:file:bg-indigo-100">
+                                    <input type="file" name="dokumen_lain" id="dokumen_lain" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-[var(--radius-btn)] file:border-0 file:text-sm file:font-semibold file:text-[var(--color-primary)] hover:file:opacity-80" style="--file-bg: var(--color-bg);">
                                     <p class="mt-1 text-[var(--fs-caption)] text-gray-500">PDF, JPG, PNG (maks. 2MB)</p>
                                     <x-input-error :messages="$errors->get('dokumen_lain')" class="mt-1" />
                                 </div>
@@ -123,7 +123,7 @@
                         <fieldset class="mb-[var(--sp-8)] border border-gray-200 rounded-[var(--radius-card)] p-[var(--sp-4)]">
                             <legend class="text-[var(--fs-h2)] font-semibold text-[var(--color-text)] px-2">4. Konfirmasi</legend>
 
-                            <div class="rounded-[var(--radius-btn)] bg-indigo-50 p-[var(--sp-4)] mb-[var(--sp-4)]">
+                            <div class="rounded-[var(--radius-btn)] bg-gray-50 p-[var(--sp-4)] mb-[var(--sp-4)]">
                                 <h4 class="text-sm font-medium text-[var(--color-primary)] mb-[var(--sp-2)]">Ringkasan Pendaftaran</h4>
                                 <dl class="text-sm text-[var(--color-primary)] space-y-1">
                                     <div><dt class="font-medium">Pelatihan</dt><dd>{{ $pelatihan->nama }}</dd></div>

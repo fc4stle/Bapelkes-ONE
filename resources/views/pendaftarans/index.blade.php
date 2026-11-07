@@ -6,9 +6,7 @@
     </x-slot>
 
     <div class="py-12">
-    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-    <div class="bg-[var(--color-surface)] shadow rounded-[var(--radius-card)]">
-    <div class="px-4 py-5 sm:p-6">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center mb-[var(--sp-6)]">
             <h1 class="text-[var(--fs-h1)] font-bold text-[var(--color-text)]">Pendaftaran Saya</h1>
             <a href="{{ route('pelatihan.katalog') }}">
@@ -53,7 +51,7 @@
                         ];
                         $badgeStatus = $statusMap[$pendaftaran->status_verifikasi] ?? 'pending';
                     @endphp
-                    <div class="border border-gray-200 rounded-[var(--radius-card)] p-[var(--sp-4)]">
+                    <div class="bg-white border border-gray-200 rounded-[var(--radius-card)] p-[var(--sp-4)]">
                         <div class="flex items-start justify-between gap-[var(--sp-2)]">
                             <div class="text-sm font-medium text-[var(--color-text)]">{{ $pendaftaran->pelatihan->nama }}</div>
                             <x-status-badge :status="$badgeStatus" />
@@ -81,8 +79,8 @@
                 @endforeach
             </div>
 
-            {{-- Tampilan tabel untuk sm ke atas --}}
-            <div class="hidden sm:block overflow-x-auto">
+            {{-- Tampilan tabel untuk sm ke atas: wrapper tabel putih sendiri --}}
+            <div class="hidden sm:block bg-white shadow rounded-[var(--radius-card)] overflow-hidden">
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
@@ -92,7 +90,7 @@
                             <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
+                    <tbody class="divide-y divide-gray-200">
                         @foreach ($pendaftarans as $pendaftaran)
                             <tr>
                                 <td class="px-6 py-4 whitespace-nowrap">
@@ -140,8 +138,6 @@
                 </table>
             </div>
         @endif
-    </div>
-    </div>
     </div>
     </div>
 </x-app-layout>

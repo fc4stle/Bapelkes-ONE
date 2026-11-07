@@ -6,7 +6,7 @@
     </x-slot>
 
     <div class="py-12">
-    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="bg-white shadow rounded-lg">
     <div class="px-4 py-5 sm:p-6">
         <div class="mb-6 flex justify-between items-center">
@@ -15,10 +15,10 @@
                 <p class="mt-1 text-sm text-gray-500">Detail pelatihan</p>
             </div>
             <div class="flex space-x-3">
-                <a href="{{ route('pelatihans.edit', $pelatihan) }}" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                <a href="{{ route('pelatihans.edit', $pelatihan) }}" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-primary)]">
                     Edit
                 </a>
-                <a href="{{ route('pelatihans.index') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                <a href="{{ route('pelatihans.index') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md hover:opacity-90" style="color: white; background-color: var(--color-primary); focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-primary)]">
                     Kembali
                 </a>
             </div>
@@ -68,7 +68,7 @@
                             \App\Enums\StatusPelatihan::Draft->value => 'bg-gray-100 text-gray-800',
                             \App\Enums\StatusPelatihan::Dibuka->value => 'bg-green-100 text-green-800',
                             \App\Enums\StatusPelatihan::Ditutup->value => 'bg-yellow-100 text-yellow-800',
-                            \App\Enums\StatusPelatihan::Selesai->value => 'bg-blue-100 text-blue-800',
+                            \App\Enums\StatusPelatihan::Selesai->value => 'bg-gray-100 text-gray-800',
                         ];
                     @endphp
                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $statusColors[$pelatihan->status->value] ?? 'bg-gray-100 text-gray-800' }}">

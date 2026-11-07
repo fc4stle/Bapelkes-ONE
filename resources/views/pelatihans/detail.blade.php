@@ -6,7 +6,7 @@
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-3xl mx-auto sm:px-6 lg:px-8">
+        <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="bg-[var(--color-surface)] shadow rounded-[var(--radius-card)]">
                 <div class="px-4 py-5 sm:p-6">
 
