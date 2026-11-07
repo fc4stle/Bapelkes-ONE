@@ -4,6 +4,8 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 class AdminRoleFeatureTest extends TestCase
@@ -306,4 +308,80 @@ class AdminRoleFeatureTest extends TestCase
 
     // Command test untuk app:buat-admin dapat tested secara manual saja
     // karena artisan testingmembutuhkan mock input yang kompleks
+
+    /** @test */
+    public function test_menu_kelola_pengguna_tampil_hanya_untuk_admin()
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $panitia = User::factory()->create(['role' => 'panitia']);
+
+        // Admin dapat lihat menu "Kelola Pengguna"
+        $response = $this->actingAs($admin)->get(route('panitia.dashboard'));
+        $response->assertSeeText('Kelola Pengguna');
+
+        // Panitia TIDAK dapat lihat menu "Kelola Pengguna"
+        $response = $this->actingAs($panitia)->get(route('panitia.dashboard'));
+        $response->assertDontSeeText('Kelola Pengguna');
+    }
+
+    /** @test */
+    public function test_ubah_panitia_ke_peserta_berhasil()
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $panitia = User::factory()->create(['role' => 'panitia']);
+
+        $response = $this->actingAs($admin)
+            ->patch(route('admin.users.updateRole', $panitia), ['role' => 'peserta']);
+
+        $response->assertSessionHas('success');
+        $this->assertDatabaseHas('users', [
+            'id' => $panitia->id,
+            'role' => 'peserta',
+        ]);
+    }
+
+    /** @test */
+    public function test_command_buat_admin_membuat_admin_baru()
+    {
+        $this->artisan('app:buat-admin')
+            ->expectsQuestion('Email:', 'neweadmin@test.local')
+            ->expectsQuestion('Nama:', 'Admin Baru')
+            ->expectsQuestion('Password:', 'password123')
+            ->expectsConfirmation('Buat admin dengan email neweadmin@test.local?', 'yes')
+            ->assertExitCode(0);
+
+        $this->assertDatabaseHas('users', [
+            'email' => 'neweadmin@test.local',
+            'role' => 'admin',
+        ]);
+    }
+
+    /** @test */
+    public function test_command_buat_admin_menolak_email_duplikat()
+    {
+        User::factory()->create(['email' => 'duplicate@test.local']);
+
+        $this->artisan('app:buat-admin')
+            ->expectsQuestion('Email:', 'duplicate@test.local')
+            ->expectsOutput('Email duplicate@test.local sudah terdaftar.')
+            ->assertExitCode(1);
+    }
+
+    /** @test */
+    public function test_buat_user_tanpa_kolom_role_default_ke_peserta()
+    {
+        // Simulasi insert tanpa role (DB DEFAULT akan set peserta)
+        DB::table('users')->insert([
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => Hash::make('password'),
+            'email_verified_at' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+            // role NOT set, should default to 'peserta'
+        ]);
+
+        $user = User::where('email', 'test@example.com')->first();
+        $this->assertEquals('peserta', $user->role);
+    }
 }
