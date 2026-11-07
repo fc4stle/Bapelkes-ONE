@@ -32,6 +32,8 @@ Route::middleware('auth')->group(function () {
         Route::delete('/pendaftarans/{pendaftaran}', [PendaftaranController::class, 'destroy'])->name('pendaftarans.destroy');
         Route::get('/pendaftarans/{pendaftaran}/kartu', [PendaftaranController::class, 'kartu'])->name('pendaftarans.kartu');
         Route::get('/pendaftarans/{pendaftaran}/sertifikat', [PendaftaranController::class, 'sertifikat'])->name('pendaftarans.sertifikat');
+        Route::get('/tiyas', fn () => view('tiyas.form'))->name('tiyas.form');
+        Route::post('/tiyas', fn () => back()->with('success', 'TIYAS berhasil disimpan!'))->name('tiyas.store');
     });
 
     Route::patch('/pendaftarans/{pendaftaran}', [PendaftaranController::class, 'update'])
