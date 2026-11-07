@@ -155,4 +155,93 @@ class Pendaftaran extends Model
     {
         return strtoupper(substr(md5($this->id.$this->peserta_id.$this->pelatihan_id.uniqid()), 0, 16));
     }
+
+    /**
+     * @return array{judul: string, deskripsi: string, tone: string, aksi: array<int, array{label: string, url: string}>}
+     */
+    public function langkahBerikutnya(): array
+    {
+        // a) ditolak
+        if ($this->isDitolak()) {
+            return [
+                'judul' => 'Pendaftaran ditolak',
+                'deskripsi' => $this->alasan_penolakan ?? 'Pendaftaran Anda tidak memenuhi syarat.',
+                'tone' => 'bahaya',
+                'aksi' => [
+                    ['label' => 'Lihat katalog', 'url' => route('pelatihan.katalog')],
+                ],
+            ];
+        }
+
+        // b) pending
+        if ($this->isPending()) {
+            return [
+                'judul' => 'Menunggu verifikasi panitia',
+                'deskripsi' => 'Panitia akan memeriksa data Anda.',
+                'tone' => 'info',
+                'aksi' => [
+                    ['label' => 'Ubah data', 'url' => route('pendaftarans.edit', $this)],
+                ],
+            ];
+        }
+
+        // c) diverifikasi, pelatihan selesai, dan sudah hadir
+        if ($this->isDiverifikasi() && $this->pelatihan->status->value === 'selesai' && $this->isHadir()) {
+            $aksi = [];
+
+            if ($this->bisaDownloadSertifikat()) {
+                $aksi[] = ['label' => 'Unduh sertifikat', 'url' => route('pendaftarans.sertifikat', $this)];
+            }
+
+            if (! $this->tiyasResponse()->exists()) {
+                $aksi[] = ['label' => 'Isi Evaluasi TIYAS', 'url' => route('tiyas.form', $this)];
+            }
+
+            if (empty($aksi)) {
+                return [
+                    'judul' => 'Pelatihan selesai',
+                    'deskripsi' => 'Terima kasih telah mengikuti pelatihan.',
+                    'tone' => 'sukses',
+                    'aksi' => [],
+                ];
+            }
+
+            return [
+                'judul' => 'Pelatihan selesai',
+                'deskripsi' => 'Pelatihan Anda telah selesai. Silakan unduh sertifikat atau isi evaluasi TIYAS jika belum.',
+                'tone' => 'sukses',
+                'aksi' => $aksi,
+            ];
+        }
+
+        // d) diverifikasi, belum hadir
+        if ($this->isDiverifikasi() && ! $this->isHadir()) {
+            return [
+                'judul' => 'Pendaftaran terverifikasi',
+                'deskripsi' => 'Tunjukkan kartu peserta saat hari pertama ('.$this->pelatihan->tanggal_mulai->translatedFormat('d M Y').').',
+                'tone' => 'info',
+                'aksi' => [
+                    ['label' => 'Kartu peserta', 'url' => route('pendaftarans.kartu', $this)],
+                ],
+            ];
+        }
+
+        // e) diverifikasi dan sudah hadir (pelatihan belum/sedang berlangsung)
+        if ($this->isDiverifikasi() && $this->isHadir()) {
+            return [
+                'judul' => 'Anda sudah hadir',
+                'deskripsi' => 'Pelatihan berlangsung sampai '.$this->pelatihan->tanggal_selesai->translatedFormat('d M Y').'.',
+                'tone' => 'info',
+                'aksi' => [],
+            ];
+        }
+
+        // Fallback (seharusnya tidak ada)
+        return [
+            'judul' => 'Status tidak diketahui',
+            'deskripsi' => 'Hubungi panitia untuk informasi lebih lanjut.',
+            'tone' => 'perhatian',
+            'aksi' => [],
+        ];
+    }
 }
