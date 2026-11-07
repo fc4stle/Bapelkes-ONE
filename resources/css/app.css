@@ -108,4 +108,27 @@ button:disabled,
   }
 }
 
+/* ========== TIYAS RADIO STYLING ========== */
+@media (prefers-reduced-motion: no-preference) {
+  /* Radio button label pill styling */
+  label:has(input[type="radio"]) {
+    transition: background-color 150ms ease-in-out, color 150ms ease-in-out, border-color 150ms ease-in-out, transform 150ms ease-in-out;
+  }
+
+  /* Radio label hover */
+  label:has(input[type="radio"]):hover {
+    border-color: var(--color-primary);
+  }
+
+  /* Radio label active */
+  label:has(input[type="radio"]):active {
+    transform: scale(0.97);
+  }
+
+  /* Radio label checked styling via peer */
+  input[type="radio"].peer:checked + span {
+    font-weight: 600;
+  }
+}
+
 /* ========== END INTERAKSI UX ========== */
