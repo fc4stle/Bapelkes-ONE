@@ -14,12 +14,12 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <!-- Flash Messages -->
             @if ($message = session('success'))
-                <div class="mb-4 p-4 rounded-[var(--radius-btn)] bg-green-50 border border-green-200 text-green-800">
+                <div class="mb-4 p-4 rounded-[var(--radius-btn)] border-l-4 text-white" style="background-color: var(--color-krem); border-color: var(--color-primary); color: var(--color-primary);">
                     {{ $message }}
                 </div>
             @endif
             @if ($message = session('error'))
-                <div class="mb-4 p-4 rounded-[var(--radius-btn)] bg-red-50 border border-red-200 text-red-800">
+                <div class="mb-4 p-4 rounded-[var(--radius-btn)] border-l-4" style="background-color: var(--color-krem); border-color: var(--color-primary); color: var(--color-primary);">
                     {{ $message }}
                 </div>
             @endif
@@ -33,6 +33,7 @@
                     <div>
                         <select name="role" class="px-4 py-2 rounded-[var(--radius-btn)] border" style="border-color: #d4a76a;">
                             <option value="">Semua Role</option>
+                            <option value="peserta" @selected($selectedRole === 'peserta')>Peserta</option>
                             <option value="panitia" @selected($selectedRole === 'panitia')>Panitia</option>
                             <option value="admin" @selected($selectedRole === 'admin')>Admin</option>
                         </select>
@@ -75,6 +76,7 @@
                                                 @csrf
                                                 @method('PATCH')
                                                 <select name="role" class="px-2 py-1 text-xs rounded border" style="border-color: #d4a76a;">
+                                                    <option value="peserta" @selected($user->role === 'peserta')>Peserta</option>
                                                     <option value="panitia" @selected($user->role === 'panitia')>Panitia</option>
                                                     <option value="admin" @selected($user->role === 'admin')>Admin</option>
                                                 </select>

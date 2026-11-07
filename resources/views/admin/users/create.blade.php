@@ -7,7 +7,7 @@
 
     <div class="py-12">
         <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
-            <form method="POST" action="{{ route('admin.users.store') }}" @submit="$nextTick(() => { if (! $event.defaultPrevented) submitting = true })" class="rounded-[var(--radius-btn)] p-6" style="background-color: white; border: 1px solid #d4a76a;">
+            <form method="POST" action="{{ route('admin.users.store') }}" x-data="{ submitting: false }" @submit="$nextTick(() => { if (! $event.defaultPrevented) submitting = true })" class="rounded-[var(--radius-btn)] p-6" style="background-color: white; border: 1px solid #d4a76a;">
                 @csrf
 
                 <!-- Nama -->
@@ -71,8 +71,9 @@
 
                 <!-- Buttons -->
                 <div class="flex gap-3">
-                    <button type="submit" class="px-6 py-2 rounded-[var(--radius-btn)] text-white font-semibold text-sm" style="background-color: var(--color-primary);">
-                        Buat Akun
+                    <button type="submit" :disabled="submitting" class="px-6 py-2 rounded-[var(--radius-btn)] text-white font-semibold text-sm" style="background-color: var(--color-primary);" :style="submitting && 'opacity: 0.5; cursor: not-allowed;'">
+                        <span x-show="!submitting">Buat Akun</span>
+                        <span x-show="submitting">Menyimpan...</span>
                     </button>
                     <a href="{{ route('admin.users.index') }}" class="px-6 py-2 rounded-[var(--radius-btn)] font-semibold text-sm border-2 bg-transparent" style="border-color: var(--color-primary); color: var(--color-primary);">
                         Batal
