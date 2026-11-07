@@ -21,7 +21,7 @@
                         </div>
                     @endif
 
-                    <form action="{{ route('pelatihans.daftar', $pelatihan) }}" method="POST" enctype="multipart/form-data" id="daftarForm" novalidate @submit="submitting = true" x-data="{ submitting: false }">
+                    <form action="{{ route('pelatihans.daftar', $pelatihan) }}" method="POST" enctype="multipart/form-data" id="daftarForm" novalidate @submit="$nextTick(() => { if (! $event.defaultPrevented) submitting = true })" x-data="{ submitting: false }">
                         @csrf
 
                         <!-- Bagian 1: Data Diri -->

@@ -25,7 +25,7 @@
                         $dataDiri = $pendaftaran->data_diri ?? [];
                     @endphp
 
-                    <form action="{{ route('pendaftarans.updateSelf', $pendaftaran) }}" method="POST" enctype="multipart/form-data" id="editForm" novalidate @submit="submitting = true" x-data="{ submitting: false }">
+                    <form action="{{ route('pendaftarans.updateSelf', $pendaftaran) }}" method="POST" enctype="multipart/form-data" id="editForm" novalidate @submit="$nextTick(() => { if (! $event.defaultPrevented) submitting = true })" x-data="{ submitting: false }">
                         @csrf
                         @method('PUT')
 

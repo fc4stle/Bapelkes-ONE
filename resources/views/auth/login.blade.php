@@ -15,7 +15,7 @@
     <!-- Session Status -->
     <x-auth-session-status class="mb-4" :status="session('status')" />
 
-    <form method="POST" action="{{ route('login') }}" @submit="submitting = true" x-data="{ submitting: false }">
+    <form method="POST" action="{{ route('login') }}" @submit="$nextTick(() => { if (! $event.defaultPrevented) submitting = true })" x-data="{ submitting: false }">
         @csrf
 
         <!-- Email Address -->

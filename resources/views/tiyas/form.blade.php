@@ -18,7 +18,7 @@
                 <h2 class="text-2xl font-bold text-gray-900 mb-1">Evaluasi TIYAS</h2>
                 <p class="text-gray-600 mb-6">Pengisian Kuesioner Model TIYAS (Training Implementation and Yielded Behavior Evaluation System)</p>
 
-                <form action="{{ route('tiyas.simpan', $pendaftaran) }}" method="POST" class="space-y-8" @submit="submitting = true">
+                <form action="{{ route('tiyas.simpan', $pendaftaran) }}" method="POST" class="space-y-8" @submit="$nextTick(() => { if (! $event.defaultPrevented) submitting = true })">
                     @csrf
 
                     <!-- Info Peserta (Read-only) -->

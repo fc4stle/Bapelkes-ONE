@@ -5,7 +5,7 @@
         Akun baru otomatis berperan sebagai peserta.
     </p>
 
-    <form method="POST" action="{{ route('register') }}" @submit="submitting = true" x-data="{ submitting: false }">
+    <form method="POST" action="{{ route('register') }}" @submit="$nextTick(() => { if (! $event.defaultPrevented) submitting = true })" x-data="{ submitting: false }">
         @csrf
 
         <!-- Name -->
