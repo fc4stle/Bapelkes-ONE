@@ -38,7 +38,7 @@
                         @if ($pelatihan_perhatian > 0)
                             <a href="{{ route('pelatihans.index') }}" 
                                class="inline-block px-3 py-2 text-sm font-medium rounded transition"
-                               style="background-color: var(--color-emas); color: white;">
+                               style="background-color: var(--color-emas); color: #5c2f1f;">
                                 Lihat
                             </a>
                         @else
@@ -48,16 +48,16 @@
                 </div>
 
                 <!-- Pelatihan Tanpa TIYAS -->
-                <div class="rounded-lg p-6" style="background-color: var(--color-krem); border-left: 4px solid #ef4444;">
+                <div class="rounded-lg p-6" style="background-color: var(--color-krem); border-left: 4px solid var(--color-marun);">
                     <div class="flex items-baseline justify-between">
                         <p class="text-sm font-medium text-gray-600">Tanpa TIYAS</p>
-                        <span class="text-3xl font-bold text-red-600">{{ $pelatihan_tanpa_tiyas }}</span>
+                        <span class="text-3xl font-bold" style="color: var(--color-marun);">{{ $pelatihan_tanpa_tiyas }}</span>
                     </div>
                     <div class="mt-4">
                         @if ($pelatihan_tanpa_tiyas > 0)
                             <a href="{{ route('pelatihans.index') }}" 
                                class="inline-block px-3 py-2 text-sm font-medium rounded transition"
-                               style="background-color: #ef4444; color: white;">
+                               style="background-color: var(--color-marun); color: white;">
                                 Tinjau
                             </a>
                         @else
@@ -66,14 +66,22 @@
                     </div>
                 </div>
 
-                <!-- Peserta Butuh Asrama (Future - placeholder) -->
+                <!-- Peserta Butuh Asrama -->
                 <div class="rounded-lg p-6" style="background-color: var(--color-krem); border-left: 4px solid var(--color-marun);">
                     <div class="flex items-baseline justify-between">
                         <p class="text-sm font-medium text-gray-600">Asrama Pending</p>
-                        <span class="text-3xl font-bold" style="color: var(--color-marun);">0</span>
+                        <span class="text-3xl font-bold" style="color: var(--color-marun);">{{ $asrama_pending }}</span>
                     </div>
                     <div class="mt-4">
-                        <span class="text-sm text-gray-500">Tidak ada</span>
+                        @if ($asrama_pending > 0 && $pelatihan_asrama_terbanyak)
+                            <a href="{{ route('pelatihan.pendaftar', $pelatihan_asrama_terbanyak) }}" 
+                               class="inline-block px-3 py-2 text-sm font-medium rounded transition"
+                               style="background-color: var(--color-marun); color: white;">
+                                Tinjau
+                            </a>
+                        @else
+                            <span class="text-sm text-gray-500">Tidak ada</span>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -132,7 +140,7 @@
                                 </div>
                                 <a href="{{ route('tiyas.hasil', $item) }}" 
                                    class="ml-4 px-3 py-2 text-sm font-medium rounded transition"
-                                   style="background-color: var(--color-emas); color: white;">
+                                   style="background-color: var(--color-emas); color: #5c2f1f;">
                                     Lihat
                                 </a>
                             </div>
