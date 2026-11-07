@@ -7,6 +7,7 @@ use App\Enums\StatusPelatihan;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 class Pelatihan extends Model
 {
@@ -51,6 +52,19 @@ class Pelatihan extends Model
     public function pendaftarans(): HasMany
     {
         return $this->hasMany(Pendaftaran::class);
+    }
+
+    /**
+     * @return HasManyThrough<TiyasResponse, Pendaftaran>
+     */
+    public function tiyasResponses(): HasManyThrough
+    {
+        return $this->hasManyThrough(
+            TiyasResponse::class,
+            Pendaftaran::class,
+            'pelatihan_id',
+            'pendaftaran_id'
+        );
     }
 
     public function jumlahPendaftar(): int

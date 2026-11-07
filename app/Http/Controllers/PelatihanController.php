@@ -231,6 +231,50 @@ class PelatihanController extends Controller
      */
     public function dashboard()
     {
+        // 1. Hitung pending verifikasi
+        $total_pending = Pendaftaran::where('status_verifikasi', 'pending')->count();
+
+        // Temukan pelatihan dengan pending terbanyak
+        $pelatihan_pending_terbanyak = Pelatihan::withCount([
+            'pendaftarans as pending_count' => fn ($q) => $q->where('status_verifikasi', 'pending'),
+        ])->orderByDesc('pending_count')
+            ->first();
+
+        // 2. Antrian verifikasi: 5 pendaftaran pending terlama
+        $antrian_verifikasi = Pendaftaran::where('status_verifikasi', 'pending')
+            ->with(['peserta', 'pelatihan'])
+            ->oldest('created_at')
+            ->limit(5)
+            ->get();
+
+        // 3. Pelatihan dibuka dengan 0 pendaftar atau >=90% kuota
+        $pelatihan_perhatian = Pelatihan::where('status', 'dibuka')
+            ->withCount([
+                'pendaftarans as total' => fn ($q) => $q->where('status_verifikasi', 'diverifikasi'),
+            ])
+            ->get()
+            ->filter(function ($p) {
+                $pendaftar = $p->total;
+
+                return $pendaftar === 0 || ($p->kuota > 0 && $pendaftar / $p->kuota >= 0.9);
+            })
+            ->count();
+
+        // 4. Pelatihan selesai tanpa TIYAS
+        $pelatihan_tanpa_tiyas = Pelatihan::where('status', 'selesai')
+            ->whereDoesntHave('pendaftarans.tiyasResponse')
+            ->count();
+
+        // 5. Daftar 5 pelatihan selesai dengan TIYAS terbaru
+        $tiyas_terbaru = Pelatihan::where('status', 'selesai')
+            ->has('tiyasResponses')
+            ->withCount('tiyasResponses')
+            ->orderBy('tiyas_responses_count', 'desc')
+            ->latest('tanggal_selesai')
+            ->limit(5)
+            ->get();
+
+        // 6. Pelatihan untuk tabel rekap
         $pelatihans = Pelatihan::withCount([
             'pendaftarans as total_pendaftar',
             'pendaftarans as terverifikasi' => fn ($q) => $q->where('status_verifikasi', 'diverifikasi'),
@@ -241,7 +285,15 @@ class PelatihanController extends Controller
             'pendaftarans as sertifikat_terunduh' => fn ($q) => $q->whereNotNull('kode_sertifikat'),
         ])->latest()->paginate(10);
 
-        return view('pelatihans.dashboard', compact('pelatihans'));
+        return view('pelatihans.dashboard', compact(
+            'pelatihans',
+            'total_pending',
+            'pelatihan_pending_terbanyak',
+            'antrian_verifikasi',
+            'pelatihan_perhatian',
+            'pelatihan_tanpa_tiyas',
+            'tiyas_terbaru'
+        ));
     }
 
     /**
