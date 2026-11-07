@@ -34,3 +34,178 @@
   --radius-card: 12px;
   --shadow-card: 0 1px 3px rgba(0,0,0,.12);
 }
+
+/* ========== INTERAKSI UX ========== */
+
+/* Tombol dan link tombol */
+@media (prefers-reduced-motion: no-preference) {
+  .primary-button,
+  .secondary-button,
+  button,
+  a[class*="button"],
+  .btn {
+    transition: color 150ms ease, background-color 150ms ease, box-shadow 150ms ease, transform 150ms ease;
+  }
+
+  .primary-button:hover,
+  .secondary-button:hover,
+  button:not(:disabled):hover,
+  a[class*="button"]:hover,
+  .btn:not(:disabled):hover {
+    background-color: var(--color-primary-hover);
+    box-shadow: 0 4px 12px rgba(122, 31, 43, 0.2);
+  }
+
+  .primary-button:active,
+  .secondary-button:active,
+  button:not(:disabled):active,
+  a[class*="button"]:active,
+  .btn:not(:disabled):active {
+    transform: scale(0.97);
+  }
+
+  .primary-button:focus-visible,
+  .secondary-button:focus-visible,
+  button:focus-visible,
+  a[class*="button"]:focus-visible,
+  .btn:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+}
+
+/* Tombol disabled */
+button:disabled,
+.primary-button:disabled,
+.secondary-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Kartu */
+@media (prefers-reduced-motion: no-preference) {
+  x-card,
+  .card,
+  [class*="card"] {
+    transition: transform 200ms ease, box-shadow 200ms ease;
+  }
+
+  /* Hover hanya di perangkat dengan hover capability */
+  @media (hover: hover) {
+    x-card:hover,
+    .card:hover,
+    [class*="card"]:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    }
+  }
+
+  /* Mobile: scale active */
+  x-card:active,
+  .card:active,
+  [class*="card"]:active {
+    transform: scale(0.99);
+  }
+}
+
+/* ========== TIYAS RADIO STYLING ========== */
+@media (prefers-reduced-motion: no-preference) {
+  /* Radio button label pill styling */
+  label:has(input[type="radio"]) {
+    transition: background-color 150ms ease-in-out, color 150ms ease-in-out, border-color 150ms ease-in-out, transform 150ms ease-in-out;
+  }
+
+  /* Radio label hover */
+  label:has(input[type="radio"]):hover {
+    border-color: var(--color-primary);
+  }
+
+  /* Radio label active */
+  label:has(input[type="radio"]):active {
+    transform: scale(0.97);
+  }
+
+  /* Radio label checked styling via peer */
+  input[type="radio"].peer:checked + span {
+    font-weight: 600;
+  }
+}
+
+/* ========== SELECT DROPDOWN STYLING ========== */
+
+/* Accent color untuk checkbox/radio bawaan */
+input[type="checkbox"],
+input[type="radio"] {
+  accent-color: var(--color-primary);
+}
+
+/* Customizable select dengan @supports untuk browser lama */
+@supports (appearance: base-select) {
+  select,
+  ::picker(select) {
+    appearance: base-select;
+  }
+
+  /* Kolom select: pertahankan tampilan sekarang */
+  select {
+    background-color: var(--color-surface);
+    border: 1px solid #e5e7eb;
+    border-radius: var(--radius-btn);
+    padding: 8px 12px;
+    font-size: var(--fs-body);
+    color: var(--color-text);
+    cursor: pointer;
+  }
+
+  select:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+
+  /* Daftar pilihan dropdown */
+  ::picker(select) {
+    background: var(--color-surface);
+    border: 1px solid #e5e7eb;
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    padding: 4px;
+    width: anchor-size(width);
+    max-height: 18rem;
+  }
+
+  /* Opsi di daftar */
+  option {
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: var(--fs-body);
+    color: var(--color-text);
+  }
+
+  option:hover {
+    background: #fdf2f4;
+  }
+
+  option:focus-visible {
+    background: #fdf2f4;
+  }
+
+  option:checked {
+    background: var(--color-primary);
+    color: #fff;
+  }
+
+  /* Ikon dropdown */
+  select::picker-icon {
+    color: var(--color-primary);
+  }
+}
+
+/* Tinggi baris option di layar sentuh */
+@media (pointer: coarse) {
+  option {
+    min-height: 44px;
+    padding: 12px 12px;
+  }
+}
+
+/* ========== END INTERAKSI UX ========== */

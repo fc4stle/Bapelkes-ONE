@@ -45,7 +45,7 @@
                             <h4 class="text-md font-semibold text-gray-900 mb-4">Skor Per Dimensi</h4>
                             <div class="space-y-4">
                                 @foreach ($skorDimensi as $konstruk => $dimensis)
-                                    <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                                    <div class="bg-[#fdf2f4] p-4 rounded-lg border border-[#e8c4ca]">
                                         <p class="text-sm font-medium text-gray-700 mb-3">{{ $config['konstruk'][$konstruk]['nama'] }}</p>
                                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                                             @foreach ($dimensis as $namaDimensi => $skorDim)
@@ -76,13 +76,13 @@
 
                     <div class="mb-4">
                         <label for="catatan_supervisor" class="block text-sm font-medium text-gray-700 mb-2">Catatan Supervisor</label>
-                        <textarea name="catatan_supervisor" id="catatan_supervisor" rows="4" maxlength="2000" class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" placeholder="Masukkan catatan dari supervisor...">{{ old('catatan_supervisor', $tiyasResponse->catatan_supervisor) }}</textarea>
+                        <textarea name="catatan_supervisor" id="catatan_supervisor" rows="4" maxlength="2000" class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-[var(--color-primary)] focus:ring-[var(--color-primary)]" placeholder="Masukkan catatan dari supervisor...">{{ old('catatan_supervisor', $tiyasResponse->catatan_supervisor) }}</textarea>
                         <p class="text-xs text-gray-500 mt-1">Maksimal 2000 karakter</p>
                     </div>
 
                     <div class="mb-6">
                         <label for="catatan_rekan_kerja" class="block text-sm font-medium text-gray-700 mb-2">Catatan Rekan Kerja</label>
-                        <textarea name="catatan_rekan_kerja" id="catatan_rekan_kerja" rows="4" maxlength="2000" class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" placeholder="Masukkan catatan dari rekan kerja...">{{ old('catatan_rekan_kerja', $tiyasResponse->catatan_rekan_kerja) }}</textarea>
+                        <textarea name="catatan_rekan_kerja" id="catatan_rekan_kerja" rows="4" maxlength="2000" class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-[var(--color-primary)] focus:ring-[var(--color-primary)]" placeholder="Masukkan catatan dari rekan kerja...">{{ old('catatan_rekan_kerja', $tiyasResponse->catatan_rekan_kerja) }}</textarea>
                         <p class="text-xs text-gray-500 mt-1">Maksimal 2000 karakter</p>
                     </div>
 
@@ -94,7 +94,7 @@
 
             <!-- Kembali -->
             <div>
-                <a href="{{ route('tiyas.hasil', $tiyasResponse->pendaftaran->pelatihan) }}" class="text-indigo-600 hover:text-indigo-900">
+                <a href="{{ route('tiyas.hasil', $tiyasResponse->pendaftaran->pelatihan) }}" class="text-[var(--color-primary)] hover:opacity-80">
                     ← Kembali ke Hasil
                 </a>
             </div>

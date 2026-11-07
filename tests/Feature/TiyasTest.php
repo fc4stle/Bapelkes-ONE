@@ -446,6 +446,49 @@ class TiyasTest extends TestCase
         $this->assertNotNull($response->getContent());
     }
 
+    /**
+     * Test: form TIYAS peserta menampilkan teks "dari 65 terjawab".
+     */
+    public function test_form_tiyas_menampilkan_dari_65_terjawab()
+    {
+        $peserta = User::factory()->create(['role' => 'peserta']);
+        $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
+        $pendaftaran = Pendaftaran::factory()->create([
+            'peserta_id' => $peserta->id,
+            'pelatihan_id' => $pelatihan->id,
+            'status_verifikasi' => 'diverifikasi',
+        ]);
+
+        $this->actingAs($peserta)
+            ->get(route('tiyas.form', $pendaftaran))
+            ->assertOk()
+            ->assertSeeText('dari 65 terjawab');
+    }
+
+    /**
+     * Test: setelah simpan TIYAS, halaman pendaftarans.index menampilkan flash "Evaluasi TIYAS berhasil disimpan."
+     */
+    public function test_flash_message_evaluasi_tiyas_berhasil_disimpan()
+    {
+        $peserta = User::factory()->create(['role' => 'peserta']);
+        $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
+        $pendaftaran = Pendaftaran::factory()->create([
+            'peserta_id' => $peserta->id,
+            'pelatihan_id' => $pelatihan->id,
+            'status_verifikasi' => 'diverifikasi',
+        ]);
+
+        $data = $this->generateValidTiyasData();
+
+        $this->actingAs($peserta)
+            ->post(route('tiyas.simpan', $pendaftaran), $data)
+            ->assertRedirect(route('pendaftarans.index'));
+
+        $this->actingAs($peserta)
+            ->get(route('pendaftarans.index'))
+            ->assertSeeText('Evaluasi TIYAS berhasil disimpan.');
+    }
+
     // Helper methods
 
     private function generateValidTiyasData(): array
