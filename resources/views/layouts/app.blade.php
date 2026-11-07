@@ -20,7 +20,7 @@
 
             <!-- Page Heading -->
             @isset($header)
-                <header style="background-color: var(--color-surface); box-shadow: var(--shadow-card);">
+                <header style="background-color: var(--color-bg); border-bottom: 1px solid #e5e7eb;">
                     <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
                         {{ $header }}
                     </div>

@@ -1,5 +1,5 @@
 <x-app-layout>
-    <div style="background-color: var(--color-surface);">
+    <div style="background-color: var(--color-bg);">
         <!-- Hero Section -->
         <section class="py-10 sm:py-16 px-4">
             <div class="max-w-5xl mx-auto text-center">
