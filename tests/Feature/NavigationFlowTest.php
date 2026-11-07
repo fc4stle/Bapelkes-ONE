@@ -42,7 +42,14 @@ class NavigationFlowTest extends TestCase
         $response = $this->actingAs($panitia)
             ->get(route('dashboard'));
 
-        $response->assertSee('Rekap Panitia');
+        // Redirect ke panitia.dashboard
+        $response->assertRedirect(route('panitia.dashboard'));
+
+        // Follow redirect dan assert see text
+        $response = $this->actingAs($panitia)
+            ->get(route('panitia.dashboard'));
+
+        $response->assertSee('Dashboard Rekap Panitia');
         $response->assertSee('Kelola Pelatihan');
         $response->assertDontSee('Pendaftaran Saya');
     }
