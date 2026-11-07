@@ -7,34 +7,34 @@
 
     <div class="py-12">
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-    <div class="bg-[var(--color-surface)] shadow rounded-[var(--radius-card)]">
-    <div class="px-4 py-5 sm:p-6">
-        <h1 class="text-[var(--fs-h1)] font-bold text-[var(--color-text)] mb-[var(--sp-6)]">Katalog Pelatihan</h1>
+        <!-- Filter Card -->
+        <div class="bg-white shadow rounded-[var(--radius-card)] p-4 sm:p-6 mb-6 border border-gray-200">
+            <form method="GET" action="{{ route('pelatihan.katalog') }}" class="flex flex-col gap-4 sm:flex-row sm:items-end">
+                <div class="flex-1">
+                    <x-input-label for="q" value="Cari Pelatihan" />
+                    <x-text-input type="text" name="q" id="q" value="{{ $search }}" placeholder="Cari nama pelatihan..." class="mt-1 block w-full" />
+                </div>
 
-        <form method="GET" action="{{ route('pelatihan.katalog') }}" class="mb-[var(--sp-6)] flex flex-col gap-[var(--sp-4)] sm:flex-row sm:items-end">
-            <div class="flex-1">
-                <x-input-label for="q" value="Cari Pelatihan" />
-                <x-text-input type="text" name="q" id="q" value="{{ $search }}" placeholder="Cari nama pelatihan..." class="mt-1 block w-full" />
-            </div>
+                <div>
+                    <x-input-label for="metode" value="Metode" />
+                    <select name="metode" id="metode" class="mt-1 block w-full rounded-[var(--radius-btn)] border-gray-300 shadow-sm focus:border-[var(--color-primary)] focus:ring-[var(--color-primary)] sm:text-sm border px-3 py-2">
+                        <option value="">Semua Metode</option>
+                        @foreach (\App\Enums\MetodePelatihan::cases() as $metodeOption)
+                            <option value="{{ $metodeOption->value }}" {{ $metode === $metodeOption->value ? 'selected' : '' }}>{{ $metodeOption->label() }}</option>
+                        @endforeach
+                    </select>
+                </div>
 
-            <div>
-                <x-input-label for="metode" value="Metode" />
-                <select name="metode" id="metode" class="mt-1 block w-full rounded-[var(--radius-btn)] border-gray-300 shadow-sm focus:border-[var(--color-primary)] focus:ring-[var(--color-primary)] sm:text-sm border px-3 py-2">
-                    <option value="">Semua Metode</option>
-                    @foreach (\App\Enums\MetodePelatihan::cases() as $metodeOption)
-                        <option value="{{ $metodeOption->value }}" {{ $metode === $metodeOption->value ? 'selected' : '' }}>{{ $metodeOption->label() }}</option>
-                    @endforeach
-                </select>
-            </div>
+                <div class="flex items-center gap-[var(--sp-3)]">
+                    <x-primary-button type="submit">Cari</x-primary-button>
+                    @if ($search || $metode)
+                        <a href="{{ route('pelatihan.katalog') }}" class="text-sm text-gray-500 hover:text-gray-700">Reset</a>
+                    @endif
+                </div>
+            </form>
+        </div>
 
-            <div class="flex items-center gap-[var(--sp-3)]">
-                <x-primary-button type="submit">Cari</x-primary-button>
-                @if ($search || $metode)
-                    <a href="{{ route('pelatihan.katalog') }}" class="text-sm text-gray-500 hover:text-gray-700">Reset</a>
-                @endif
-            </div>
-        </form>
-
+        <!-- Pelatihan Grid -->
         @if ($pelatihans->isEmpty())
             <div class="text-center py-12">
                 <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -78,8 +78,6 @@
                 {{ $pelatihans->links() }}
             </div>
         @endif
-    </div>
-    </div>
     </div>
     </div>
 </x-app-layout>
