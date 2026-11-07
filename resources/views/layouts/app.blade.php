@@ -18,6 +18,10 @@
         <div class="min-h-screen" style="background-color: var(--color-bg);">
             @include('layouts.navigation')
 
+            <!-- Flash Messages -->
+            <x-flash type="success" />
+            <x-flash type="error" />
+
             <!-- Page Heading -->
             @isset($header)
                 <header style="background-color: var(--color-bg); border-bottom: 1px solid #e5e7eb;">

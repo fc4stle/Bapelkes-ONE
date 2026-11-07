@@ -15,6 +15,10 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="font-sans text-gray-900 antialiased">
+        <!-- Flash Messages -->
+        <x-flash type="success" />
+        <x-flash type="error" />
+
         <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0" style="background-color: var(--color-bg);">
             <div>
                 <a href="/" class="text-center">
