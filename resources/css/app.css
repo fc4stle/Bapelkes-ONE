@@ -34,3 +34,78 @@
   --radius-card: 12px;
   --shadow-card: 0 1px 3px rgba(0,0,0,.12);
 }
+
+/* ========== INTERAKSI UX ========== */
+
+/* Tombol dan link tombol */
+@media (prefers-reduced-motion: no-preference) {
+  .primary-button,
+  .secondary-button,
+  button,
+  a[class*="button"],
+  .btn {
+    transition: color 150ms ease, background-color 150ms ease, box-shadow 150ms ease, transform 150ms ease;
+  }
+
+  .primary-button:hover,
+  .secondary-button:hover,
+  button:not(:disabled):hover,
+  a[class*="button"]:hover,
+  .btn:not(:disabled):hover {
+    background-color: var(--color-primary-hover);
+    box-shadow: 0 4px 12px rgba(122, 31, 43, 0.2);
+  }
+
+  .primary-button:active,
+  .secondary-button:active,
+  button:not(:disabled):active,
+  a[class*="button"]:active,
+  .btn:not(:disabled):active {
+    transform: scale(0.97);
+  }
+
+  .primary-button:focus-visible,
+  .secondary-button:focus-visible,
+  button:focus-visible,
+  a[class*="button"]:focus-visible,
+  .btn:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+}
+
+/* Tombol disabled */
+button:disabled,
+.primary-button:disabled,
+.secondary-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Kartu */
+@media (prefers-reduced-motion: no-preference) {
+  x-card,
+  .card,
+  [class*="card"] {
+    transition: transform 200ms ease, box-shadow 200ms ease;
+  }
+
+  /* Hover hanya di perangkat dengan hover capability */
+  @media (hover: hover) {
+    x-card:hover,
+    .card:hover,
+    [class*="card"]:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    }
+  }
+
+  /* Mobile: scale active */
+  x-card:active,
+  .card:active,
+  [class*="card"]:active {
+    transform: scale(0.99);
+  }
+}
+
+/* ========== END INTERAKSI UX ========== */
