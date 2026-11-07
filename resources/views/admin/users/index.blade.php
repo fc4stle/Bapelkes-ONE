@@ -14,12 +14,12 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <!-- Flash Messages -->
             @if ($message = session('success'))
-                <div class="mb-4 p-4 rounded-[var(--radius-btn)] border-l-4 text-white" style="background-color: var(--color-krem); border-color: var(--color-primary); color: var(--color-primary);">
+                <div class="mb-4 p-4 rounded-[var(--radius-btn)] border-l-4 text-white" style="background-color: var(--color-bg); border-color: var(--color-primary); color: var(--color-primary);">
                     {{ $message }}
                 </div>
             @endif
             @if ($message = session('error'))
-                <div class="mb-4 p-4 rounded-[var(--radius-btn)] border-l-4" style="background-color: var(--color-krem); border-color: var(--color-primary); color: var(--color-primary);">
+                <div class="mb-4 p-4 rounded-[var(--radius-btn)] border-l-4" style="background-color: var(--color-bg); border-color: var(--color-primary); color: var(--color-primary);">
                     {{ $message }}
                 </div>
             @endif
@@ -28,10 +28,10 @@
             <div class="mb-6 flex flex-col sm:flex-row gap-3">
                 <form method="GET" action="{{ route('admin.users.index') }}" class="flex flex-col sm:flex-row gap-3 w-full">
                     <div class="flex-1">
-                        <input type="text" name="q" placeholder="Cari nama atau email..." value="{{ $q }}" class="w-full px-4 py-2 rounded-[var(--radius-btn)] border" style="border-color: #d4a76a;">
+                        <input type="text" name="q" placeholder="Cari nama atau email..." value="{{ $q }}" class="w-full px-4 py-2 rounded-[var(--radius-btn)] border" style="border-color: var(--color-accent);">
                     </div>
                     <div>
-                        <select name="role" class="px-4 py-2 rounded-[var(--radius-btn)] border" style="border-color: #d4a76a;">
+                        <select name="role" class="px-4 py-2 rounded-[var(--radius-btn)] border" style="border-color: var(--color-accent);">
                             <option value="">Semua Role</option>
                             <option value="peserta" @selected($selectedRole === 'peserta')>Peserta</option>
                             <option value="panitia" @selected($selectedRole === 'panitia')>Panitia</option>
@@ -46,27 +46,27 @@
 
             <!-- Users Table -->
             @if ($users->count() > 0)
-                <div class="overflow-x-auto rounded-[var(--radius-btn)] border" style="border-color: #d4a76a;">
+                <div class="overflow-x-auto rounded-[var(--radius-btn)] border" style="border-color: var(--color-accent);">
                     <table class="w-full">
                         <thead>
-                            <tr style="background-color: var(--color-krem);">
-                                <th class="px-4 py-3 text-left text-sm font-semibold" style="color: var(--color-marun);">Nama</th>
-                                <th class="px-4 py-3 text-left text-sm font-semibold" style="color: var(--color-marun);">Email</th>
-                                <th class="px-4 py-3 text-left text-sm font-semibold" style="color: var(--color-marun);">Role</th>
-                                <th class="px-4 py-3 text-left text-sm font-semibold" style="color: var(--color-marun);">Tanggal Daftar</th>
-                                <th class="px-4 py-3 text-left text-sm font-semibold" style="color: var(--color-marun);">Aksi</th>
+                            <tr style="background-color: var(--color-bg);">
+                                <th class="px-4 py-3 text-left text-sm font-semibold" style="color: var(--color-primary);">Nama</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold" style="color: var(--color-primary);">Email</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold" style="color: var(--color-primary);">Role</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold" style="color: var(--color-primary);">Tanggal Daftar</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold" style="color: var(--color-primary);">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach ($users as $user)
-                                <tr class="border-t" style="border-color: #d4a76a;">
+                                <tr class="border-t" style="border-color: var(--color-accent);">
                                     <td class="px-4 py-3 text-sm">{{ $user->name }}</td>
                                     <td class="px-4 py-3 text-sm">{{ $user->email }}</td>
                                     <td class="px-4 py-3 text-sm">
                                         @if ($user->isAdmin())
-                                            <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold" style="background-color: #fdf2f4; color: #7A1F2B;">Admin</span>
+                                            <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold" style="background-color: var(--color-bg); color: var(--color-primary);">Admin</span>
                                         @else
-                                            <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold" style="background-color: #fdf2f4; color: #7A1F2B;">Panitia</span>
+                                            <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold" style="background-color: var(--color-bg); color: var(--color-primary);">Panitia</span>
                                         @endif
                                     </td>
                                     <td class="px-4 py-3 text-sm">{{ $user->created_at->format('d M Y') }}</td>
@@ -75,7 +75,7 @@
                                             <form method="POST" action="{{ route('admin.users.updateRole', $user) }}" class="inline-flex items-center gap-2">
                                                 @csrf
                                                 @method('PATCH')
-                                                <select name="role" class="px-2 py-1 text-xs rounded border" style="border-color: #d4a76a;">
+                                                <select name="role" class="px-2 py-1 text-xs rounded border" style="border-color: var(--color-accent);">
                                                     <option value="peserta" @selected($user->role === 'peserta')>Peserta</option>
                                                     <option value="panitia" @selected($user->role === 'panitia')>Panitia</option>
                                                     <option value="admin" @selected($user->role === 'admin')>Admin</option>
@@ -99,7 +99,7 @@
                     {{ $users->links() }}
                 </div>
             @else
-                <div class="text-center py-12 rounded-[var(--radius-btn)] border-2 border-dashed" style="border-color: #d4a76a; background-color: var(--color-krem);">
+                <div class="text-center py-12 rounded-[var(--radius-btn)] border-2 border-dashed" style="border-color: var(--color-accent); background-color: var(--color-bg);">
                     <p class="text-gray-500">Tidak ada pengguna.</p>
                 </div>
             @endif
