@@ -35,7 +35,7 @@ class AuthenticatedSessionController extends Controller
             return redirect($intendedUrl);
         }
 
-        if ($user->isPanitia()) {
+        if ($user->isStaf()) {
             return redirect()->intended(route('panitia.dashboard', absolute: false));
         }
 
