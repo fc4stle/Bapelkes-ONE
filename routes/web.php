@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PelatihanController;
 use App\Http\Controllers\PendaftaranController;
 use App\Http\Controllers\ProfileController;
@@ -14,9 +15,7 @@ Route::get('/', function () {
 Route::get('/pelatihan', [PelatihanController::class, 'katalog'])->name('pelatihan.katalog');
 Route::get('/pelatihan/{pelatihan}/detail', [PelatihanController::class, 'detail'])->name('pelatihan.detail');
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
