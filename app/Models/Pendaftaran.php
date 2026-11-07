@@ -6,6 +6,7 @@ use Database\Factories\PendaftaranFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Pendaftaran extends Model
 {
@@ -65,6 +66,14 @@ class Pendaftaran extends Model
     public function kamar(): BelongsTo
     {
         return $this->belongsTo(Kamar::class);
+    }
+
+    /**
+     * @return HasOne<TiyasResponse, $this>
+     */
+    public function tiyasResponse(): HasOne
+    {
+        return $this->hasOne(TiyasResponse::class);
     }
 
     public function isPending(): bool

@@ -3,6 +3,7 @@
 use App\Http\Controllers\PelatihanController;
 use App\Http\Controllers\PendaftaranController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\TiyasController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -32,6 +33,8 @@ Route::middleware('auth')->group(function () {
         Route::delete('/pendaftarans/{pendaftaran}', [PendaftaranController::class, 'destroy'])->name('pendaftarans.destroy');
         Route::get('/pendaftarans/{pendaftaran}/kartu', [PendaftaranController::class, 'kartu'])->name('pendaftarans.kartu');
         Route::get('/pendaftarans/{pendaftaran}/sertifikat', [PendaftaranController::class, 'sertifikat'])->name('pendaftarans.sertifikat');
+        Route::get('/pendaftarans/{pendaftaran}/tiyas', [TiyasController::class, 'form'])->name('tiyas.form');
+        Route::post('/pendaftarans/{pendaftaran}/tiyas', [TiyasController::class, 'simpan'])->name('tiyas.simpan');
     });
 
     Route::patch('/pendaftarans/{pendaftaran}', [PendaftaranController::class, 'update'])
@@ -47,6 +50,10 @@ Route::middleware(['auth', 'role:panitia'])->group(function () {
     Route::post('/pelatihan/{pelatihan}/presensi', [PelatihanController::class, 'prosesPresensi'])->name('pelatihan.presensi.proses');
     Route::patch('/pendaftarans/{pendaftaran}/verifikasi', [PendaftaranController::class, 'verifikasi'])->name('pendaftarans.verifikasi');
     Route::patch('/pendaftarans/{pendaftaran}/tolak', [PendaftaranController::class, 'tolak'])->name('pendaftarans.tolak');
+    Route::get('/pelatihans/{pelatihan}/tiyas', [TiyasController::class, 'hasil'])->name('tiyas.hasil');
+    Route::get('/tiyas/{tiyasResponse}', [TiyasController::class, 'detail'])->name('tiyas.detail');
+    Route::patch('/tiyas/{tiyasResponse}/catatan', [TiyasController::class, 'catatan'])->name('tiyas.catatan');
+    Route::get('/pelatihans/{pelatihan}/tiyas/export', [TiyasController::class, 'export'])->name('tiyas.export');
 });
 
 Route::resource('pelatihans', PelatihanController::class)
