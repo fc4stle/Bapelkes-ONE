@@ -27,8 +27,10 @@
                 </a>
             </div>
 
-            <div class="w-full sm:max-w-md mt-6 px-4 sm:px-6 py-4 rounded-[var(--radius-card)] p-[var(--sp-6)] overflow-hidden" style="background-color: var(--color-surface); box-shadow: var(--shadow-card);">
-                {{ $slot }}
+            <div class="w-full max-w-md px-4 mt-6">
+                <div class="p-6 rounded-[var(--radius-card)] overflow-hidden" style="background-color: var(--color-surface); box-shadow: var(--shadow-card);">
+                    {{ $slot }}
+                </div>
             </div>
         </div>
     </body>
