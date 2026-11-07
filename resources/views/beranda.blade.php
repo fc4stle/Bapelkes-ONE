@@ -1,32 +1,32 @@
 <x-app-layout>
     <!-- Hero Section -->
-    <section class="py-20 px-4" style="background: linear-gradient(135deg, var(--color-primary) 0%, rgba(79, 70, 229, 0.8) 100%);">
-        <div class="max-w-5xl mx-auto text-center text-white">
-            <h1 class="text-5xl font-bold mb-4">Bapelkes ONE</h1>
-            <p class="text-xl mb-8">Portal terpadu pelatihan dan layanan peserta Bapelkes DIY</p>
+    <section class="py-16 px-4" style="background-color: var(--color-bg);">
+        <div class="max-w-5xl mx-auto text-center">
+            <h1 class="text-5xl font-bold mb-4" style="color: var(--color-text);">Bapelkes ONE</h1>
+            <p class="text-xl mb-8" style="color: #555;">Portal terpadu pelatihan dan layanan peserta Bapelkes DIY</p>
 
             <div class="flex flex-wrap gap-4 justify-center">
                 @auth
                     @if (auth()->user()->isPanitia())
-                        <a href="{{ route('panitia.dashboard') }}" class="px-8 py-3 rounded-[var(--radius-btn)] text-white font-semibold" style="background-color: var(--color-accent);">
+                        <a href="{{ route('panitia.dashboard') }}" class="px-8 py-3 rounded-[var(--radius-btn)] text-white font-semibold" style="background-color: var(--color-primary);">
                             Rekap Panitia
                         </a>
-                        <a href="{{ route('pelatihans.index') }}" class="px-8 py-3 rounded-[var(--radius-btn)] text-white font-semibold border-2 border-white bg-transparent">
+                        <a href="{{ route('pelatihans.index') }}" class="px-8 py-3 rounded-[var(--radius-btn)] font-semibold border-2 bg-transparent" style="border-color: var(--color-primary); color: var(--color-primary);">
                             Kelola Pelatihan
                         </a>
                     @else
-                        <a href="{{ route('pelatihan.katalog') }}" class="px-8 py-3 rounded-[var(--radius-btn)] text-white font-semibold" style="background-color: var(--color-accent);">
+                        <a href="{{ route('pelatihan.katalog') }}" class="px-8 py-3 rounded-[var(--radius-btn)] text-white font-semibold" style="background-color: var(--color-primary);">
                             Lihat Katalog
                         </a>
-                        <a href="{{ route('pendaftarans.index') }}" class="px-8 py-3 rounded-[var(--radius-btn)] text-white font-semibold border-2 border-white bg-transparent">
+                        <a href="{{ route('pendaftarans.index') }}" class="px-8 py-3 rounded-[var(--radius-btn)] font-semibold border-2 bg-transparent" style="border-color: var(--color-primary); color: var(--color-primary);">
                             Pendaftaran Saya
                         </a>
                     @endif
                 @else
-                    <a href="{{ route('pelatihan.katalog') }}" class="px-8 py-3 rounded-[var(--radius-btn)] text-white font-semibold" style="background-color: var(--color-accent);">
+                    <a href="{{ route('pelatihan.katalog') }}" class="px-8 py-3 rounded-[var(--radius-btn)] text-white font-semibold" style="background-color: var(--color-primary);">
                         Lihat Katalog
                     </a>
-                    <a href="{{ route('register') }}" class="px-8 py-3 rounded-[var(--radius-btn)] text-white font-semibold border-2 border-white bg-transparent">
+                    <a href="{{ route('register') }}" class="px-8 py-3 rounded-[var(--radius-btn)] font-semibold border-2 bg-transparent" style="border-color: var(--color-primary); color: var(--color-primary);">
                         Daftar Akun
                     </a>
                 @endauth
