@@ -10,16 +10,17 @@ class RoleMiddleware
 {
     /**
      * Handle an incoming request.
+     * Terima multiple roles (variadic): role:panitia,admin
      *
      * @param  Closure(Request): (Response)  $next
      */
-    public function handle(Request $request, Closure $next, string $role): Response
+    public function handle(Request $request, Closure $next, string ...$roles): Response
     {
         if (! $request->user()) {
             return redirect()->route('login');
         }
 
-        if ($request->user()->role !== $role) {
+        if (! in_array($request->user()->role, $roles, strict: true)) {
             abort(403);
         }
 

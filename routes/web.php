@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PelatihanController;
 use App\Http\Controllers\PendaftaranController;
@@ -37,11 +38,11 @@ Route::middleware('auth')->group(function () {
     });
 
     Route::patch('/pendaftarans/{pendaftaran}', [PendaftaranController::class, 'update'])
-        ->middleware('role:panitia')
+        ->middleware('role:panitia,admin')
         ->name('pendaftarans.update');
 });
 
-Route::middleware(['auth', 'role:panitia'])->group(function () {
+Route::middleware(['auth', 'role:panitia,admin'])->group(function () {
     Route::get('/panitia/dashboard', [PelatihanController::class, 'dashboard'])->name('panitia.dashboard');
     Route::get('/pelatihan/{pelatihan}/pendaftar', [PelatihanController::class, 'pendaftar'])->name('pelatihan.pendaftar');
     Route::get('/pelatihan/{pelatihan}/pendaftar/export', [PelatihanController::class, 'exportPendaftar'])->name('pelatihan.pendaftar.export');
@@ -56,6 +57,12 @@ Route::middleware(['auth', 'role:panitia'])->group(function () {
 });
 
 Route::resource('pelatihans', PelatihanController::class)
-    ->middleware(['auth', 'role:panitia']);
+    ->middleware(['auth', 'role:panitia,admin']);
+
+// Admin routes
+Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::resource('users', AdminUserController::class)->only(['index', 'create', 'store']);
+    Route::patch('/users/{user}/role', [AdminUserController::class, 'updateRole'])->name('users.updateRole');
+});
 
 require __DIR__.'/auth.php';
