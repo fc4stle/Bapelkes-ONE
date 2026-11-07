@@ -412,4 +412,91 @@ class DashboardPanitiaTest extends TestCase
         // Hanya pelatihan_selesai_1 yang tanpa TIYAS
         $this->assertEquals(1, $response->viewData('pelatihan_tanpa_tiyas'));
     }
+
+    public function test_asrama_pending_hitung_benar(): void
+    {
+        // 3 pending asrama, 2 diverifikasi asrama
+        Pendaftaran::factory()->count(3)->create([
+            'pelatihan_id' => $this->pelatihan->id,
+            'status_verifikasi' => 'pending',
+            'butuh_asrama' => true,
+        ]);
+
+        Pendaftaran::factory()->count(2)->create([
+            'pelatihan_id' => $this->pelatihan->id,
+            'status_verifikasi' => 'diverifikasi',
+            'butuh_asrama' => true,
+        ]);
+
+        $response = $this->actingAs($this->panitia)
+            ->get(route('panitia.dashboard'));
+
+        $response->assertStatus(200);
+
+        // Total asrama pending = 3
+        $this->assertEquals(3, $response->viewData('asrama_pending'));
+
+        // Pelatihan dengan pending asrama terbanyak
+        $pelatihan_asrama = $response->viewData('pelatihan_asrama_terbanyak');
+        $this->assertEquals($this->pelatihan->id, $pelatihan_asrama->id);
+    }
+
+    public function test_asrama_pending_kosong(): void
+    {
+        $response = $this->actingAs($this->panitia)
+            ->get(route('panitia.dashboard'));
+
+        $response->assertStatus(200);
+        $this->assertEquals(0, $response->viewData('asrama_pending'));
+        $response->assertSee('Asrama Pending');
+    }
+
+    public function test_hasil_tiyas_urutan_terbaru(): void
+    {
+        // Buat 2 pelatihan selesai dengan tanggal berbeda
+        $pelatihan_lama = Pelatihan::factory()->create([
+            'status' => 'selesai',
+            'tanggal_selesai' => now()->subDays(20),
+        ]);
+
+        $pelatihan_baru = Pelatihan::factory()->create([
+            'status' => 'selesai',
+            'tanggal_selesai' => now()->subDays(5),
+        ]);
+
+        // Buat TIYAS untuk keduanya
+        $pendaftaran_lama = Pendaftaran::factory()->create([
+            'pelatihan_id' => $pelatihan_lama->id,
+            'status_verifikasi' => 'diverifikasi',
+        ]);
+
+        $pendaftaran_baru = Pendaftaran::factory()->create([
+            'pelatihan_id' => $pelatihan_baru->id,
+            'status_verifikasi' => 'diverifikasi',
+        ]);
+
+        $pendaftaran_lama->tiyasResponse()->create([
+            'identitas' => ['nama' => 'Old', 'email' => 'old@test.com'],
+            'jawaban' => ['q1' => 'setuju'],
+            'submitted_at' => now(),
+        ]);
+
+        $pendaftaran_baru->tiyasResponse()->create([
+            'identitas' => ['nama' => 'New', 'email' => 'new@test.com'],
+            'jawaban' => ['q1' => 'setuju'],
+            'submitted_at' => now(),
+        ]);
+
+        $response = $this->actingAs($this->panitia)
+            ->get(route('panitia.dashboard'));
+
+        $response->assertStatus(200);
+
+        $tiyas = $response->viewData('tiyas_terbaru');
+        $this->assertCount(2, $tiyas);
+
+        // Urutan: terbaru (pelatihan_baru) harus di depan
+        $this->assertEquals($pelatihan_baru->id, $tiyas->first()->id);
+        $this->assertEquals($pelatihan_lama->id, $tiyas->last()->id);
+    }
 }
