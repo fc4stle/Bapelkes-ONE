@@ -1,33 +1,33 @@
 <x-app-layout>
     <div style="background-color: var(--color-surface);">
         <!-- Hero Section -->
-        <section class="py-16 px-4">
+        <section class="py-10 sm:py-16 px-4">
             <div class="max-w-5xl mx-auto text-center">
-                <h1 class="text-5xl font-bold mb-4" style="color: var(--color-text);">Bapelkes ONE</h1>
-                <p class="text-xl mb-8" style="color: #555;">Portal terpadu pelatihan dan layanan peserta Bapelkes DIY</p>
+                <h1 class="text-3xl sm:text-5xl font-bold mb-4" style="color: var(--color-text);">Bapelkes ONE</h1>
+                <p class="text-base sm:text-xl mb-8" style="color: #555;">Portal terpadu pelatihan dan layanan peserta Bapelkes DIY</p>
 
-                <div class="flex flex-wrap gap-4 justify-center">
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
                     @auth
                         @if (auth()->user()->isPanitia())
-                            <a href="{{ route('panitia.dashboard') }}" class="px-8 py-3 rounded-[var(--radius-btn)] text-white font-semibold" style="background-color: var(--color-primary);">
+                            <a href="{{ route('panitia.dashboard') }}" class="w-full sm:w-auto px-8 py-3 rounded-[var(--radius-btn)] text-white font-semibold text-center" style="background-color: var(--color-primary);">
                                 Rekap Panitia
                             </a>
-                            <a href="{{ route('pelatihans.index') }}" class="px-8 py-3 rounded-[var(--radius-btn)] font-semibold border-2 bg-transparent" style="border-color: var(--color-primary); color: var(--color-primary);">
+                            <a href="{{ route('pelatihans.index') }}" class="w-full sm:w-auto px-8 py-3 rounded-[var(--radius-btn)] font-semibold border-2 bg-transparent text-center" style="border-color: var(--color-primary); color: var(--color-primary);">
                                 Kelola Pelatihan
                             </a>
                         @else
-                            <a href="{{ route('pelatihan.katalog') }}" class="px-8 py-3 rounded-[var(--radius-btn)] text-white font-semibold" style="background-color: var(--color-primary);">
+                            <a href="{{ route('pelatihan.katalog') }}" class="w-full sm:w-auto px-8 py-3 rounded-[var(--radius-btn)] text-white font-semibold text-center" style="background-color: var(--color-primary);">
                                 Lihat Katalog
                             </a>
-                            <a href="{{ route('pendaftarans.index') }}" class="px-8 py-3 rounded-[var(--radius-btn)] font-semibold border-2 bg-transparent" style="border-color: var(--color-primary); color: var(--color-primary);">
+                            <a href="{{ route('pendaftarans.index') }}" class="w-full sm:w-auto px-8 py-3 rounded-[var(--radius-btn)] font-semibold border-2 bg-transparent text-center" style="border-color: var(--color-primary); color: var(--color-primary);">
                                 Pendaftaran Saya
                             </a>
                         @endif
                     @else
-                        <a href="{{ route('pelatihan.katalog') }}" class="px-8 py-3 rounded-[var(--radius-btn)] text-white font-semibold" style="background-color: var(--color-primary);">
+                        <a href="{{ route('pelatihan.katalog') }}" class="w-full sm:w-auto px-8 py-3 rounded-[var(--radius-btn)] text-white font-semibold text-center" style="background-color: var(--color-primary);">
                             Lihat Katalog
                         </a>
-                        <a href="{{ route('register') }}" class="px-8 py-3 rounded-[var(--radius-btn)] font-semibold border-2 bg-transparent" style="border-color: var(--color-primary); color: var(--color-primary);">
+                        <a href="{{ route('register') }}" class="w-full sm:w-auto px-8 py-3 rounded-[var(--radius-btn)] font-semibold border-2 bg-transparent text-center" style="border-color: var(--color-primary); color: var(--color-primary);">
                             Daftar Akun
                         </a>
                     @endauth
@@ -40,8 +40,8 @@
             <section class="py-12 px-4" style="border-top: 1px solid #e5e7eb;">
                 <div class="max-w-5xl mx-auto">
                     <form method="GET" action="{{ route('pelatihan.katalog') }}" class="flex flex-col sm:flex-row gap-3">
-                        <input type="text" name="q" placeholder="Cari pelatihan..." class="flex-1 px-4 py-3 rounded-[var(--radius-btn)] border-2" style="border-color: #e5e7eb; color: var(--color-text);">
-                        <button type="submit" class="px-6 py-3 rounded-[var(--radius-btn)] text-white font-semibold" style="background-color: var(--color-primary);">
+                        <input type="text" name="q" placeholder="Cari pelatihan..." class="flex-1 px-4 py-3 rounded-[var(--radius-btn)] border-2 w-full" style="border-color: #e5e7eb; color: var(--color-text);">
+                        <button type="submit" class="w-full sm:w-auto px-6 py-3 rounded-[var(--radius-btn)] text-white font-semibold" style="background-color: var(--color-primary);">
                             Cari
                         </button>
                     </form>
@@ -50,11 +50,11 @@
         @endif
 
         <!-- How to Register Section -->
-        <section class="py-16 px-4" style="border-top: 1px solid #e5e7eb;">
+        <section class="py-10 sm:py-16 px-4" style="border-top: 1px solid #e5e7eb;">
             <div class="max-w-5xl mx-auto">
-                <h2 class="text-3xl font-bold text-center mb-12" style="color: var(--color-text);">Cara Mendaftar</h2>
+                <h2 class="text-2xl sm:text-3xl font-bold text-center mb-12" style="color: var(--color-text);">Cara Mendaftar</h2>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
                     <!-- Step 1 -->
                     <div class="text-center">
                         <div class="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center text-white text-2xl font-bold" style="background-color: var(--color-primary);">
@@ -86,9 +86,9 @@
         </section>
 
         <!-- Open Trainings Section -->
-        <section class="py-16 px-4" style="border-top: 1px solid #e5e7eb;">
+        <section class="py-10 sm:py-16 px-4" style="border-top: 1px solid #e5e7eb;">
             <div class="max-w-5xl mx-auto">
-                <h2 class="text-3xl font-bold text-center mb-12" style="color: var(--color-text);">Pelatihan yang Sedang Dibuka</h2>
+                <h2 class="text-2xl sm:text-3xl font-bold text-center mb-12" style="color: var(--color-text);">Pelatihan yang Sedang Dibuka</h2>
 
                 @php
                     $trainings = \App\Models\Pelatihan::where('status', 'dibuka')
