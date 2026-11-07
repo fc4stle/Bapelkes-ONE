@@ -234,10 +234,14 @@ class PelatihanController extends Controller
         // 1. Hitung pending verifikasi
         $total_pending = Pendaftaran::where('status_verifikasi', 'pending')->count();
 
-        // Temukan pelatihan dengan pending terbanyak
+        // Temukan pelatihan dengan pending terbanyak (hanya yang pending_count > 0)
+        // Gunakan metode PHP sort untuk menghindari HAVING clause di SQLite
         $pelatihan_pending_terbanyak = Pelatihan::withCount([
             'pendaftarans as pending_count' => fn ($q) => $q->where('status_verifikasi', 'pending'),
-        ])->orderByDesc('pending_count')
+        ])
+            ->get()
+            ->filter(fn ($p) => $p->pending_count > 0)
+            ->sortByDesc('pending_count')
             ->first();
 
         // 2. Antrian verifikasi: 5 pendaftaran pending terlama
@@ -265,11 +269,25 @@ class PelatihanController extends Controller
             ->whereDoesntHave('pendaftarans.tiyasResponse')
             ->count();
 
+        // 4b. Asrama pending
+        $asrama_pending = Pendaftaran::where('butuh_asrama', true)
+            ->where('status_verifikasi', 'pending')
+            ->count();
+
+        // Temukan pelatihan dengan pending asrama terbanyak (hanya yang > 0)
+        // Gunakan metode PHP sort untuk menghindari HAVING clause di SQLite
+        $pelatihan_asrama_terbanyak = Pelatihan::withCount([
+            'pendaftarans as pending_asrama_count' => fn ($q) => $q->where('butuh_asrama', true)->where('status_verifikasi', 'pending'),
+        ])
+            ->get()
+            ->filter(fn ($p) => $p->pending_asrama_count > 0)
+            ->sortByDesc('pending_asrama_count')
+            ->first();
+
         // 5. Daftar 5 pelatihan selesai dengan TIYAS terbaru
         $tiyas_terbaru = Pelatihan::where('status', 'selesai')
             ->has('tiyasResponses')
             ->withCount('tiyasResponses')
-            ->orderBy('tiyas_responses_count', 'desc')
             ->latest('tanggal_selesai')
             ->limit(5)
             ->get();
@@ -292,6 +310,8 @@ class PelatihanController extends Controller
             'antrian_verifikasi',
             'pelatihan_perhatian',
             'pelatihan_tanpa_tiyas',
+            'asrama_pending',
+            'pelatihan_asrama_terbanyak',
             'tiyas_terbaru'
         ));
     }
