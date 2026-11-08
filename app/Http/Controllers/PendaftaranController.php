@@ -430,6 +430,9 @@ class PendaftaranController extends Controller
 
                 $pendaftaran->update(['kamar_id' => $kamarTujuan->id]);
             });
+            
+            // Kirim notifikasi SETELAH transaction berhasil
+            $pendaftaran->peserta->notify(new \App\Notifications\KamarDipindah($pendaftaran, $kamarTujuan->nomor_kamar));
         } catch (ValidationException $e) {
             return back()->withErrors($e->errors());
         }
@@ -437,5 +440,40 @@ class PendaftaranController extends Controller
         return redirect()
             ->route('panitia.asrama.show', $kamarTujuan->asrama_id)
             ->with('success', 'Penghuni berhasil dipindahkan ke kamar '.$kamarTujuan->nomor_kamar);
+    }
+
+    /**
+     * Show notifications page for authenticated user
+     */
+    public function notifikasiIndex(Request $request)
+    {
+        $notifikasi = Auth::user()
+            ->notifications()
+            ->orderBy('created_at', 'desc')
+            ->paginate(15);
+
+        return view('notifikasi.index', compact('notifikasi'));
+    }
+
+    /**
+     * Mark a single notification as read
+     */
+    public function tandaiDibaca($notification)
+    {
+        $notif = Auth::user()->notifications()->findOrFail($notification);
+        
+        $notif->markAsRead();
+
+        return back()->with('success', 'Notifikasi telah ditandai dibaca.');
+    }
+
+    /**
+     * Mark all notifications as read
+     */
+    public function tandaiSemuaDibaca(Request $request)
+    {
+        Auth::user()->unreadNotifications->markAsRead();
+
+        return back()->with('success', 'Semua notifikasi telah ditandai dibaca.');
     }
 }
