@@ -8,6 +8,7 @@ use App\Http\Requests\StorePelatihanRequest;
 use App\Http\Requests\UpdatePelatihanRequest;
 use App\Models\Pelatihan;
 use App\Models\Pendaftaran;
+use App\Notifications\PelatihanSelesai;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -198,8 +199,23 @@ class PelatihanController extends Controller
     public function update(UpdatePelatihanRequest $request, Pelatihan $pelatihan)
     {
         $validated = $request->validated();
+        $statusSebelumnya = $pelatihan->status->value ?? $pelatihan->status;
 
         $pelatihan->update($validated);
+
+        // Kirim notifikasi PelatihanSelesai jika status berubah menjadi 'selesai'
+        if ($statusSebelumnya !== 'selesai' && $pelatihan->status === StatusPelatihan::Selesai) {
+            // Ambil semua pendaftaran yang diverifikasi dan hadir
+            $pendaftaranYangBisaDiterima = $pelatihan->pendaftarans()
+                ->where('status_verifikasi', 'diverifikasi')
+                ->whereNotNull('hadir_at')
+                ->get();
+
+            // Kirim notifikasi ke masing-masing peserta
+            foreach ($pendaftaranYangBisaDiterima as $pendaftaran) {
+                $pendaftaran->peserta->notify(new PelatihanSelesai($pendaftaran));
+            }
+        }
 
         return redirect()
             ->route('pelatihans.index')

@@ -29,6 +29,7 @@ Route::middleware('auth')->group(function () {
 
     // Notifikasi
     Route::get('/notifikasi', [PendaftaranController::class, 'notifikasiIndex'])->name('notifikasi.index');
+    Route::get('/notifikasi/{notification}/buka', [PendaftaranController::class, 'bukaNotiifikasi'])->name('notifikasi.buka');
     Route::patch('/notifikasi/baca-semua', [PendaftaranController::class, 'tandaiSemuaDibaca'])->name('notifikasi.tandai-semua-dibaca');
     Route::patch('/notifikasi/{notification}/baca', [PendaftaranController::class, 'tandaiDibaca'])->name('notifikasi.tandai-dibaca');
 

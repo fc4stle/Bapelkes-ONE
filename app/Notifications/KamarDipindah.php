@@ -24,6 +24,7 @@ class KamarDipindah extends Notification
             'judul_pelatihan' => $this->pendaftaran->pelatihan->nama,
             'pesan' => 'Anda telah dipindahkan ke kamar '.$this->nomorKamarBaru.' untuk pelatihan '.$this->pendaftaran->pelatihan->nama.'.',
             'tipe' => 'pindah_kamar',
+            'url' => route('pendaftarans.kartu', $this->pendaftaran, false),
         ];
     }
 }

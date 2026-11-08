@@ -2,11 +2,13 @@
 
 namespace Tests\Feature;
 
+use App\Enums\StatusPelatihan;
 use App\Models\Asrama;
 use App\Models\Kamar;
 use App\Models\Pelatihan;
 use App\Models\Pendaftaran;
 use App\Models\User;
+use App\Notifications\PendaftaranDiverifikasi;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Tests\TestCase;
@@ -456,5 +458,240 @@ class NotifikasiTest extends TestCase
         $notifikasi = $peserta->notifications()->where('data->tipe', 'pindah_kamar')->first();
         $this->assertNotNull($notifikasi);
         $this->assertStringContainsString('Pelatihan Testing', $notifikasi->data['pesan']);
+    }
+
+    public function test_menu_hp_menampilkan_link_notifikasi_untuk_user_login(): void
+    {
+        $peserta = User::factory()->create(['role' => 'peserta']);
+
+        $response = $this->actingAs($peserta)->get(route('dashboard'));
+
+        $response->assertSee('Notifikasi', escape: false);
+        $response->assertSee(route('notifikasi.index'), escape: false);
+    }
+
+    public function test_notifikasi_buka_menandai_dibaca_dan_redirect(): void
+    {
+        $peserta = User::factory()->create(['role' => 'peserta']);
+        $panitia = User::factory()->create(['role' => 'panitia']);
+        $pelatihan = Pelatihan::factory()->create();
+
+        $pendaftaran = Pendaftaran::factory()
+            ->for($peserta, 'peserta')
+            ->for($pelatihan, 'pelatihan')
+            ->create(['status_verifikasi' => 'menunggu']);
+
+        $pendaftaran->verifikasi($panitia);
+
+        $notifikasi = $peserta->notifications()->first();
+        $this->assertNull($notifikasi->read_at);
+
+        $response = $this->actingAs($peserta)
+            ->get(route('notifikasi.buka', $notifikasi->id));
+
+        $notifikasi->refresh();
+        $this->assertNotNull($notifikasi->read_at);
+
+        // Should redirect to url dalam notifikasi data
+        $response->assertRedirect();
+        $response->assertRedirectToRoute('pendaftarans.kartu', $pendaftaran);
+    }
+
+    public function test_notifikasi_buka_user_lain_return_404(): void
+    {
+        $peserta1 = User::factory()->create(['role' => 'peserta']);
+        $peserta2 = User::factory()->create(['role' => 'peserta']);
+        $panitia = User::factory()->create(['role' => 'panitia']);
+        $pelatihan = Pelatihan::factory()->create();
+
+        $pendaftaran = Pendaftaran::factory()
+            ->for($peserta1, 'peserta')
+            ->for($pelatihan, 'pelatihan')
+            ->create(['status_verifikasi' => 'menunggu']);
+
+        $pendaftaran->verifikasi($panitia);
+
+        $notifikasi = $peserta1->notifications()->first();
+
+        // Peserta2 mencoba buka notifikasi peserta1
+        $response = $this->actingAs($peserta2)
+            ->get(route('notifikasi.buka', $notifikasi->id));
+
+        $response->assertStatus(404);
+    }
+
+    public function test_notifikasi_buka_invalid_url_redirect_ke_index(): void
+    {
+        $peserta = User::factory()->create(['role' => 'peserta']);
+        $pelatihan = Pelatihan::factory()->create();
+
+        $pendaftaran = Pendaftaran::factory()
+            ->for($peserta, 'peserta')
+            ->for($pelatihan, 'pelatihan')
+            ->create(['status_verifikasi' => 'menunggu']);
+
+        // Buat notifikasi dengan URL tidak valid
+        $notifikasi = $peserta->notify(new PendaftaranDiverifikasi($pendaftaran));
+
+        // Manually set invalid URL
+        $notifikasiDb = $peserta->notifications()->first();
+        $data = $notifikasiDb->data;
+        $data['url'] = '//evil.com'; // Invalid: double slash
+        $notifikasiDb->update(['data' => $data]);
+
+        $response = $this->actingAs($peserta)
+            ->get(route('notifikasi.buka', $notifikasiDb->id));
+
+        $response->assertRedirectToRoute('notifikasi.index');
+    }
+
+    public function test_kehadiran_tercatat_dikirim_saat_presensi_berhasil(): void
+    {
+        $peserta = User::factory()->create(['role' => 'peserta']);
+        $panitia = User::factory()->create(['role' => 'panitia']);
+
+        $tanggalMulai = now()->startOfDay();
+        $tanggalSelesai = $tanggalMulai->clone()->addDays(5);
+
+        $pelatihan = Pelatihan::factory()->create([
+            'tanggal_mulai' => $tanggalMulai,
+            'tanggal_selesai' => $tanggalSelesai,
+        ]);
+
+        $kodePresensi = 'KODE123456789012';
+        $pendaftaran = Pendaftaran::factory()
+            ->for($peserta, 'peserta')
+            ->for($pelatihan, 'pelatihan')
+            ->create([
+                'status_verifikasi' => 'diverifikasi',
+                'kode_presensi' => $kodePresensi,
+                'kode_generated_at' => now(),
+            ]);
+
+        // Simulate presenceRecord via controller
+        $response = $this->actingAs($panitia)->post(route('pelatihan.presensi.proses', $pelatihan), [
+            'kode_presensi' => $kodePresensi,
+        ]);
+
+        $notifikasi = $peserta->notifications()->where('data->tipe', 'kehadiran_tercatat')->first();
+        $this->assertNotNull($notifikasi);
+        $this->assertStringContainsString($pelatihan->nama, $notifikasi->data['pesan']);
+    }
+
+    public function test_kehadiran_tercatat_tidak_dikirim_jika_sudah_hadir(): void
+    {
+        $peserta = User::factory()->create(['role' => 'peserta']);
+        $panitia = User::factory()->create(['role' => 'panitia']);
+
+        $tanggalMulai = now()->startOfDay();
+        $tanggalSelesai = $tanggalMulai->clone()->addDays(5);
+
+        $pelatihan = Pelatihan::factory()->create([
+            'tanggal_mulai' => $tanggalMulai,
+            'tanggal_selesai' => $tanggalSelesai,
+        ]);
+
+        $kodePresensi = 'KODE123456789012';
+        $pendaftaran = Pendaftaran::factory()
+            ->for($peserta, 'peserta')
+            ->for($pelatihan, 'pelatihan')
+            ->create([
+                'status_verifikasi' => 'diverifikasi',
+                'hadir_at' => now(),
+                'kode_presensi' => $kodePresensi,
+                'kode_generated_at' => now(),
+            ]);
+
+        // Simulate presenceRecord via controller - sudah hadir
+        $response = $this->actingAs($panitia)->post(route('pelatihan.presensi.proses', $pelatihan), [
+            'kode_presensi' => $kodePresensi,
+        ]);
+
+        // Tidak boleh ada notifikasi karena sudah hadir
+        $notifikasi = $peserta->notifications()->where('data->tipe', 'kehadiran_tercatat')->first();
+        $this->assertNull($notifikasi);
+    }
+
+    public function test_pelatihan_selesai_dikirim_ke_peserta_diverifikasi_dan_hadir(): void
+    {
+        $peserta1 = User::factory()->create(['role' => 'peserta']);
+        $peserta2 = User::factory()->create(['role' => 'peserta']);
+        $peserta3 = User::factory()->create(['role' => 'peserta']);
+        $panitia = User::factory()->create(['role' => 'panitia']);
+        $pelatihan = Pelatihan::factory()->create(['status' => StatusPelatihan::Dibuka]);
+
+        // Peserta1: diverifikasi dan hadir
+        $pendaftaran1 = Pendaftaran::factory()
+            ->for($peserta1, 'peserta')
+            ->for($pelatihan, 'pelatihan')
+            ->create(['status_verifikasi' => 'diverifikasi', 'hadir_at' => now()]);
+
+        // Peserta2: diverifikasi tapi belum hadir
+        $pendaftaran2 = Pendaftaran::factory()
+            ->for($peserta2, 'peserta')
+            ->for($pelatihan, 'pelatihan')
+            ->create(['status_verifikasi' => 'diverifikasi']);
+
+        // Peserta3: ditolak
+        $pendaftaran3 = Pendaftaran::factory()
+            ->for($peserta3, 'peserta')
+            ->for($pelatihan, 'pelatihan')
+            ->create(['status_verifikasi' => 'ditolak']);
+
+        // Update status pelatihan menjadi selesai
+        $this->actingAs($panitia)->patch(route('pelatihans.update', $pelatihan), [
+            'nama' => $pelatihan->nama,
+            'status' => 'selesai',
+        ]);
+
+        // Hanya peserta1 yang dapat notifikasi
+        $notifikasi1 = $peserta1->notifications()->where('data->tipe', 'pelatihan_selesai')->first();
+        $notifikasi2 = $peserta2->notifications()->where('data->tipe', 'pelatihan_selesai')->first();
+        $notifikasi3 = $peserta3->notifications()->where('data->tipe', 'pelatihan_selesai')->first();
+
+        $this->assertNotNull($notifikasi1);
+        $this->assertNull($notifikasi2);
+        $this->assertNull($notifikasi3);
+    }
+
+    public function test_pelatihan_selesai_tidak_dikirim_jika_status_tidak_berubah(): void
+    {
+        $peserta = User::factory()->create(['role' => 'peserta']);
+        $panitia = User::factory()->create(['role' => 'panitia']);
+        $pelatihan = Pelatihan::factory()->create(['status' => 'selesai']);
+
+        $pendaftaran = Pendaftaran::factory()
+            ->for($peserta, 'peserta')
+            ->for($pelatihan, 'pelatihan')
+            ->create(['status_verifikasi' => 'diverifikasi', 'hadir_at' => now()]);
+
+        // Update pelatihan tapi status tetap selesai
+        $this->actingAs($panitia)->patch(route('pelatihans.update', $pelatihan), [
+            'nama' => 'Nama Baru',
+            'status' => 'selesai',
+        ]);
+
+        // Tidak ada notifikasi karena status sudah selesai
+        $notifikasi = $peserta->notifications()->where('data->tipe', 'pelatihan_selesai')->first();
+        $this->assertNull($notifikasi);
+    }
+
+    public function test_notifikasi_url_tersimpan_dengan_benar(): void
+    {
+        $peserta = User::factory()->create(['role' => 'peserta']);
+        $panitia = User::factory()->create(['role' => 'panitia']);
+        $pelatihan = Pelatihan::factory()->create();
+
+        $pendaftaran = Pendaftaran::factory()
+            ->for($peserta, 'peserta')
+            ->for($pelatihan, 'pelatihan')
+            ->create(['status_verifikasi' => 'menunggu']);
+
+        $pendaftaran->verifikasi($panitia);
+
+        $notifikasi = $peserta->notifications()->where('data->tipe', 'diverifikasi')->first();
+        $this->assertNotNull($notifikasi->data['url']);
+        $this->assertTrue(str_starts_with($notifikasi->data['url'], '/'));
+        $this->assertFalse(str_starts_with($notifikasi->data['url'], '//'));
     }
 }

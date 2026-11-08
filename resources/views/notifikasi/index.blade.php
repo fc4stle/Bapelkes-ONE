@@ -30,26 +30,16 @@
                 @if ($notifikasi->count() > 0)
                     <div class="space-y-3">
                         @foreach ($notifikasi as $notif)
-                            <div class="p-4 rounded-lg" style="background-color: var(--color-surface); border: 1px solid #e5e7eb;">
+                            <a href="{{ route('notifikasi.buka', $notif->id) }}" class="block p-4 rounded-lg" style="background-color: var(--color-surface); border: 1px solid #e5e7eb; text-decoration: none; transition: all 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
                                 <div class="flex justify-between items-start mb-2">
                                     <h3 class="font-semibold" style="color: var(--color-text);">
                                         {{ $notif->data['judul_pelatihan'] ?? 'Notifikasi' }}
                                     </h3>
                                     <div class="flex gap-2">
                                         @if (!$notif->read_at)
-                                            <form method="POST" action="{{ route('notifikasi.tandai-dibaca', $notif->id) }}" style="display: inline;">
-                                                @csrf
-                                                @method('PATCH')
-                                                <button 
-                                                    type="submit"
-                                                    class="text-xs px-3 py-1 rounded-lg transition-colors"
-                                                    style="background-color: var(--color-primary); color: white;"
-                                                    onmouseover="this.style.backgroundColor='var(--color-primary-hover)'"
-                                                    onmouseout="this.style.backgroundColor='var(--color-primary)'"
-                                                >
-                                                    Tandai Dibaca
-                                                </button>
-                                            </form>
+                                            <span class="text-xs px-3 py-1 rounded-lg" style="background-color: var(--color-danger); color: white;">
+                                                Belum Dibaca
+                                            </span>
                                         @else
                                             <span class="text-xs px-3 py-1" style="color: #999;">Sudah Dibaca</span>
                                         @endif
@@ -63,7 +53,7 @@
                                 <p style="color: var(--color-text); opacity: 0.6; font-size: 0.875rem;">
                                     {{ $notif->created_at->diffForHumans() }}
                                 </p>
-                            </div>
+                            </a>
                         @endforeach
                     </div>
                 @else
