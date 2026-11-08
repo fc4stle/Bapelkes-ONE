@@ -193,6 +193,72 @@ class Pendaftaran extends Model
     }
 
     /**
+     * Pengingat pelatihan: mengembalikan null jika tidak ada pengingat.
+     * Kondisi: pendaftaran diverifikasi, pelatihan belum selesai, mulai paling lama 7 hari lagi.
+     * 
+     * @return array{label: string, urgensi: string, selisih_hari: int}|null
+     */
+    public function pengingat(): ?array
+    {
+        // Hanya untuk pendaftaran yang diverifikasi
+        if (!$this->isDiverifikasi()) {
+            return null;
+        }
+
+        // Pelatihan harus belum selesai
+        if ($this->pelatihan->tanggal_selesai->isPast()) {
+            return null;
+        }
+
+        // Hitung selisih hari antara hari ini (tanpa jam) dan tanggal mulai
+        // Positif = tanggal mulai di masa depan, Negatif = sudah berlangsung
+        $today = now()->startOfDay();
+        $start_date = $this->pelatihan->tanggal_mulai->startOfDay();
+        $end_date = $this->pelatihan->tanggal_selesai->startOfDay();
+        
+        // diffInDays(other) returns (this - other), jadi start_date->diffInDays(today) = negatif jika start belum tiba
+        // Kita ingin positif jika masa depan, jadi gunakan today->diffInDays(start_date)
+        // diffInDays mengembalikan float, convert ke int
+        $diff_days = (int) $today->diffInDays($start_date);
+
+        // Hanya tampilkan pengingat jika mulai paling lama 7 hari lagi atau sedang berlangsung
+        if ($diff_days > 7) {
+            return null;
+        }
+
+        // Jika sudah melewati tanggal selesai, tidak ada pengingat
+        if ($today->isAfter($end_date)) {
+            return null;
+        }
+
+        // Tentukan label berdasarkan selisih hari
+        $label = match (true) {
+            $diff_days > 1 => "Dimulai $diff_days hari lagi",
+            $diff_days === 1 => 'Besok',
+            $diff_days === 0 => 'Hari ini',
+            $diff_days < 0 => 'Sedang berlangsung',
+            default => null,
+        };
+
+        if ($label === null) {
+            return null;
+        }
+
+        // Tentukan urgensi
+        $urgensi = match (true) {
+            $diff_days <= 1 => 'tinggi',
+            $diff_days <= 3 => 'sedang',
+            default => 'rendah',
+        };
+
+        return [
+            'label' => $label,
+            'urgensi' => $urgensi,
+            'selisih_hari' => $diff_days,
+        ];
+    }
+
+    /**
      * @return array{judul: string, deskripsi: string, tone: string, aksi: array<int, array{label: string, url: string}>}
      */
     public function langkahBerikutnya(): array
