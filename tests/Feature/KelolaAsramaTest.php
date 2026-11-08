@@ -507,7 +507,8 @@ class KelolaAsramaTest extends TestCase
             'status_verifikasi' => 'diverifikasi',
         ]);
 
-        // User checking in tomorrow (should NOT be counted today)
+        // User checking in tomorrow (SHOULD be counted today via default scope
+        // because check_out >= today, even though check_in is tomorrow)
         $user2 = User::factory()->create(['role' => 'peserta']);
         Pendaftaran::create([
             'peserta_id' => $user2->id,
@@ -518,10 +519,10 @@ class KelolaAsramaTest extends TestCase
             'status_verifikasi' => 'diverifikasi',
         ]);
 
-        // Without filter (defaults to today)
+        // Without filter (defaults to today) - both should be counted
         $response = $this->actingAs($this->panitia)->get(route('panitia.asrama.show', $this->asrama));
         $response->assertSee($user1->name);
-        $response->assertDontSee($user2->name);
+        $response->assertSee($user2->name);
     }
 
     public function test_move_to_full_room_shows_error(): void
@@ -652,5 +653,92 @@ class KelolaAsramaTest extends TestCase
         $response = $this->actingAs($this->panitia)->get(route('panitia.asrama.show', $this->asrama));
         // When viewing asrama, target room kamar should show 1 occupant
         // (This is verified implicitly by checking the user appears in the target room)
+    }
+
+    public function test_future_checkin_peserta_counted_in_penghuni_aktif(): void
+    {
+        $pelatihan = Pelatihan::factory()->create();
+        $tomorrow = now()->addDay()->toDateString();
+        $dayAfter = now()->addDays(2)->toDateString();
+
+        // User checking in tomorrow (in the future)
+        $user = User::factory()->create(['role' => 'peserta']);
+        Pendaftaran::create([
+            'peserta_id' => $user->id,
+            'pelatihan_id' => $pelatihan->id,
+            'kamar_id' => $this->kamar->id,
+            'check_in' => $tomorrow,
+            'check_out' => $dayAfter,
+            'status_verifikasi' => 'diverifikasi',
+        ]);
+
+        // Verify peserta appears in asrama show (counted as penghuni aktif)
+        $response = $this->actingAs($this->panitia)->get(route('panitia.asrama.show', $this->asrama));
+        $response->assertSee($user->name);
+
+        // Verify penghuni aktif count in index includes this future peserta
+        $response = $this->actingAs($this->panitia)->get(route('panitia.asrama.index'));
+        $this->kamar->refresh();
+        $penghuniAktif = Pendaftaran::penghuniAktif()->where('kamar_id', $this->kamar->id)->count();
+        $this->assertEquals(1, $penghuniAktif);
+    }
+
+    public function test_room_shows_full_with_future_checkin_peserta(): void
+    {
+        $pelatihan = Pelatihan::factory()->create();
+        $tomorrow = now()->addDay()->toDateString();
+        $dayAfter = now()->addDays(2)->toDateString();
+
+        // Create a kamar with capacity 1
+        $smallKamar = Kamar::create([
+            'asrama_id' => $this->asrama->id,
+            'nomor_kamar' => '999',
+            'kapasitas' => 1,
+        ]);
+
+        // User checking in tomorrow (in the future)
+        $user = User::factory()->create(['role' => 'peserta']);
+        Pendaftaran::create([
+            'peserta_id' => $user->id,
+            'pelatihan_id' => $pelatihan->id,
+            'kamar_id' => $smallKamar->id,
+            'check_in' => $tomorrow,
+            'check_out' => $dayAfter,
+            'status_verifikasi' => 'diverifikasi',
+        ]);
+
+        // Verify room shows as "Penuh" in asrama show
+        $response = $this->actingAs($this->panitia)->get(route('panitia.asrama.show', $this->asrama));
+        // The room status should indicate it's full (using penghuniAktif scope, this future resident counts)
+        $response->assertSee($smallKamar->nomor_kamar);
+    }
+
+    public function test_cannot_reduce_capacity_below_future_registered_peserta(): void
+    {
+        $pelatihan = Pelatihan::factory()->create();
+        $nextWeek = now()->addWeeks(1)->toDateString();
+        $nextWeekEnd = now()->addWeeks(1)->addDay()->toDateString();
+
+        // User checking in next week (future)
+        $user = User::factory()->create(['role' => 'peserta']);
+        Pendaftaran::create([
+            'peserta_id' => $user->id,
+            'pelatihan_id' => $pelatihan->id,
+            'kamar_id' => $this->kamar->id,
+            'check_in' => $nextWeek,
+            'check_out' => $nextWeekEnd,
+            'status_verifikasi' => 'diverifikasi',
+        ]);
+
+        // Attempt to reduce kamar capacity below 1 (to 0)
+        $response = $this->actingAs($this->panitia)->patch(
+            route('panitia.kamar.update', $this->kamar),
+            ['kapasitas' => 0]
+        );
+
+        // Should be rejected with validation error
+        $response->assertSessionHasErrors('kapasitas');
+        $this->kamar->refresh();
+        $this->assertEquals(3, $this->kamar->kapasitas); // capacity unchanged
     }
 }

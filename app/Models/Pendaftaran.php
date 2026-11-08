@@ -93,9 +93,7 @@ class Pendaftaran extends Model
                         ->where('check_out', '>=', $tanggal);
                 },
                 function ($q) {
-                    return $q
-                        ->where('check_in', '<=', now()->toDateString())
-                        ->where('check_out', '>=', now()->toDateString());
+                    return $q->where('check_out', '>=', now()->toDateString());
                 }
             );
     }
