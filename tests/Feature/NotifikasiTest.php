@@ -235,4 +235,108 @@ class NotifikasiTest extends TestCase
         $notifikasiCount = $peserta->notifications()->where('data->tipe', 'diverifikasi')->count();
         $this->assertEquals(0, $notifikasiCount);
     }
+
+    public function test_tandai_semua_dibaca_bekerja(): void
+    {
+        $peserta = User::factory()->create(['role' => 'peserta']);
+        $panitia = User::factory()->create(['role' => 'panitia']);
+        $pelatihan1 = Pelatihan::factory()->create();
+        $pelatihan2 = Pelatihan::factory()->create();
+        $pelatihan3 = Pelatihan::factory()->create();
+
+        // Buat 3 pendaftaran yang akan menghasilkan 3 notifikasi belum dibaca
+        $pendaftaran1 = Pendaftaran::factory()
+            ->for($peserta, 'peserta')
+            ->for($pelatihan1, 'pelatihan')
+            ->create(['status_verifikasi' => 'menunggu']);
+
+        $pendaftaran2 = Pendaftaran::factory()
+            ->for($peserta, 'peserta')
+            ->for($pelatihan2, 'pelatihan')
+            ->create(['status_verifikasi' => 'menunggu']);
+
+        $pendaftaran3 = Pendaftaran::factory()
+            ->for($peserta, 'peserta')
+            ->for($pelatihan3, 'pelatihan')
+            ->create(['status_verifikasi' => 'menunggu']);
+
+        $pendaftaran1->verifikasi($panitia);
+        $pendaftaran2->verifikasi($panitia);
+        $pendaftaran3->tolak($panitia, 'Alasan');
+
+        // Verifikasi ada 3 notifikasi belum dibaca
+        $this->assertEquals(3, $peserta->unreadNotifications->count());
+
+        // Tandai semua dibaca
+        $response = $this->actingAs($peserta)
+            ->patch(route('notifikasi.tandai-semua-dibaca'));
+
+        // Verifikasi redirect dan pesan sukses
+        $response->assertRedirect();
+        $response->assertSessionHas('success', 'Semua notifikasi telah ditandai dibaca.');
+
+        // Verifikasi semua notifikasi sudah dibaca
+        $this->assertEquals(0, $peserta->fresh()->unreadNotifications->count());
+    }
+
+    public function test_tandai_semua_tidak_menyentuh_notifikasi_user_lain(): void
+    {
+        $peserta1 = User::factory()->create(['role' => 'peserta']);
+        $peserta2 = User::factory()->create(['role' => 'peserta']);
+        $panitia = User::factory()->create(['role' => 'panitia']);
+        $pelatihan1 = Pelatihan::factory()->create();
+        $pelatihan2 = Pelatihan::factory()->create();
+
+        // Buat notifikasi untuk peserta1
+        $pendaftaran1 = Pendaftaran::factory()
+            ->for($peserta1, 'peserta')
+            ->for($pelatihan1, 'pelatihan')
+            ->create(['status_verifikasi' => 'menunggu']);
+
+        $pendaftaran1->verifikasi($panitia);
+
+        // Buat notifikasi untuk peserta2
+        $pendaftaran2 = Pendaftaran::factory()
+            ->for($peserta2, 'peserta')
+            ->for($pelatihan2, 'pelatihan')
+            ->create(['status_verifikasi' => 'menunggu']);
+
+        $pendaftaran2->verifikasi($panitia);
+
+        // Verifikasi peserta2 punya 1 notifikasi belum dibaca
+        $this->assertEquals(1, $peserta2->unreadNotifications->count());
+
+        // Peserta1 tandai semua dibaca
+        $this->actingAs($peserta1)
+            ->patch(route('notifikasi.tandai-semua-dibaca'));
+
+        // Verifikasi notifikasi peserta2 tetap belum dibaca
+        $this->assertEquals(1, $peserta2->fresh()->unreadNotifications->count());
+    }
+
+    public function test_halaman_notifikasi_menampilkan_pesan_dan_tombol_tandai_semua(): void
+    {
+        $peserta = User::factory()->create(['role' => 'peserta']);
+        $panitia = User::factory()->create(['role' => 'panitia']);
+        $pelatihan = Pelatihan::factory()->create();
+
+        $pendaftaran = Pendaftaran::factory()
+            ->for($peserta, 'peserta')
+            ->for($pelatihan, 'pelatihan')
+            ->create(['status_verifikasi' => 'menunggu']);
+
+        $pendaftaran->verifikasi($panitia);
+
+        $response = $this->actingAs($peserta)
+            ->get(route('notifikasi.index'));
+
+        $response->assertStatus(200);
+        
+        // Verifikasi halaman menampilkan pesan notifikasi
+        $notifikasi = $peserta->notifications()->first();
+        $response->assertSee($notifikasi->data['judul_pelatihan']);
+        
+        // Verifikasi tombol "Tandai Semua Dibaca" ada
+        $response->assertSee('Tandai Semua Dibaca');
+    }
 }
