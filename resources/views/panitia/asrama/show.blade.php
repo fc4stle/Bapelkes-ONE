@@ -19,6 +19,24 @@
                 </div>
             @endif
 
+            <!-- Session Success Message -->
+            @if (session('success'))
+                <div class="mb-6 p-4 rounded-lg" style="border-left: 4px solid var(--color-success); background-color: var(--color-surface); color: var(--color-text);">
+                    <p class="font-medium">{{ session('success') }}</p>
+                </div>
+            @endif
+
+            <!-- Validation Errors -->
+            @if ($errors->any())
+                <div class="mb-6 p-4 rounded-lg" style="border-left: 4px solid var(--color-danger); background-color: var(--color-surface); color: var(--color-text);">
+                    <ul class="text-sm space-y-1">
+                        @foreach ($errors->all() as $error)
+                            <li>• {{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
             <!-- Tambah Kamar Section -->
             <div class="bg-white shadow rounded-lg mb-6">
                 <div class="px-4 py-5 sm:p-6">
@@ -201,17 +219,6 @@
             <h3 class="text-lg font-semibold mb-4" style="color: var(--color-text);">Ubah Kapasitas Kamar</h3>
             <p class="text-sm text-gray-600 mb-4">Kamar: <strong x-text="nomorKamar"></strong></p>
 
-            <!-- Modal Error Messages -->
-            @if ($errors->any())
-                <div class="mb-4 p-3 rounded-lg" style="background-color: var(--color-surface); border-left: 4px solid var(--color-danger);">
-                    <ul class="text-sm" style="color: var(--color-text);">
-                        @foreach ($errors->all() as $error)
-                            <li>• {{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
-
             <form :action="`/panitia/kamar/${kamarId}`" method="POST" @submit.prevent="$el.submit()">
                 @csrf
                 @method('PATCH')
@@ -269,17 +276,6 @@
             <h3 class="text-lg font-semibold mb-4" style="color: var(--color-text);">Pindah Kamar</h3>
             <p class="text-sm text-gray-600 mb-1">Peserta: <strong x-text="namaPeserta"></strong></p>
             <p class="text-sm text-gray-600 mb-4">Kamar Saat Ini: <strong x-text="kamarSkrg"></strong></p>
-
-            <!-- Modal Error Messages -->
-            @if ($errors->any())
-                <div class="mb-4 p-3 rounded-lg" style="background-color: var(--color-surface); border-left: 4px solid var(--color-danger);">
-                    <ul class="text-sm" style="color: var(--color-text);">
-                        @foreach ($errors->all() as $error)
-                            <li>• {{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
 
             <form :action="`/panitia/pendaftaran/${pendaftaranId}/kamar`" method="POST" @submit.prevent="$el.submit()">
                 @csrf
