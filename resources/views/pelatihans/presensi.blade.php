@@ -161,35 +161,43 @@
 
                 async startScan() {
                     try {
+                        // Cek apakah Html5Qrcode sudah tersedia dari presensi-scan.js
+                        if (typeof window.Html5Qrcode === 'undefined') {
+                            this.cameraError = 'Library pemindai QR sedang dimuat. Coba lagi dalam beberapa detik.';
+                            this.scanActive = false;
+                            console.error('Html5Qrcode library not loaded');
+                            return;
+                        }
+
                         this.cameraError = null;
                         this.scanResult = null;
                         this.scanActive = true;
 
-                        // Dynamic import html5-qrcode
-                        const { Html5QrcodeScanner } = await import('html5-qrcode');
-
                         document.getElementById('qr_scanner_container').style.display = 'block';
 
-                        this.scanner = new Html5QrcodeScanner('qr_scanner_container', {
-                            fps: 10,
-                            qrbox: { width: 250, height: 250 },
-                            facingMode: 'environment',
-                        });
+                        this.scanner = new window.Html5Qrcode('qr_scanner_container');
 
-                        this.scanner.render(
+                        await this.scanner.start(
+                            { facingMode: 'environment' },
+                            { fps: 10, qrbox: { width: 250, height: 250 } },
                             (decodedText) => this.onQrSuccess(decodedText),
                             (error) => this.onQrError(error)
                         );
                     } catch (error) {
-                        this.cameraError = 'Tidak dapat menginisialisasi kamera. Pastikan browser mendukung akses kamera dan izin sudah diberikan.';
+                        this.cameraError = 'Tidak dapat mengakses kamera. Pastikan browser mendukung akses kamera dan izin sudah diberikan.';
                         this.scanActive = false;
                         console.error('Scan init error:', error);
                     }
                 },
 
-                stopScan() {
+                async stopScan() {
                     if (this.scanner) {
-                        this.scanner.clear();
+                        try {
+                            await this.scanner.stop();
+                            this.scanner.clear();
+                        } catch (error) {
+                            console.error('Error stopping scanner:', error);
+                        }
                         document.getElementById('qr_scanner_container').style.display = 'none';
                     }
                     this.scanActive = false;
@@ -222,6 +230,7 @@
                         });
 
                         const data = await response.json();
+                        console.log('Scan response:', { status: data.status, hadir_count: data.hadir_count, hasil: data.hasil });
 
                         if (response.ok && data.status === 'sukses') {
                             this.scanResult = {
@@ -266,4 +275,8 @@
             };
         }
     </script>
+
+    @push('scripts')
+        @vite('resources/js/presensi-scan.js')
+    @endpush
 </x-app-layout>

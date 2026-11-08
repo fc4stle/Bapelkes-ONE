@@ -668,4 +668,16 @@ class PresensiTest extends TestCase
         // Pastikan waktu hadir mendekati waktu sekarang (dalam 5 detik)
         $this->assertTrue($pendaftaran->hadir_at->diffInSeconds($sekarang) < 5);
     }
+
+    public function test_presensi_halaman_tidak_mengandung_dynamic_import_dan_menggunakan_vite_presensi_scan(): void
+    {
+        $response = $this->actingAs($this->panitia)
+            ->get(route('pelatihan.presensi', $this->pelatihan));
+
+        $response->assertStatus(200);
+        // BUG 1 FIX: Pastikan tidak ada await import('html5-qrcode') di view
+        $this->assertStringNotContainsString("import('html5-qrcode')", $response->getContent());
+        // BUG 1 FIX: Pastikan ada referensi ke aset presensi-scan (Vite built)
+        $response->assertSee('presensi-scan', escape: false);
+    }
 }
