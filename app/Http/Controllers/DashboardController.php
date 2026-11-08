@@ -18,7 +18,7 @@ class DashboardController extends Controller
 
         // Ambil pendaftaran peserta (terbaru dulu)
         $pendaftarans = $user->pendaftarans()
-            ->with(['pelatihan', 'tiyasResponse'])
+            ->with(['pelatihan', 'tiyasResponse', 'kamar'])
             ->orderByDesc('id')
             ->get();
 
@@ -36,13 +36,30 @@ class DashboardController extends Controller
             ->take(3)
             ->get();
 
+        // Ambil pengingat dan urutkan dari paling dekat
+        $pengingats = $pendaftarans
+            ->map(function ($p) {
+                $pengingat = $p->pengingat();
+                return $pengingat ? array_merge(['pendaftaran' => $p], $pengingat) : null;
+            })
+            ->filter()
+            ->sortBy('selisih_hari')
+            ->values();
+
+        // Ambil pengingat dengan sisa 0-1 hari untuk banner
+        $bannerPengingat = $pengingats
+            ->filter(fn ($p) => $p['selisih_hari'] <= 1 && $p['selisih_hari'] >= 0)
+            ->first();
+
         return view('dashboard', compact(
             'user',
             'pendaftarans',
             'totalPendaftaran',
             'menungguVerifikasi',
             'terverifikasi',
-            'pelatihansNew'
+            'pelatihansNew',
+            'pengingats',
+            'bannerPengingat'
         ));
     }
 }

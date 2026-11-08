@@ -31,6 +31,28 @@
                     </p>
                 </div>
 
+                {{-- A1. Banner Pengingat (0-1 hari) --}}
+                @if ($bannerPengingat)
+                    <div class="rounded-[var(--radius-card)] border border-[var(--color-warning)] bg-[var(--color-surface)] p-[var(--sp-4)] shadow-[var(--shadow-card)]" x-data="{}">
+                        <div class="flex items-start gap-[var(--sp-4)]">
+                            <div class="flex-1">
+                                <h3 class="font-semibold text-[var(--color-warning)]">
+                                    ⚠️ {{ $bannerPengingat['label'] }}
+                                </h3>
+                                <p class="mt-[var(--sp-1)] text-sm text-gray-700">
+                                    <strong>{{ $bannerPengingat['pendaftaran']->pelatihan->nama }}</strong>
+                                </p>
+                                <p class="mt-[var(--sp-1)] text-xs text-gray-600">
+                                    Mulai: <strong>{{ $bannerPengingat['pendaftaran']->pelatihan->tanggal_mulai->translatedFormat('d M Y') }}</strong>
+                                </p>
+                            </div>
+                            <a href="{{ route('pendaftarans.kartu', $bannerPengingat['pendaftaran']) }}" class="inline-flex items-center px-3 py-2 bg-[var(--color-warning)] border border-transparent rounded-[var(--radius-btn)] font-semibold text-xs text-white uppercase tracking-widest hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-[var(--color-warning)] focus:ring-offset-2 transition ease-in-out duration-150 whitespace-nowrap">
+                                Lihat Kartu
+                            </a>
+                        </div>
+                    </div>
+                @endif
+
                 {{-- B. Tiga angka ringkas --}}
                 <div class="grid grid-cols-3 gap-[var(--sp-4)] sm:gap-[var(--sp-6)]">
                     <div class="rounded-[var(--radius-card)] border border-gray-200 bg-[var(--color-surface)] p-[var(--sp-4)] shadow-[var(--shadow-card)] text-center">
@@ -115,6 +137,68 @@
                         @endforelse
                     </div>
                 </div>
+
+                {{-- C1. Pengingat Pelatihan --}}
+                @if ($pengingats->isNotEmpty())
+                    <div>
+                        <h2 class="text-lg font-semibold text-[var(--color-text)] mb-[var(--sp-4)]">
+                            Pengingat
+                        </h2>
+                        <div class="space-y-[var(--sp-4)]">
+                            @foreach ($pengingats as $item)
+                                @php
+                                    $pendaftaran = $item['pendaftaran'];
+                                    $urgensiColor = match ($item['urgensi']) {
+                                        'tinggi' => 'border-l-[var(--color-danger)]',
+                                        'sedang' => 'border-l-[var(--color-warning)]',
+                                        default => 'border-l-[var(--color-accent)]',
+                                    };
+                                @endphp
+                                <div class="rounded-[var(--radius-card)] border border-gray-200 border-l-4 {{ $urgensiColor }} bg-[var(--color-surface)] p-[var(--sp-4)] shadow-[var(--shadow-card)]">
+                                    <div class="flex items-start justify-between gap-[var(--sp-4)]">
+                                        <div class="flex-1">
+                                            <h3 class="font-semibold text-[var(--color-text)]">
+                                                {{ $pendaftaran->pelatihan->nama }}
+                                            </h3>
+                                            <p class="mt-[var(--sp-1)] text-sm font-semibold text-[var(--color-accent)]">
+                                                {{ $item['label'] }}
+                                            </p>
+                                            <p class="mt-[var(--sp-2)] text-xs text-gray-600">
+                                                <span class="font-semibold">Tanggal Mulai:</span> {{ $pendaftaran->pelatihan->tanggal_mulai->translatedFormat('d M Y') }}
+                                            </p>
+                                            <p class="mt-[var(--sp-1)] text-xs text-gray-600">
+                                                <span class="font-semibold">Lokasi:</span> {{ $pendaftaran->pelatihan->lokasi }}
+                                            </p>
+                                            @if ($pendaftaran->butuh_asrama)
+                                                <p class="mt-[var(--sp-1)] text-xs text-gray-600">
+                                                    <span class="font-semibold">Kamar:</span> 
+                                                    @if ($pendaftaran->kamar)
+                                                        {{ $pendaftaran->kamar->nomor_kamar }}
+                                                    @else
+                                                        Belum ditugaskan
+                                                    @endif
+                                                </p>
+                                                <p class="mt-[var(--sp-1)] text-xs text-gray-600">
+                                                    <span class="font-semibold">Check-in:</span> 
+                                                    @if ($pendaftaran->check_in)
+                                                        {{ $pendaftaran->check_in->translatedFormat('d M Y') }}
+                                                    @else
+                                                        Belum ditentukan
+                                                    @endif
+                                                </p>
+                                            @endif
+                                        </div>
+                                    </div>
+                                    <div class="mt-[var(--sp-4)] flex gap-[var(--sp-2)]">
+                                        <a href="{{ route('pendaftarans.kartu', $pendaftaran) }}" class="inline-flex items-center px-4 py-2 bg-[var(--color-primary)] border border-transparent rounded-[var(--radius-btn)] font-semibold text-xs text-white uppercase tracking-widest hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-2 transition ease-in-out duration-150">
+                                            Kartu Peserta
+                                        </a>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
 
                 {{-- D. Pelatihan yang dibuka --}}
                 <div>
