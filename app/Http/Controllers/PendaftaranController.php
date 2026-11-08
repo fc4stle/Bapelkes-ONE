@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\StatusPelatihan;
+use App\Models\Kamar;
 use App\Models\Pelatihan;
 use App\Models\Pendaftaran;
 use App\Services\KamarService;
@@ -12,7 +13,10 @@ use BaconQrCode\Renderer\RendererStyle\RendererStyle;
 use BaconQrCode\Writer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class PendaftaranController extends Controller
 {
@@ -370,5 +374,59 @@ class PendaftaranController extends Controller
         $filename = 'Sertifikat_'.Str::slug($pendaftaran->data_diri['nama'] ?? 'peserta').'_'.$pendaftaran->kode_sertifikat.'.pdf';
 
         return $pdf->download($filename);
+    }
+
+    /**
+     * Pindahkan penghuni ke kamar lain.
+     */
+    public function pindahKamar(Request $request, Pendaftaran $pendaftaran)
+    {
+        // Cek akses
+        if (! auth()->user()->isStaf()) {
+            abort(403);
+        }
+
+        // Validasi
+        $validated = $request->validate([
+            'kamar_id' => 'required|integer|exists:kamars,id',
+        ]);
+
+        // Cek apakah pendaftaran butuh asrama
+        if (! $pendaftaran->butuh_asrama) {
+            return back()->with('error', 'Pendaftaran ini tidak memerlukan asrama.');
+        }
+
+        // Cek apakah kamar tujuan tersedia untuk rentang check_in/check_out
+        $kamarTujuan = Kamar::findOrFail($validated['kamar_id']);
+
+        // Update kamar_id dengan transaction dan lock
+        try {
+            DB::transaction(function () use ($pendaftaran, $kamarTujuan) {
+                // Lock kamar tujuan untuk mencegah race condition
+                $kamarTujuan = Kamar::lockForUpdate()->findOrFail($kamarTujuan->id);
+
+                // Verifikasi ketersediaan setelah lock, kecuali pendaftaran saat ini
+                if (! $kamarTujuan->tersediaUntukTanggal(
+                    $pendaftaran->check_in->format('Y-m-d'),
+                    $pendaftaran->check_out->format('Y-m-d'),
+                    $pendaftaran->id // exclude diri sendiri
+                )) {
+                    $validator = Validator::make(
+                        ['kamar_id' => $pendaftaran->kamar_id],
+                        ['kamar_id' => 'required']
+                    );
+                    $validator->errors()->add('kamar_id', 'Kamar tujuan tidak tersedia untuk rentang tanggal ini.');
+                    throw new ValidationException($validator);
+                }
+
+                $pendaftaran->update(['kamar_id' => $kamarTujuan->id]);
+            });
+        } catch (ValidationException $e) {
+            return back()->withErrors($e->errors());
+        }
+
+        return redirect()
+            ->route('panitia.asrama.show', $kamarTujuan->asrama_id)
+            ->with('success', 'Penghuni berhasil dipindahkan ke kamar '.$kamarTujuan->nomor_kamar);
     }
 }

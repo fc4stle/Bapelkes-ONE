@@ -26,6 +26,10 @@
                             Rekap Panitia
                         </x-nav-link>
 
+                        <x-nav-link :href="route('panitia.asrama.index')" :active="request()->routeIs('panitia.asrama.*')">
+                            Kelola Asrama
+                        </x-nav-link>
+
                         <x-nav-link :href="route('pelatihans.index')" :active="request()->routeIs('pelatihans.index', 'pelatihans.show', 'pelatihans.create', 'pelatihans.edit')">
                             Kelola Pelatihan
                         </x-nav-link>
@@ -120,6 +124,10 @@
                 @if (auth()->user()->isStaf())
                     <x-responsive-nav-link :href="route('panitia.dashboard')" :active="request()->routeIs('panitia.dashboard')">
                         Rekap Panitia
+                    </x-responsive-nav-link>
+
+                    <x-responsive-nav-link :href="route('panitia.asrama.index')" :active="request()->routeIs('panitia.asrama.*')">
+                        Kelola Asrama
                     </x-responsive-nav-link>
 
                     <x-responsive-nav-link :href="route('pelatihans.index')" :active="request()->routeIs('pelatihans.index', 'pelatihans.show', 'pelatihans.create', 'pelatihans.edit')">

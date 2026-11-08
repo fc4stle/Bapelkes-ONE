@@ -30,19 +30,24 @@ class Kamar extends Model
     /**
      * Cek apakah kamar tersedia untuk rentang tanggal tertentu.
      */
-    public function tersediaUntukTanggal(string $checkIn, string $checkOut): bool
+    public function tersediaUntukTanggal(string $checkIn, string $checkOut, ?int $excludePendaftaranId = null): bool
     {
-        $jumlahPendaftar = $this->pendaftarans()
+        $query = $this->pendaftarans()
             ->where('status_verifikasi', '!=', 'ditolak')
-            ->where(function ($query) use ($checkIn, $checkOut) {
-                $query->whereBetween('check_in', [$checkIn, $checkOut])
+            ->where(function ($q) use ($checkIn, $checkOut) {
+                $q->whereBetween('check_in', [$checkIn, $checkOut])
                     ->orWhereBetween('check_out', [$checkIn, $checkOut])
-                    ->orWhere(function ($q) use ($checkIn, $checkOut) {
-                        $q->where('check_in', '<=', $checkIn)
+                    ->orWhere(function ($q2) use ($checkIn, $checkOut) {
+                        $q2->where('check_in', '<=', $checkIn)
                             ->where('check_out', '>=', $checkOut);
                     });
-            })
-            ->count();
+            });
+
+        if ($excludePendaftaranId) {
+            $query->where('id', '!=', $excludePendaftaranId);
+        }
+
+        $jumlahPendaftar = $query->count();
 
         return $jumlahPendaftar < $this->kapasitas;
     }
