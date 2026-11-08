@@ -7,6 +7,20 @@
 
     <div class="py-12" style="background-color: var(--color-bg);">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- Session Error Message -->
+            @if (session('error'))
+                <div class="mb-6 p-4 rounded-lg" style="border-left: 4px solid var(--color-primary); background-color: var(--color-surface); color: var(--color-text);">
+                    <p class="font-medium">{{ session('error') }}</p>
+                </div>
+            @endif
+
+            <!-- Session Success Message -->
+            @if (session('success'))
+                <div class="mb-6 p-4 rounded-lg" style="border-left: 4px solid var(--color-success); background-color: var(--color-surface); color: var(--color-text);">
+                    <p class="font-medium">{{ session('success') }}</p>
+                </div>
+            @endif
+
             <div class="bg-white shadow rounded-lg">
                 <div class="px-4 py-5 sm:p-6">
                     <div class="mb-6">
@@ -79,7 +93,7 @@
                                         </div>
                                         <div class="flex justify-between border-t pt-2 mt-2">
                                             <span style="color: var(--color-text);">Sisa Kapasitas:</span>
-                                            <span class="font-medium" style="color: @if ($asrama['sisa_kapasitas'] <= 0) #dc2626 @elseif ($asrama['sisa_kapasitas'] <= 3) #f59e0b @else var(--color-primary) @endif;">
+                                            <span class="font-medium" style="color: @if ($asrama['sisa_kapasitas'] <= 0) var(--color-danger) @elseif ($asrama['sisa_kapasitas'] <= 3) var(--color-warning) @else var(--color-primary) @endif;">
                                                 {{ $asrama['sisa_kapasitas'] }} orang
                                             </span>
                                         </div>

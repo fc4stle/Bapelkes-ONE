@@ -76,6 +76,28 @@ class Pendaftaran extends Model
         return $this->hasOne(TiyasResponse::class);
     }
 
+    /**
+     * Scope: Penghuni aktif = status_verifikasi != 'ditolak' AND sesuai kriteria tanggal
+     * - Tanpa $tanggal: check_out >= hari ini
+     * - Dengan $tanggal: check_in <= $tanggal AND check_out >= $tanggal
+     */
+    public function scopePenghuniAktif($query, ?string $tanggal = null)
+    {
+        return $query
+            ->where('status_verifikasi', '!=', 'ditolak')
+            ->when(
+                $tanggal !== null,
+                function ($q) use ($tanggal) {
+                    return $q
+                        ->where('check_in', '<=', $tanggal)
+                        ->where('check_out', '>=', $tanggal);
+                },
+                function ($q) {
+                    return $q->where('check_out', '>=', now()->toDateString());
+                }
+            );
+    }
+
     public function isPending(): bool
     {
         return $this->status_verifikasi === 'pending';

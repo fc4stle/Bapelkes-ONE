@@ -55,8 +55,7 @@ class UpdateKamarRequest extends FormRequest
 
             $kapasitasBaru = $this->input('kapasitas');
             $penhuniAktif = $kamar->pendaftarans()
-                ->where('status_verifikasi', '!=', 'ditolak')
-                ->where('check_out', '>=', now()->toDateString())
+                ->penghuniAktif()
                 ->count();
 
             if ($kapasitasBaru < $penhuniAktif) {

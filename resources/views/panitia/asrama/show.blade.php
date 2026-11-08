@@ -12,6 +12,20 @@
 
     <div class="py-12" style="background-color: var(--color-bg);">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- Session Error Message -->
+            @if (session('error'))
+                <div class="mb-6 p-4 rounded-lg" style="border-left: 4px solid var(--color-primary); background-color: var(--color-surface); color: var(--color-text);">
+                    <p class="font-medium">{{ session('error') }}</p>
+                </div>
+            @endif
+
+            <!-- Session Success Message -->
+            @if (session('success'))
+                <div class="mb-6 p-4 rounded-lg" style="border-left: 4px solid var(--color-success); background-color: var(--color-surface); color: var(--color-text);">
+                    <p class="font-medium">{{ session('success') }}</p>
+                </div>
+            @endif
+
             <!-- Tambah Kamar Section -->
             <div class="bg-white shadow rounded-lg mb-6">
                 <div class="px-4 py-5 sm:p-6">
@@ -30,7 +44,7 @@
 
                         <div>
                             <label for="nomor_kamar" class="block text-sm font-medium mb-1" style="color: var(--color-text);">
-                                Nomor Kamar <span style="color: #dc2626;">*</span>
+                                Nomor Kamar <span style="color: var(--color-danger);">*</span>
                             </label>
                             <input
                                 type="text"
@@ -42,13 +56,13 @@
                                 placeholder="Cth: A-001"
                             />
                             @error('nomor_kamar')
-                                <p class="text-sm mt-1" style="color: #dc2626;">{{ $message }}</p>
+                                <p class="text-sm mt-1" style="color: var(--color-danger);">{{ $message }}</p>
                             @enderror
                         </div>
 
                         <div>
                             <label for="kapasitas" class="block text-sm font-medium mb-1" style="color: var(--color-text);">
-                                Kapasitas <span style="color: #dc2626;">*</span>
+                                Kapasitas <span style="color: var(--color-danger);">*</span>
                             </label>
                             <input
                                 type="number"
@@ -62,7 +76,7 @@
                                 placeholder="1-10"
                             />
                             @error('kapasitas')
-                                <p class="text-sm mt-1" style="color: #dc2626;">{{ $message }}</p>
+                                <p class="text-sm mt-1" style="color: var(--color-danger);">{{ $message }}</p>
                             @enderror
                         </div>
 
@@ -100,7 +114,7 @@
                                             </p>
                                         </div>
                                         <div class="flex flex-col gap-2">
-                                            <span class="px-3 py-1 text-xs font-medium rounded-full @if ($kamar['status'] === 'Penuh') text-white" style="background-color: #dc2626; @else text-gray-700" style="background-color: #d1d5db; @endif">
+                                            <span class="px-3 py-1 text-xs font-medium rounded-full text-white @if ($kamar['status'] === 'Penuh') text-white" style="background-color: var(--color-danger); @else text-gray-700" style="background-color: var(--color-accent); @endif">
                                                 {{ $kamar['status'] }}
                                             </span>
                                             <button
@@ -138,9 +152,19 @@
                                                                 <td class="px-3 py-2">{{ $penghuni['check_in'] }}</td>
                                                                 <td class="px-3 py-2">{{ $penghuni['check_out'] }}</td>
                                                                 <td class="px-3 py-2">
-                                                                    <span class="inline-flex px-2 py-1 text-xs rounded-full @if ($penghuni['status_verifikasi'] === 'diverifikasi') text-green-700 bg-green-100 @elseif ($penghuni['status_verifikasi'] === 'pending') text-yellow-700 bg-yellow-100 @else text-red-700 bg-red-100 @endif">
-                                                                        {{ ucfirst($penghuni['status_verifikasi']) }}
-                                                                    </span>
+                                                                    @if ($penghuni['status_verifikasi'] === 'diverifikasi')
+                                                                        <span class="inline-flex px-2 py-1 text-xs rounded-full text-white" style="background-color: var(--color-primary);">
+                                                                            Diverifikasi
+                                                                        </span>
+                                                                    @elseif ($penghuni['status_verifikasi'] === 'pending')
+                                                                        <span class="inline-flex px-2 py-1 text-xs rounded-full" style="background-color: var(--color-accent); color: var(--color-text);">
+                                                                            Pending
+                                                                        </span>
+                                                                    @else
+                                                                        <span class="inline-flex px-2 py-1 text-xs rounded-full text-white" style="background-color: var(--color-danger);">
+                                                                            Ditolak
+                                                                        </span>
+                                                                    @endif
                                                                 </td>
                                                                 <td class="px-3 py-2 text-center">
                                                                     <button
@@ -184,13 +208,24 @@
             <h3 class="text-lg font-semibold mb-4" style="color: var(--color-text);">Ubah Kapasitas Kamar</h3>
             <p class="text-sm text-gray-600 mb-4">Kamar: <strong x-text="nomorKamar"></strong></p>
 
+            <!-- Modal Error Messages -->
+            @if ($errors->any())
+                <div class="mb-4 p-3 rounded-lg" style="background-color: var(--color-surface); border-left: 4px solid var(--color-danger);">
+                    <ul class="text-sm" style="color: var(--color-text);">
+                        @foreach ($errors->all() as $error)
+                            <li>• {{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
             <form :action="`/panitia/kamar/${kamarId}`" method="POST" @submit.prevent="$el.submit()">
                 @csrf
                 @method('PATCH')
 
                 <div class="mb-4">
                     <label for="kapasitas_ubah" class="block text-sm font-medium mb-1" style="color: var(--color-text);">
-                        Kapasitas Baru <span style="color: #dc2626;">*</span>
+                        Kapasitas Baru <span style="color: var(--color-danger);">*</span>
                     </label>
                     <input
                         type="number"
@@ -242,13 +277,24 @@
             <p class="text-sm text-gray-600 mb-1">Peserta: <strong x-text="namaPeserta"></strong></p>
             <p class="text-sm text-gray-600 mb-4">Kamar Saat Ini: <strong x-text="kamarSkrg"></strong></p>
 
+            <!-- Modal Error Messages -->
+            @if ($errors->any())
+                <div class="mb-4 p-3 rounded-lg" style="background-color: var(--color-surface); border-left: 4px solid var(--color-danger);">
+                    <ul class="text-sm" style="color: var(--color-text);">
+                        @foreach ($errors->all() as $error)
+                            <li>• {{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
             <form :action="`/panitia/pendaftaran/${pendaftaranId}/kamar`" method="POST" @submit.prevent="$el.submit()">
                 @csrf
                 @method('PATCH')
 
                 <div class="mb-4">
                     <label for="kamar_tujuan" class="block text-sm font-medium mb-1" style="color: var(--color-text);">
-                        Kamar Tujuan <span style="color: #dc2626;">*</span>
+                        Kamar Tujuan <span style="color: var(--color-danger);">*</span>
                     </label>
                     <select
                         id="kamar_tujuan"
@@ -286,3 +332,4 @@
         </div>
     </div>
 </x-app-layout>
+

@@ -35,18 +35,6 @@ class KamarController extends Controller
     {
         $validated = $request->validated();
 
-        // Cek apakah kapasitas baru tidak lebih kecil dari jumlah penghuni aktif
-        $jumlahPenghuniAktif = $kamar->pendaftarans()
-            ->where('status_verifikasi', '!=', 'ditolak')
-            ->count();
-
-        if ($validated['kapasitas'] < $jumlahPenghuniAktif) {
-            return redirect()
-                ->back()
-                ->withInput()
-                ->with('error', "Kapasitas tidak boleh lebih kecil dari jumlah penghuni aktif ($jumlahPenghuniAktif).");
-        }
-
         $kamar->update(['kapasitas' => $validated['kapasitas']]);
 
         return redirect()

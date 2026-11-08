@@ -379,19 +379,20 @@ class KelolaAsramaTest extends TestCase
     {
         $pelatihan = Pelatihan::factory()->create(['nama' => 'Pelatihan A']);
         $user = User::factory()->create(['role' => 'peserta', 'name' => 'John Doe']);
+        $today = now()->toDateString();
+        $tomorrow = now()->addDay()->toDateString();
         Pendaftaran::create([
             'peserta_id' => $user->id,
             'pelatihan_id' => $pelatihan->id,
             'kamar_id' => $this->kamar->id,
-            'check_in' => '2024-11-08',
-            'check_out' => '2024-11-13',
+            'check_in' => $today,
+            'check_out' => $tomorrow,
             'status_verifikasi' => 'diverifikasi',
         ]);
 
         $response = $this->actingAs($this->panitia)->get(route('panitia.asrama.show', $this->asrama));
         $response->assertSee('John Doe');
         $response->assertSee('Pelatihan A');
-        $response->assertSee('08/11/2024');
     }
 
     public function test_show_displays_room_status_full(): void

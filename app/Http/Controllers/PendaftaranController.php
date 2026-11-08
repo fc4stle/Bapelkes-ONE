@@ -386,6 +386,11 @@ class PendaftaranController extends Controller
             abort(403);
         }
 
+        // Validasi pendaftaran tidak boleh ditolak
+        if ($pendaftaran->status_verifikasi === 'ditolak') {
+            return back()->withErrors(['kamar_id' => 'Tidak dapat memindahkan peserta dengan status pendaftaran ditolak.']);
+        }
+
         // Validasi
         $validated = $request->validate([
             'kamar_id' => 'required|integer|exists:kamars,id',
@@ -396,7 +401,11 @@ class PendaftaranController extends Controller
             return back()->with('error', 'Pendaftaran ini tidak memerlukan asrama.');
         }
 
-        // Cek apakah kamar tujuan tersedia untuk rentang check_in/check_out
+        // Cek apakah kamar tujuan sama dengan kamar saat ini
+        if ($pendaftaran->kamar_id === (int) $validated['kamar_id']) {
+            return back()->withErrors(['kamar_id' => 'Peserta sudah berada di kamar ini.']);
+        }
+
         $kamarTujuan = Kamar::findOrFail($validated['kamar_id']);
 
         // Update kamar_id dengan transaction dan lock

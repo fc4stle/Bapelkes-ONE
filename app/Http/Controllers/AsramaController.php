@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Asrama;
+use App\Models\Pendaftaran;
 use Illuminate\Http\Request;
 
 class AsramaController extends Controller
@@ -17,16 +18,24 @@ class AsramaController extends Controller
             $tanggal = null;
         }
 
-        $asramas = Asrama::with('kamars.pendaftarans.peserta', 'kamars.pendaftarans.pelatihan')
+        // Hitung penghuni aktif per asrama menggunakan query
+        $asramas = Asrama::with('kamars')
             ->get()
             ->map(function ($asrama) use ($tanggal) {
+                // Hitung penghuni aktif SEKALI per asrama
+                $penghuniAktif = Pendaftaran::whereIn('kamar_id', $asrama->kamars->pluck('id'))
+                    ->penghuniAktif($tanggal)
+                    ->count();
+
+                $totalKapasitas = $asrama->totalKapasitasKamar();
+
                 return [
                     'id' => $asrama->id,
                     'nama' => $asrama->nama,
                     'jumlah_kamar' => $asrama->kamars->count(),
-                    'total_kapasitas' => $asrama->totalKapasitasKamar(),
-                    'jumlah_penghuni_aktif' => $this->hitungPenghuniAktif($asrama, $tanggal),
-                    'sisa_kapasitas' => $asrama->totalKapasitasKamar() - $this->hitungPenghuniAktif($asrama, $tanggal),
+                    'total_kapasitas' => $totalKapasitas,
+                    'jumlah_penghuni_aktif' => $penghuniAktif,
+                    'sisa_kapasitas' => $totalKapasitas - $penghuniAktif,
                 ];
             });
 
@@ -41,14 +50,17 @@ class AsramaController extends Controller
      */
     public function show(Asrama $asrama)
     {
-        $asrama->load('kamars.pendaftarans.peserta', 'kamars.pendaftarans.pelatihan', 'kamars.pendaftarans.kamar');
+        // Eager load dengan constraint pada scope penghuniAktif
+        $asrama->load([
+            'kamars.pendaftarans' => function ($q) {
+                $q->penghuniAktif()
+                    ->with('peserta', 'pelatihan');
+            },
+        ]);
 
         $kamars = $asrama->kamars
             ->map(function ($kamar) {
-                $penghuni = $kamar->pendaftarans()
-                    ->where('status_verifikasi', '!=', 'ditolak')
-                    ->with('peserta', 'pelatihan', 'kamar.asrama')
-                    ->get();
+                $penghuni = $kamar->pendaftarans;
 
                 return [
                     'id' => $kamar->id,
@@ -72,40 +84,5 @@ class AsramaController extends Controller
             'asrama' => $asrama,
             'kamars' => $kamars,
         ]);
-    }
-
-    /**
-     * Hitung penghuni aktif di asrama pada tanggal tertentu.
-     * Penghuni aktif = status_verifikasi != 'ditolak' AND check_out >= hari ini (atau tanggal filter).
-     */
-    private function hitungPenghuniAktif(Asrama $asrama, ?string $tanggal = null): int
-    {
-        $cekTanggal = $tanggal ? $tanggal : now()->format('Y-m-d');
-
-        $penghuni = $asrama->kamars
-            ->flatMap(fn ($kamar) => $kamar->pendaftarans)
-            ->filter(function ($p) use ($cekTanggal) {
-                if ($p->status_verifikasi === 'ditolak') {
-                    return false;
-                }
-
-                // Jika ada filter tanggal, hitung yang menginap pada tanggal itu
-                if ($cekTanggal !== now()->format('Y-m-d')) {
-                    $checkIn = $p->check_in?->format('Y-m-d');
-                    $checkOut = $p->check_out?->format('Y-m-d');
-
-                    if (! $checkIn || ! $checkOut) {
-                        return false;
-                    }
-
-                    return $checkIn <= $cekTanggal && $cekTanggal <= $checkOut;
-                }
-
-                // Default: check_out >= hari ini
-                return $p->check_out?->format('Y-m-d') >= now()->format('Y-m-d');
-            })
-            ->count();
-
-        return $penghuni;
     }
 }
