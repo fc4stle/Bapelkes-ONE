@@ -228,4 +228,31 @@ class ApplicationBrandingTest extends TestCase
             'beranda.blade.php tidak boleh hardcode "Bapelkes ONE"'
         );
     }
+
+    /**
+     * Halaman login memiliki <title> yang mengandung nama aplikasi TEPAT SATU KALI
+     */
+    public function test_login_page_title_contains_app_name_exactly_once(): void
+    {
+        $response = $this->get(route('login'));
+
+        $response->assertStatus(200);
+
+        $content = $response->getContent();
+
+        // Extract <title> tag content
+        preg_match('/<title>(.*?)<\/title>/i', $content, $matches);
+        $this->assertNotEmpty($matches, 'Halaman login harus memiliki <title> tag');
+
+        $titleContent = $matches[1];
+        $appName = config('app.name', 'Sistem Informasi Portal Pelatihan Terpadu');
+
+        // Count berapa kali app name muncul di title
+        $count = substr_count($titleContent, $appName);
+        $this->assertEquals(
+            1,
+            $count,
+            "Nama aplikasi '$appName' harus muncul TEPAT SATU KALI di <title>, tapi ditemukan $count kali. Title: '$titleContent'"
+        );
+    }
 }

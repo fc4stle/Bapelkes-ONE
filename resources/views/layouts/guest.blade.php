@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>{{ $title ?? config('app.name', 'Sistem Informasi Portal Pelatihan Terpadu') }} - {{ config('app.name', 'Sistem Informasi Portal Pelatihan Terpadu') }}</title>
+        <title>{{ isset($title) ? $title.' - '.config('app.name', 'Sistem Informasi Portal Pelatihan Terpadu') : config('app.name', 'Sistem Informasi Portal Pelatihan Terpadu') }}</title>
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
