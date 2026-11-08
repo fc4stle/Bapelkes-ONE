@@ -19,13 +19,6 @@
                 </div>
             @endif
 
-            <!-- Session Success Message -->
-            @if (session('success'))
-                <div class="mb-6 p-4 rounded-lg" style="border-left: 4px solid var(--color-success); background-color: var(--color-surface); color: var(--color-text);">
-                    <p class="font-medium">{{ session('success') }}</p>
-                </div>
-            @endif
-
             <!-- Tambah Kamar Section -->
             <div class="bg-white shadow rounded-lg mb-6">
                 <div class="px-4 py-5 sm:p-6">
