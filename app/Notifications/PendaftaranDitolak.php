@@ -20,8 +20,8 @@ class PendaftaranDitolak extends Notification
     {
         return [
             'pendaftaran_id' => $this->pendaftaran->id,
-            'judul_pelatihan' => $this->pendaftaran->pelatihan->judul,
-            'pesan' => 'Pendaftaran Anda untuk pelatihan '.$this->pendaftaran->pelatihan->judul.' telah ditolak.',
+            'judul_pelatihan' => $this->pendaftaran->pelatihan->nama,
+            'pesan' => 'Pendaftaran Anda untuk pelatihan '.$this->pendaftaran->pelatihan->nama.' telah ditolak.',
             'tipe' => 'ditolak',
         ];
     }

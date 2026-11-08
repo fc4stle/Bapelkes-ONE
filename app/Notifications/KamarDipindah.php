@@ -21,8 +21,8 @@ class KamarDipindah extends Notification
     {
         return [
             'pendaftaran_id' => $this->pendaftaran->id,
-            'judul_pelatihan' => $this->pendaftaran->pelatihan->judul,
-            'pesan' => 'Anda telah dipindahkan ke kamar '.$this->nomorKamarBaru.' untuk pelatihan '.$this->pendaftaran->pelatihan->judul.'.',
+            'judul_pelatihan' => $this->pendaftaran->pelatihan->nama,
+            'pesan' => 'Anda telah dipindahkan ke kamar '.$this->nomorKamarBaru.' untuk pelatihan '.$this->pendaftaran->pelatihan->nama.'.',
             'tipe' => 'pindah_kamar',
         ];
     }

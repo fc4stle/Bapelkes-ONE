@@ -173,7 +173,7 @@
                                                 <p class="mt-[var(--sp-1)] text-xs text-gray-600">
                                                     <span class="font-semibold">Kamar:</span> 
                                                     @if ($pendaftaran->kamar)
-                                                        {{ $pendaftaran->kamar->nama }}
+                                                        {{ $pendaftaran->kamar->nomor_kamar }}
                                                     @else
                                                         Belum ditugaskan
                                                     @endif

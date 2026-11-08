@@ -20,8 +20,8 @@ class PendaftaranDiverifikasi extends Notification
     {
         return [
             'pendaftaran_id' => $this->pendaftaran->id,
-            'judul_pelatihan' => $this->pendaftaran->pelatihan->judul,
-            'pesan' => 'Pendaftaran Anda untuk pelatihan '.$this->pendaftaran->pelatihan->judul.' telah diverifikasi.',
+            'judul_pelatihan' => $this->pendaftaran->pelatihan->nama,
+            'pesan' => 'Pendaftaran Anda untuk pelatihan '.$this->pendaftaran->pelatihan->nama.' telah diverifikasi.',
             'tipe' => 'diverifikasi',
         ];
     }

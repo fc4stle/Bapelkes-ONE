@@ -2,10 +2,13 @@
 
 namespace Tests\Feature;
 
+use App\Models\Asrama;
+use App\Models\Kamar;
 use App\Models\Pelatihan;
 use App\Models\Pendaftaran;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Tests\TestCase;
 
 class NotifikasiTest extends TestCase
@@ -27,8 +30,9 @@ class NotifikasiTest extends TestCase
         $notifikasi = $peserta->notifications()->first();
         $this->assertNotNull($notifikasi);
         $this->assertEquals('diverifikasi', $notifikasi->data['tipe']);
-        $this->assertEquals($pelatihan->judul, $notifikasi->data['judul_pelatihan']);
+        $this->assertEquals($pelatihan->nama, $notifikasi->data['judul_pelatihan']);
         $this->assertEquals($pendaftaran->id, $notifikasi->data['pendaftaran_id']);
+        $this->assertStringContainsString($pelatihan->nama, $notifikasi->data['pesan']);
     }
 
     public function test_notifikasi_dikirim_saat_pendaftaran_ditolak(): void
@@ -46,8 +50,9 @@ class NotifikasiTest extends TestCase
         $notifikasi = $peserta->notifications()->first();
         $this->assertNotNull($notifikasi);
         $this->assertEquals('ditolak', $notifikasi->data['tipe']);
-        $this->assertEquals($pelatihan->judul, $notifikasi->data['judul_pelatihan']);
+        $this->assertEquals($pelatihan->nama, $notifikasi->data['judul_pelatihan']);
         $this->assertEquals($pendaftaran->id, $notifikasi->data['pendaftaran_id']);
+        $this->assertStringContainsString($pelatihan->nama, $notifikasi->data['pesan']);
     }
 
     public function test_notifikasi_dikirim_saat_kamar_dipindah_berhasil(): void
@@ -55,11 +60,11 @@ class NotifikasiTest extends TestCase
         $peserta = User::factory()->create(['role' => 'peserta']);
         $panitia = User::factory()->create(['role' => 'panitia']);
         $pelatihan = Pelatihan::factory()->create();
-        $asrama = \App\Models\Asrama::factory()->create();
-        $kamarLama = \App\Models\Kamar::factory()
+        $asrama = Asrama::factory()->create();
+        $kamarLama = Kamar::factory()
             ->for($asrama)
             ->create(['nomor_kamar' => 'A101']);
-        $kamarBaru = \App\Models\Kamar::factory()
+        $kamarBaru = Kamar::factory()
             ->for($asrama)
             ->create(['nomor_kamar' => 'B202']);
 
@@ -85,11 +90,11 @@ class NotifikasiTest extends TestCase
         $peserta = User::factory()->create(['role' => 'peserta']);
         $panitia = User::factory()->create(['role' => 'panitia']);
         $pelatihan = Pelatihan::factory()->create();
-        $asrama = \App\Models\Asrama::factory()->create();
-        $kamarLama = \App\Models\Kamar::factory()
+        $asrama = Asrama::factory()->create();
+        $kamarLama = Kamar::factory()
             ->for($asrama)
             ->create(['nomor_kamar' => 'A101']);
-        $kamarBaru = \App\Models\Kamar::factory()
+        $kamarBaru = Kamar::factory()
             ->for($asrama)
             ->create(['nomor_kamar' => 'B202', 'kapasitas' => 0]); // Penuh
 
@@ -106,7 +111,7 @@ class NotifikasiTest extends TestCase
             ]);
 
         $response->assertSessionHasErrors('kamar_id');
-        
+
         // Verify no pindah_kamar notification was sent
         $notifikasi = $peserta->notifications()->where('data->tipe', 'pindah_kamar')->first();
         $this->assertNull($notifikasi);
@@ -116,10 +121,10 @@ class NotifikasiTest extends TestCase
     {
         $peserta1 = User::factory()->create(['role' => 'peserta']);
         $peserta2 = User::factory()->create(['role' => 'peserta']);
-        
+
         $pelatihan = Pelatihan::factory()->create();
         $panitia = User::factory()->create(['role' => 'panitia']);
-        
+
         $pendaftaran1 = Pendaftaran::factory()
             ->for($peserta1, 'peserta')
             ->for($pelatihan, 'pelatihan')
@@ -128,14 +133,14 @@ class NotifikasiTest extends TestCase
         $pendaftaran1->verifikasi($panitia);
 
         $notifikasi = $peserta1->notifications()->first();
-        
+
         // Peserta2 mencoba akses notifikasi peserta1
         $response = $this->actingAs($peserta2)
             ->patch(route('notifikasi.tandai-dibaca', $notifikasi->id));
 
         // Harus 404 atau redirect
         $response->assertStatus(404);
-        
+
         // Verifikasi notifikasi belum dibaca
         $notifikasi->refresh();
         $this->assertNull($notifikasi->read_at);
@@ -146,7 +151,7 @@ class NotifikasiTest extends TestCase
         $peserta = User::factory()->create(['role' => 'peserta']);
         $panitia = User::factory()->create(['role' => 'panitia']);
         $pelatihan = Pelatihan::factory()->create();
-        
+
         $pendaftaran = Pendaftaran::factory()
             ->for($peserta, 'peserta')
             ->for($pelatihan, 'pelatihan')
@@ -202,7 +207,7 @@ class NotifikasiTest extends TestCase
         $peserta = User::factory()->create(['role' => 'peserta']);
         $panitia = User::factory()->create(['role' => 'panitia']);
         $pelatihan = Pelatihan::factory()->create();
-        
+
         $pendaftaran = Pendaftaran::factory()
             ->for($peserta, 'peserta')
             ->for($pelatihan, 'pelatihan')
@@ -222,7 +227,7 @@ class NotifikasiTest extends TestCase
         $peserta = User::factory()->create(['role' => 'peserta']);
         $panitia = User::factory()->create(['role' => 'panitia']);
         $pelatihan = Pelatihan::factory()->create();
-        
+
         $pendaftaran = Pendaftaran::factory()
             ->for($peserta, 'peserta')
             ->for($pelatihan, 'pelatihan')
@@ -331,12 +336,125 @@ class NotifikasiTest extends TestCase
             ->get(route('notifikasi.index'));
 
         $response->assertStatus(200);
-        
+
         // Verifikasi halaman menampilkan pesan notifikasi
         $notifikasi = $peserta->notifications()->first();
         $response->assertSee($notifikasi->data['judul_pelatihan']);
-        
+
         // Verifikasi tombol "Tandai Semua Dibaca" ada
         $response->assertSee('Tandai Semua Dibaca');
+    }
+
+    /**
+     * BUG 3: pengingat() mengembalikan 'Sedang berlangsung' pada HARI TERAKHIR pelatihan
+     */
+    public function test_pengingat_sedang_berlangsung_pada_hari_terakhir(): void
+    {
+        Carbon::setTestNow('2025-01-25'); // Hari terakhir
+
+        $peserta = User::factory()->create(['role' => 'peserta']);
+        $pelatihan = Pelatihan::factory()->create([
+            'tanggal_mulai' => '2025-01-15',
+            'tanggal_selesai' => '2025-01-25', // hari ini adalah tanggal_selesai
+        ]);
+
+        $pendaftaran = Pendaftaran::factory()->create([
+            'peserta_id' => $peserta->id,
+            'pelatihan_id' => $pelatihan->id,
+            'status_verifikasi' => 'diverifikasi',
+        ]);
+
+        $pengingat = $pendaftaran->pengingat();
+        $this->assertNotNull($pengingat);
+        $this->assertEquals('Sedang berlangsung', $pengingat['label']);
+    }
+
+    /**
+     * BUG 3: pengingat() mengembalikan null sehari setelah tanggal_selesai
+     */
+    public function test_pengingat_null_sehari_setelah_tanggal_selesai(): void
+    {
+        Carbon::setTestNow('2025-01-26'); // Sehari setelah
+
+        $peserta = User::factory()->create(['role' => 'peserta']);
+        $pelatihan = Pelatihan::factory()->create([
+            'tanggal_mulai' => '2025-01-15',
+            'tanggal_selesai' => '2025-01-25', // kemarin
+        ]);
+
+        $pendaftaran = Pendaftaran::factory()->create([
+            'peserta_id' => $peserta->id,
+            'pelatihan_id' => $pelatihan->id,
+            'status_verifikasi' => 'diverifikasi',
+        ]);
+
+        $pengingat = $pendaftaran->pengingat();
+        $this->assertNull($pengingat);
+    }
+
+    /**
+     * BUG 2: Dashboard menampilkan nomor_kamar yang sebenarnya saat butuh_asrama dan kamar terisi
+     */
+    public function test_dashboard_menampilkan_nomor_kamar_sebenarnya(): void
+    {
+        Carbon::setTestNow('2025-01-15');
+
+        $peserta = User::factory()->create(['role' => 'peserta']);
+        $pelatihan = Pelatihan::factory()->create([
+            'tanggal_mulai' => '2025-01-18',
+            'tanggal_selesai' => '2025-01-25',
+        ]);
+
+        $asrama = Asrama::factory()->create();
+        $kamar = Kamar::factory()
+            ->for($asrama)
+            ->create(['nomor_kamar' => 'A101']);
+
+        $pendaftaran = Pendaftaran::factory()->create([
+            'peserta_id' => $peserta->id,
+            'pelatihan_id' => $pelatihan->id,
+            'status_verifikasi' => 'diverifikasi',
+            'butuh_asrama' => true,
+            'kamar_id' => $kamar->id,
+            'check_in' => '2025-01-18',
+            'check_out' => '2025-01-25',
+        ]);
+
+        $response = $this->actingAs($peserta)->get(route('dashboard'));
+        $response->assertOk();
+        $response->assertSee('A101');
+    }
+
+    /**
+     * BUG 1: Pesan notifikasi KamarDipindah mengandung nama pelatihan sebenarnya
+     */
+    public function test_notifikasi_kamar_dipindah_mengandung_nama_pelatihan(): void
+    {
+        $peserta = User::factory()->create(['role' => 'peserta']);
+        $panitia = User::factory()->create(['role' => 'panitia']);
+        $pelatihan = Pelatihan::factory()->create(['nama' => 'Pelatihan Testing']);
+        $asrama = Asrama::factory()->create();
+        $kamarLama = Kamar::factory()
+            ->for($asrama)
+            ->create(['nomor_kamar' => 'A101']);
+        $kamarBaru = Kamar::factory()
+            ->for($asrama)
+            ->create(['nomor_kamar' => 'B202']);
+
+        $pendaftaran = Pendaftaran::factory()
+            ->for($peserta, 'peserta')
+            ->for($pelatihan, 'pelatihan')
+            ->for($kamarLama, 'kamar')
+            ->create(['status_verifikasi' => 'diverifikasi', 'butuh_asrama' => true, 'check_in' => now(), 'check_out' => now()->addDays(5)]);
+
+        // Simulate pindahKamar via controller as panitia
+        $response = $this->actingAs($panitia)
+            ->patch(route('panitia.pendaftaran.pindah-kamar', $pendaftaran), [
+                'kamar_id' => $kamarBaru->id,
+            ]);
+
+        $notifikasi = $peserta->notifications()->where('data->tipe', 'pindah_kamar')->first();
+        $this->assertNotNull($notifikasi);
+        $this->assertStringContainsString('Pelatihan Testing', $notifikasi->data['pesan']);
     }
 }
