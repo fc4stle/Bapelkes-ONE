@@ -241,7 +241,7 @@ class ApplicationBrandingTest extends TestCase
         $content = $response->getContent();
 
         // Extract <title> tag content
-        preg_match('/<title>(.*?)<\/title>/i', $content, $matches);
+        preg_match('/<title>(.*?)<\\/title>/i', $content, $matches);
         $this->assertNotEmpty($matches, 'Halaman login harus memiliki <title> tag');
 
         $titleContent = $matches[1];
@@ -254,5 +254,28 @@ class ApplicationBrandingTest extends TestCase
             $count,
             "Nama aplikasi '$appName' harus muncul TEPAT SATU KALI di <title>, tapi ditemukan $count kali. Title: '$titleContent'"
         );
+    }
+
+    /**
+     * Guest layout memiliki responsive heading dengan class text-2xl sm:text-3xl
+     */
+    public function test_guest_layout_has_responsive_heading_classes(): void
+    {
+        $response = $this->get(route('login'));
+
+        $response->assertStatus(200);
+        $response->assertSee('text-2xl');
+        $response->assertSee('sm:text-3xl');
+    }
+
+    /**
+     * Guest layout memiliki header block dengan class mb-6 untuk spacing
+     */
+    public function test_guest_layout_has_header_block_with_margin_bottom(): void
+    {
+        $response = $this->get(route('login'));
+
+        $response->assertStatus(200);
+        $response->assertSee('mb-6');
     }
 }

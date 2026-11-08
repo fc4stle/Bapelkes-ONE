@@ -19,15 +19,15 @@
         <x-flash type="success" />
         <x-flash type="error" />
 
-        <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0" style="background-color: var(--color-bg);">
-            <div>
+        <div class="min-h-screen flex flex-col sm:justify-center items-center px-4 pt-10 sm:pt-0" style="background-color: var(--color-bg);">
+            <div class="block px-2 mb-6">
                 <a href="/" class="text-center">
-                    <h1 class="text-3xl font-bold" style="color: var(--color-primary);">{{ config('app.name', 'Sistem Informasi Portal Pelatihan Terpadu') }}</h1>
-                    <p class="text-sm" style="color: var(--color-text);">Portal terpadu pelatihan dan layanan peserta Bapelkes DIY</p>
+                    <h1 class="text-2xl sm:text-3xl font-bold leading-snug text-center" style="color: var(--color-primary);">{{ config('app.name', 'Sistem Informasi Portal Pelatihan Terpadu') }}</h1>
+                    <p class="text-sm mt-2 text-center max-w-xs mx-auto" style="color: var(--color-text);">Portal terpadu pelatihan dan layanan peserta Bapelkes DIY</p>
                 </a>
             </div>
 
-            <div class="w-full max-w-md px-4 mt-6">
+            <div class="w-full sm:max-w-md px-4 mt-6">
                 <div class="p-6 rounded-[var(--radius-card)] overflow-hidden" style="background-color: var(--color-surface); box-shadow: var(--shadow-card);">
                     {{ $slot }}
                 </div>
