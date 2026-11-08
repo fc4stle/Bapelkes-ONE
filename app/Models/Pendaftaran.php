@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Notifications\KehadiranTercatat;
 use App\Notifications\PendaftaranDitolak;
 use App\Notifications\PendaftaranDiverifikasi;
 use Database\Factories\PendaftaranFactory;
@@ -184,9 +185,15 @@ class Pendaftaran extends Model
 
     public function tandaiHadir(): void
     {
+        $hadirSebelumnya = $this->hadir_at;
         $this->update([
             'hadir_at' => now(),
         ]);
+
+        // Kirim notifikasi hanya jika hadir_at sebelumnya null (baru pertama kali hadir)
+        if ($hadirSebelumnya === null) {
+            $this->peserta->notify(new KehadiranTercatat($this));
+        }
     }
 
     private function generateKodePresensi(): string

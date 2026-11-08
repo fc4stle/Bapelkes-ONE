@@ -6,6 +6,7 @@ use App\Enums\StatusPelatihan;
 use App\Models\Kamar;
 use App\Models\Pelatihan;
 use App\Models\Pendaftaran;
+use App\Notifications\KamarDipindah;
 use App\Services\KamarService;
 use BaconQrCode\Renderer\Image\SvgImageBackEnd;
 use BaconQrCode\Renderer\ImageRenderer;
@@ -430,9 +431,9 @@ class PendaftaranController extends Controller
 
                 $pendaftaran->update(['kamar_id' => $kamarTujuan->id]);
             });
-            
+
             // Kirim notifikasi SETELAH transaction berhasil
-            $pendaftaran->peserta->notify(new \App\Notifications\KamarDipindah($pendaftaran, $kamarTujuan->nomor_kamar));
+            $pendaftaran->peserta->notify(new KamarDipindah($pendaftaran, $kamarTujuan->nomor_kamar));
         } catch (ValidationException $e) {
             return back()->withErrors($e->errors());
         }
@@ -461,7 +462,7 @@ class PendaftaranController extends Controller
     public function tandaiDibaca($notification)
     {
         $notif = Auth::user()->notifications()->findOrFail($notification);
-        
+
         $notif->markAsRead();
 
         return back()->with('success', 'Notifikasi telah ditandai dibaca.');
@@ -475,5 +476,27 @@ class PendaftaranController extends Controller
         Auth::user()->unreadNotifications->markAsRead();
 
         return back()->with('success', 'Semua notifikasi telah ditandai dibaca.');
+    }
+
+    /**
+     * Open a notification, mark as read, and redirect to its URL
+     */
+    public function bukaNotiifikasi($notification)
+    {
+        $notif = Auth::user()->notifications()->findOrFail($notification);
+
+        // Mark as read
+        $notif->markAsRead();
+
+        // Get URL from data
+        $url = $notif->data['url'] ?? null;
+
+        // Validate URL: must start with "/" and not be "//" (prevent open redirect)
+        if (! $url || ! is_string($url) || ! str_starts_with($url, '/') || str_starts_with($url, '//')) {
+            return redirect()->route('notifikasi.index')->with('info', 'URL notifikasi tidak valid.');
+        }
+
+        // Redirect to the notification URL
+        return redirect($url);
     }
 }

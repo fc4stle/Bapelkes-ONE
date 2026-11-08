@@ -98,7 +98,7 @@
                                 @if ($recentNotif->count() > 0)
                                     @foreach ($recentNotif as $notif)
                                         <a 
-                                            href="{{ route('notifikasi.index') }}"
+                                            href="{{ route('notifikasi.buka', $notif->id) }}"
                                             class="block p-3 hover:bg-gray-50 border-b transition-colors"
                                             style="border-color: #e5e7eb; text-decoration: none;"
                                         >
@@ -256,6 +256,21 @@
             </div>
 
             <div class="mt-3 space-y-1">
+                <x-responsive-nav-link :href="route('notifikasi.index')" :active="request()->routeIs('notifikasi.*')">
+                    Notifikasi
+                    @php
+                        $unreadCountMobile = auth()->user()->unreadNotifications->count();
+                    @endphp
+                    @if ($unreadCountMobile > 0)
+                        <span 
+                            class="inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white rounded-full ml-2"
+                            style="background-color: var(--color-danger); min-width: 1.25rem; height: 1.25rem;"
+                        >
+                            {{ $unreadCountMobile }}
+                        </span>
+                    @endif
+                </x-responsive-nav-link>
+
                 <x-responsive-nav-link :href="route('profile.edit')">
                     Profil
                 </x-responsive-nav-link>

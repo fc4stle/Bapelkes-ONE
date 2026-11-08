@@ -23,6 +23,7 @@ class PendaftaranDitolak extends Notification
             'judul_pelatihan' => $this->pendaftaran->pelatihan->nama,
             'pesan' => 'Pendaftaran Anda untuk pelatihan '.$this->pendaftaran->pelatihan->nama.' telah ditolak.',
             'tipe' => 'ditolak',
+            'url' => route('pendaftarans.index', [], false),
         ];
     }
 }
