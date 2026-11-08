@@ -1,7 +1,9 @@
 <?php
 
 use App\Http\Controllers\AdminUserController;
+use App\Http\Controllers\AsramaController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\KamarController;
 use App\Http\Controllers\PelatihanController;
 use App\Http\Controllers\PendaftaranController;
 use App\Http\Controllers\ProfileController;
@@ -54,6 +56,13 @@ Route::middleware(['auth', 'role:panitia,admin'])->group(function () {
     Route::get('/tiyas/{tiyasResponse}', [TiyasController::class, 'detail'])->name('tiyas.detail');
     Route::patch('/tiyas/{tiyasResponse}/catatan', [TiyasController::class, 'catatan'])->name('tiyas.catatan');
     Route::get('/pelatihans/{pelatihan}/tiyas/export', [TiyasController::class, 'export'])->name('tiyas.export');
+
+    // Asrama & Kamar Management
+    Route::get('/panitia/asrama', [AsramaController::class, 'index'])->name('panitia.asrama.index');
+    Route::get('/panitia/asrama/{asrama}', [AsramaController::class, 'show'])->name('panitia.asrama.show');
+    Route::post('/panitia/asrama/{asrama}/kamar', [KamarController::class, 'store'])->name('panitia.kamar.store');
+    Route::patch('/panitia/kamar/{kamar}', [KamarController::class, 'update'])->name('panitia.kamar.update');
+    Route::patch('/panitia/pendaftaran/{pendaftaran}/kamar', [PendaftaranController::class, 'pindahKamar'])->name('panitia.pendaftaran.pindah-kamar');
 });
 
 Route::resource('pelatihans', PelatihanController::class)
