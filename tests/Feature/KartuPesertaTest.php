@@ -306,4 +306,50 @@ class KartuPesertaTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('KODETEST123456789');
     }
+
+    public function test_kartu_tidak_mengandung_bug_css_styling_lama(): void
+    {
+        $pendaftaran = Pendaftaran::factory()->create([
+            'peserta_id' => $this->peserta->id,
+            'pelatihan_id' => $this->pelatihan->id,
+            'status_verifikasi' => 'diverifikasi',
+            'verified_by' => $this->panitia->id,
+            'verified_at' => now(),
+            'kode_presensi' => 'CSSTEST123456789',
+            'kode_generated_at' => now(),
+            'data_diri' => ['nama' => 'Test User', 'nik' => '1414141414141414', 'kontak' => '0814141414', 'profesi' => 'Perawat', 'instansi' => 'RS Test'],
+        ]);
+
+        $response = $this->actingAs($this->peserta)
+            ->get(route('pendaftarans.kartu', $pendaftaran));
+
+        $response->assertStatus(200);
+        // Bug lama: style="background-color: var(--color-primary); px-6 py-4"
+        // Harus diperbaiki menjadi class="text-white px-6 py-4" style="background-color: var(--color-primary);"
+        $response->assertDontSee('px-6 py-4"');
+        $response->assertSee('text-white px-6 py-4');
+        $response->assertSee('background-color: var(--color-primary)');
+    }
+
+    public function test_kartu_menampilkan_judul_pita_dan_institusi(): void
+    {
+        $pendaftaran = Pendaftaran::factory()->create([
+            'peserta_id' => $this->peserta->id,
+            'pelatihan_id' => $this->pelatihan->id,
+            'status_verifikasi' => 'diverifikasi',
+            'verified_by' => $this->panitia->id,
+            'verified_at' => now(),
+            'kode_presensi' => 'HEADERTEST123456',
+            'kode_generated_at' => now(),
+            'data_diri' => ['nama' => 'Test User', 'nik' => '1515151515151515', 'kontak' => '0815151515', 'profesi' => 'Perawat', 'instansi' => 'RS Test'],
+        ]);
+
+        $response = $this->actingAs($this->peserta)
+            ->get(route('pendaftarans.kartu', $pendaftaran));
+
+        $response->assertStatus(200);
+        // Pita kartu harus menampilkan
+        $response->assertSee('Kartu Peserta Digital');
+        $response->assertSee('Bapelkes Dinkes DIY');
+    }
 }

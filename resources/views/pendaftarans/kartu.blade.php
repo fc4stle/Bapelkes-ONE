@@ -1,12 +1,12 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            Kartu Peserta Digital
+            Kartu Peserta
         </h2>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-2xl mx-auto sm:px-6 lg:px-8">
+    <div class="py-6 sm:py-12">
+        <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
             @if (session('error'))
                 <div class="mb-4 rounded-md bg-red-50 p-4 text-sm text-red-700">
                     {{ session('error') }}
@@ -55,20 +55,20 @@
                 </div>
             @elseif ($pendaftaran->isDiverifikasi())
                 <div class="bg-white shadow rounded-lg overflow-hidden">
-                    <div class="text-white" style="background-color: var(--color-primary); px-6 py-4">
+                    <div class="text-white px-6 py-4" style="background-color: var(--color-primary);">
                         <div class="flex items-center justify-between">
                             <div>
                                 <h3 class="text-lg font-semibold text-white">Kartu Peserta Digital</h3>
                                 <p class="text-white text-sm">Bapelkes Dinkes DIY</p>
                             </div>
-                            <svg class="h-8 w-8 opacity-80" style="color: white;" fill="currentColor" viewBox="0 0 24 24">
+                            <svg class="h-8 w-8 flex-shrink-0 opacity-80" style="color: white;" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M3 5a2 2 0 012-2h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5zm10.7 12.7L9 13l-2.7 2.7-1.4-1.4L9 10.2l6.1 6.1-1.4 1.4z"/>
                             </svg>
                         </div>
                     </div>
 
                     <div class="px-6 py-6">
-                        <div class="flex items-start space-x-6">
+                        <div class="flex items-start space-x-4 sm:space-x-6">
                             <div class="flex-shrink-0">
                                 <div class="h-20 w-20 rounded-full bg-gray-100 flex items-center justify-center">
                                     <span class="text-2xl font-bold text-[var(--color-primary)]">
@@ -76,8 +76,8 @@
                                     </span>
                                 </div>
                             </div>
-                            <div class="flex-1">
-                                <h4 class="text-xl font-bold text-gray-900">{{ $pendaftaran->data_diri['nama'] ?? '-' }}</h4>
+                            <div class="flex-1 min-w-0">
+                                <h4 class="text-xl font-bold text-gray-900 break-words">{{ $pendaftaran->data_diri['nama'] ?? '-' }}</h4>
                                 <p class="text-sm text-gray-500">NIK: {{ $pendaftaran->data_diri['nik'] ?? '-' }}</p>
                                 <p class="text-sm text-gray-500">{{ $pendaftaran->data_diri['profesi'] ?? '-' }} &middot; {{ $pendaftaran->data_diri['instansi'] ?? '-' }}</p>
                             </div>
@@ -124,7 +124,7 @@
                         <div class="mt-6 border-t border-gray-200 pt-6">
                             <div class="flex flex-col items-center">
                                 <p class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-3">QR Code Presensi</p>
-                                <div class="bg-white p-4 rounded-lg border-2 border-gray-200 inline-block">
+                                <div class="bg-white p-4 rounded-lg border-2 border-gray-200 inline-block max-w-full overflow-hidden [&>svg]:max-w-full [&>svg]:h-auto">
                                     {!! $qrCode !!}
                                 </div>
                                 <p class="mt-3 text-xs text-gray-500 text-center">
@@ -138,11 +138,11 @@
                     </div>
 
                     <div class="bg-gray-50 px-6 py-4">
-                        <div class="flex items-center justify-between">
+                        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                             <p class="text-xs text-gray-500">
                                 Diverifikasi oleh: {{ $pendaftaran->verifier->name ?? 'Panitia' }} pada {{ $pendaftaran->verified_at->format('d M Y H:i') }}
                             </p>
-                            <button onclick="window.print()" class="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                            <button onclick="window.print()" class="print:hidden w-full sm:w-auto inline-flex items-center justify-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
                                 Cetak
                             </button>
                         </div>
