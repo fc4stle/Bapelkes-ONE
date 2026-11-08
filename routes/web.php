@@ -27,6 +27,11 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/pendaftarans', [PendaftaranController::class, 'index'])->name('pendaftarans.index');
 
+    // Notifikasi
+    Route::get('/notifikasi', [PendaftaranController::class, 'notifikasiIndex'])->name('notifikasi.index');
+    Route::patch('/notifikasi/{notification}/baca', [PendaftaranController::class, 'tandaiDibaca'])->name('notifikasi.tandai-dibaca');
+    Route::patch('/notifikasi/semua/baca', [PendaftaranController::class, 'tandaiSemuaDibaca'])->name('notifikasi.tandai-semua-dibaca');
+
     Route::middleware('role:peserta')->group(function () {
         Route::get('/pelatihan/{pelatihan}/daftar', [PendaftaranController::class, 'create'])->name('pelatihan.daftar');
         Route::post('/pelatihans/{pelatihan}/daftar', [PendaftaranController::class, 'store'])->name('pelatihans.daftar');

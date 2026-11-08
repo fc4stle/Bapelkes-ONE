@@ -146,6 +146,8 @@ class Pendaftaran extends Model
 
     public function verifikasi(User $panitia): void
     {
+        $oldStatus = $this->status_verifikasi;
+        
         $this->update([
             'status_verifikasi' => 'diverifikasi',
             'verified_by' => $panitia->id,
@@ -154,16 +156,28 @@ class Pendaftaran extends Model
             'kode_presensi' => $this->generateKodePresensi(),
             'kode_generated_at' => now(),
         ]);
+
+        // Kirim notifikasi hanya jika status berubah
+        if ($oldStatus !== 'diverifikasi') {
+            $this->peserta->notify(new \App\Notifications\PendaftaranDiverifikasi($this));
+        }
     }
 
     public function tolak(User $panitia, string $alasan): void
     {
+        $oldStatus = $this->status_verifikasi;
+        
         $this->update([
             'status_verifikasi' => 'ditolak',
             'verified_by' => $panitia->id,
             'verified_at' => now(),
             'alasan_penolakan' => $alasan,
         ]);
+
+        // Kirim notifikasi hanya jika status berubah
+        if ($oldStatus !== 'ditolak') {
+            $this->peserta->notify(new \App\Notifications\PendaftaranDitolak($this));
+        }
     }
 
     public function tandaiHadir(): void

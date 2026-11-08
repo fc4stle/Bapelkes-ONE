@@ -48,8 +48,103 @@
                 </div>
             </div>
 
-            <!-- Settings Dropdown -->
-            <div class="hidden sm:flex sm:items-center sm:ms-6">
+            <!-- Notification Bell and Settings Dropdown -->
+            <div class="hidden sm:flex sm:items-center sm:ms-6 gap-4">
+                @auth
+                    <!-- Notification Bell Dropdown -->
+                    <div x-data="{ notifOpen: false }" class="relative">
+                        <button 
+                            @click="notifOpen = !notifOpen"
+                            class="relative p-2 rounded-lg transition-colors"
+                            style="background-color: transparent; border: none; cursor: pointer;"
+                            onmouseover="this.style.backgroundColor='var(--color-bg)'"
+                            onmouseout="this.style.backgroundColor='transparent'"
+                        >
+                            <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="color: var(--color-text);">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                            </svg>
+                            
+                            @php
+                                $unreadCount = auth()->user()->unreadNotifications->count();
+                            @endphp
+                            
+                            @if ($unreadCount > 0)
+                                <span 
+                                    class="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1 -translate-y-1 rounded-full"
+                                    style="background-color: var(--color-danger); min-width: 1.25rem; height: 1.25rem; display: flex; align-items: center; justify-content: center;"
+                                >
+                                    {{ $unreadCount }}
+                                </span>
+                            @endif
+                        </button>
+
+                        <!-- Dropdown Menu -->
+                        <div 
+                            x-show="notifOpen"
+                            @click.outside="notifOpen = false"
+                            class="absolute right-0 mt-2 w-80 rounded-lg shadow-lg z-50"
+                            style="background-color: var(--color-surface); border: 1px solid #e5e7eb; display: none;"
+                            x-transition
+                        >
+                            <div class="p-4 border-b" style="border-color: #e5e7eb;">
+                                <h3 class="text-lg font-semibold" style="color: var(--color-text);">Notifikasi</h3>
+                            </div>
+
+                            <div class="max-h-96 overflow-y-auto">
+                                @php
+                                    $recentNotif = auth()->user()->notifications()->latest()->limit(5)->get();
+                                @endphp
+
+                                @if ($recentNotif->count() > 0)
+                                    @foreach ($recentNotif as $notif)
+                                        <a 
+                                            href="{{ route('notifikasi.index') }}"
+                                            class="block p-3 hover:bg-gray-50 border-b transition-colors"
+                                            style="border-color: #e5e7eb; text-decoration: none;"
+                                        >
+                                            <div class="flex justify-between items-start">
+                                                <div>
+                                                    <p class="font-semibold text-sm" style="color: var(--color-text);">
+                                                        {{ $notif->data['judul_pelatihan'] ?? 'Notifikasi' }}
+                                                    </p>
+                                                    <p class="text-xs mt-1" style="color: var(--color-text); opacity: 0.7;">
+                                                        {{ Str::limit($notif->data['pesan'], 50) }}
+                                                    </p>
+                                                    <p class="text-xs mt-1" style="color: var(--color-text); opacity: 0.5;">
+                                                        {{ $notif->created_at->diffForHumans() }}
+                                                    </p>
+                                                </div>
+                                                @if (!$notif->read_at)
+                                                    <span 
+                                                        class="inline-block w-2 h-2 rounded-full mt-1"
+                                                        style="background-color: var(--color-primary);"
+                                                    ></span>
+                                                @endif
+                                            </div>
+                                        </a>
+                                    @endforeach
+                                @else
+                                    <div class="p-4 text-center" style="color: var(--color-text);">
+                                        <p class="text-sm">Tidak ada notifikasi</p>
+                                    </div>
+                                @endif
+                            </div>
+
+                            <div class="p-3 border-t" style="border-color: #e5e7eb;">
+                                <a 
+                                    href="{{ route('notifikasi.index') }}"
+                                    class="block text-center py-2 text-sm font-semibold rounded-lg transition-colors"
+                                    style="color: white; background-color: var(--color-primary); text-decoration: none;"
+                                    onmouseover="this.style.backgroundColor='var(--color-primary-hover)'"
+                                    onmouseout="this.style.backgroundColor='var(--color-primary)'"
+                                >
+                                    Lihat Semua
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                @endauth
+
                 @guest
                     <div class="space-x-2 text-sm font-medium">
                         <a href="{{ route('login') }}" class="px-3 py-2 rounded-md" style="color: var(--color-text);">Masuk</a>
