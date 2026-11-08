@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ResetUserPasswordRequest;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRoleRequest;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class AdminUserController extends Controller
@@ -96,5 +99,29 @@ class AdminUserController extends Controller
 
         return redirect()->back()
             ->with('success', 'Role berhasil diubah.');
+    }
+
+    /**
+     * Reset user password.
+     * Admin tidak boleh mengubah password akunnya sendiri.
+     */
+    public function resetPassword(ResetUserPasswordRequest $request, User $user): RedirectResponse
+    {
+        // Admin tidak boleh mengatur ulang password akunnya sendiri
+        if ($request->user()->id === $user->id) {
+            return redirect()->back()
+                ->with('error', 'Gunakan halaman Profil untuk mengubah kata sandi Anda sendiri.');
+        }
+
+        $validated = $request->validated();
+
+        // Hash password dan simpan
+        $user->forceFill([
+            'password' => Hash::make($validated['password']),
+            'remember_token' => Str::random(60),
+        ])->save();
+
+        return redirect()->route('admin.users.index')
+            ->with('success', "Kata sandi {$user->name} berhasil diatur ulang.");
     }
 }

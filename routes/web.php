@@ -78,6 +78,7 @@ Route::resource('pelatihans', PelatihanController::class)
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::resource('users', AdminUserController::class)->only(['index', 'create', 'store']);
     Route::patch('/users/{user}/role', [AdminUserController::class, 'updateRole'])->name('users.updateRole');
+    Route::patch('/users/{user}/password', [AdminUserController::class, 'resetPassword'])->name('users.resetPassword');
 });
 
 require __DIR__.'/auth.php';
