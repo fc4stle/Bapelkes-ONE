@@ -112,4 +112,17 @@ class AsramaFeedbackTest extends TestCase
         $this->assertStringNotContainsString('text-white\" style=\"background-color', $content, 
             'Badge HTML contains backslash before style attribute (HTML malformed)');
     }
+
+    public function test_show_page_has_x_data_wrapper_for_modal_buttons(): void
+    {
+        $response = $this->actingAs($this->panitia)->get(route('panitia.asrama.show', $this->asrama));
+
+        // Verify that the page contains div.py-12 with x-data attribute
+        // This wrapper enables @click directives in modal buttons
+        $response->assertSee('class="py-12" x-data="{}"', false);
+
+        // Verify that content contains modal buttons that depend on this wrapper
+        $response->assertSee('Ubah Kapasitas');
+        $response->assertSee('Pindah Kamar');
+    }
 }

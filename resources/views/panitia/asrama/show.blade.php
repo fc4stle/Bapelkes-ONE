@@ -10,7 +10,7 @@
         </div>
     </x-slot>
 
-    <div class="py-12" style="background-color: var(--color-bg);">
+    <div class="py-12" x-data="{}" style="background-color: var(--color-bg);">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <!-- Session Error Message -->
             @if (session('error'))
