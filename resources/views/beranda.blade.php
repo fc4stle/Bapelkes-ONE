@@ -3,7 +3,7 @@
         <!-- Hero Section -->
         <section class="py-10 sm:py-16 px-4">
             <div class="max-w-5xl mx-auto text-center">
-                <h1 class="text-3xl sm:text-5xl font-bold mb-4" style="color: var(--color-text);">Bapelkes ONE</h1>
+                <h1 class="text-3xl sm:text-5xl font-bold mb-4" style="color: var(--color-text);">Sistem Informasi Portal Pelatihan Terpadu</h1>
                 <p class="text-base sm:text-xl mb-8" style="color: #555;">Portal terpadu pelatihan dan layanan peserta Bapelkes DIY</p>
 
                 <div class="flex flex-col sm:flex-row gap-4 justify-center">

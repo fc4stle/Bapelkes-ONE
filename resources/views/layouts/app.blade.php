@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>{{ $title ?? 'Beranda' }} - Bapelkes ONE</title>
+        <title>{{ $title ?? 'Beranda' }} - {{ config('app.name', 'Sistem Informasi Portal Pelatihan Terpadu') }}</title>
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">

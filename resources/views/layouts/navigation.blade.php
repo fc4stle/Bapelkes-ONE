@@ -6,7 +6,7 @@
                 <!-- Logo/Wordmark -->
                 <div class="shrink-0 flex items-center">
                     <a href="/" class="font-bold text-sm sm:text-base" style="color: var(--color-primary);">
-                        Bapelkes ONE
+                        Portal Pelatihan Terpadu
                     </a>
                 </div>
 
