@@ -304,4 +304,118 @@ class AdminResetPasswordTest extends TestCase
         $response->assertRedirect();
         $response->assertSessionHasErrors('password');
     }
+
+    /**
+     * BUG FIX TEST 1: Dengan 3 pengguna lain, submit reset dengan konfirmasi tidak cocok
+     * -> old('reset_user_id') harus di-flash ke session sehingga hanya modal pengguna B terbuka
+     */
+    public function test_reset_user_id_flashed_on_validation_error(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $userB = User::factory()->create(['role' => 'peserta', 'name' => 'User B']);
+
+        $response = $this->actingAs($admin)
+            ->patch(route('admin.users.resetPassword', $userB), [
+                'password' => 'NewPassword123!',
+                'password_confirmation' => 'DifferentPassword123!',
+                'reset_user_id' => $userB->id,
+            ]);
+
+        $response->assertRedirect();
+        $response->assertSessionHasErrors('password');
+
+        // Verifikasi: reset_user_id di-flash ke old input
+        $this->assertEquals(
+            (string) $userB->id,
+            session('_old_input.reset_user_id'),
+            'reset_user_id harus di-flash ke session agar x-data logic bekerja'
+        );
+    }
+
+    /**
+     * BUG FIX TEST 2: Submit sukses -> tidak ada modal yang terbuka
+     */
+    public function test_no_modal_opens_on_successful_reset(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $user = User::factory()->create(['role' => 'peserta', 'name' => 'Test User']);
+
+        $response = $this->actingAs($admin)
+            ->patch(route('admin.users.resetPassword', $user), [
+                'password' => 'NewPassword123!',
+                'password_confirmation' => 'NewPassword123!',
+                'reset_user_id' => $user->id,
+            ]);
+
+        $response->assertRedirect(route('admin.users.index'));
+
+        $getResponse = $this->actingAs($admin)->get(route('admin.users.index'));
+        $content = $getResponse->getContent();
+
+        // Verifikasi tidak ada modal terbuka (tidak ada showResetPasswordModal: true)
+        $this->assertStringNotContainsString('showResetPasswordModal: true', $content);
+
+        // Verifikasi semua modal dalam state false
+        $countFalse = substr_count($content, 'showResetPasswordModal: false');
+        $this->assertGreaterThan(0, $countFalse, 'Semua modal seharusnya dalam state false');
+    }
+
+    /**
+     * BUG FIX TEST 3: Mass assignment - User::create/fill dengan 'remember_token' TIDAK mengisi
+     */
+    public function test_remember_token_not_mass_assignable(): void
+    {
+        // Coba assign remember_token melalui create
+        $user = User::create([
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => Hash::make('Password123!'),
+            'role' => 'peserta',
+            'remember_token' => 'SHOULD_NOT_BE_SET',
+        ]);
+
+        // Verifikasi remember_token TIDAK diset dari create
+        // (harus tetap null atau tidak sama dengan string yang dikirim)
+        $this->assertNotEquals('SHOULD_NOT_BE_SET', $user->remember_token);
+
+        // Verifikasi fill juga tidak mengisi
+        $user2 = new User;
+        $user2->fill([
+            'name' => 'Test User 2',
+            'email' => 'test2@example.com',
+            'password' => Hash::make('Password123!'),
+            'role' => 'peserta',
+            'remember_token' => 'SHOULD_NOT_BE_SET_2',
+        ]);
+
+        $this->assertNotEquals('SHOULD_NOT_BE_SET_2', $user2->remember_token);
+    }
+
+    /**
+     * BUG FIX TEST 4: Password field kosong setelah error validasi (tidak di-flash)
+     */
+    public function test_password_field_empty_after_validation_error(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $user = User::factory()->create(['role' => 'peserta']);
+
+        $response = $this->actingAs($admin)
+            ->patch(route('admin.users.resetPassword', $user), [
+                'password' => 'NewPassword123!',
+                'password_confirmation' => 'DifferentPassword123!',
+            ]);
+
+        $response->assertRedirect();
+
+        // Setelah error, cek halaman index
+        $getResponse = $this->actingAs($admin)->get(route('admin.users.index'));
+        $content = $getResponse->getContent();
+
+        // Verifikasi password input dalam modal tidak memiliki value dengan password yang dikirim
+        $this->assertStringNotContainsString(
+            'value="NewPassword123!"',
+            $content,
+            'Password field seharusnya kosong, tidak ter-flash'
+        );
+    }
 }

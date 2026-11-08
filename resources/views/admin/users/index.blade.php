@@ -70,7 +70,7 @@
                         </thead>
                         <tbody>
                             @foreach ($users as $user)
-                                <tr class="border-t" style="border-color: var(--color-accent);" x-data="{ showResetPasswordModal: @if ($errors->any()) 'resetPassword{{ $user->id }}' === 'resetPassword{{ $user->id }}' @else false @endif }">
+                                <tr class="border-t" style="border-color: var(--color-accent);" x-data="{ showResetPasswordModal: {{ (string) old('reset_user_id') === (string) $user->id && $errors->has('password') ? 'true' : 'false' }} }">
                                     <td class="px-4 py-3 text-sm">{{ $user->name }}</td>
                                     <td class="px-4 py-3 text-sm">{{ $user->email }}</td>
                                     <td class="px-4 py-3 text-sm">
@@ -121,6 +121,7 @@
                                                     <form method="POST" action="{{ route('admin.users.resetPassword', $user) }}">
                                                         @csrf
                                                         @method('PATCH')
+                                                        <input type="hidden" name="reset_user_id" value="{{ $user->id }}">
 
                                                         <div class="mb-4">
                                                             <label for="password{{ $user->id }}" class="block text-sm font-semibold mb-2" style="color: var(--color-primary);">

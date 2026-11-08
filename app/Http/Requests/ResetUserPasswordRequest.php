@@ -13,7 +13,7 @@ class ResetUserPasswordRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return $this->user()?->isAdmin();
+        return (bool) $this->user()?->isAdmin();
     }
 
     /**
@@ -25,6 +25,7 @@ class ResetUserPasswordRequest extends FormRequest
     {
         return [
             'password' => ['required', 'string', 'confirmed', Password::defaults()],
+            'reset_user_id' => ['nullable', 'numeric'],
         ];
     }
 

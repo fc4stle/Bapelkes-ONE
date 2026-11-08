@@ -116,10 +116,10 @@ class AdminUserController extends Controller
         $validated = $request->validated();
 
         // Hash password dan simpan
-        $user->update([
+        $user->forceFill([
             'password' => Hash::make($validated['password']),
             'remember_token' => Str::random(60),
-        ]);
+        ])->save();
 
         return redirect()->route('admin.users.index')
             ->with('success', "Kata sandi {$user->name} berhasil diatur ulang.");
