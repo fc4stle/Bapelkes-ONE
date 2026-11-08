@@ -327,6 +327,62 @@ class PelatihanController extends Controller
 
         $kode = strtoupper(trim($validated['kode_presensi']));
 
+        // Ekstrak logika validasi dan proses ke private method
+        $result = $this->validateAndProcessPresensi($kode, $pelatihan);
+
+        // Jika request mengharapkan JSON, kembalikan JSON response
+        if ($request->expectsJson()) {
+            if ($result['status'] === 'sukses') {
+                return response()->json($result, 200);
+            } elseif ($result['status'] === 'sudah_hadir') {
+                return response()->json($result, 200);
+            } elseif ($result['status'] === 'error_validasi') {
+                return response()->json([
+                    'status' => 'error',
+                    'pesan' => $result['pesan'],
+                    'nama' => null,
+                ], 422);
+            } elseif ($result['status'] === 'not_found') {
+                return response()->json([
+                    'status' => 'error',
+                    'pesan' => $result['pesan'],
+                    'nama' => null,
+                ], 404);
+            }
+        }
+
+        // Jalur non-JSON: redirect back dengan flash message seperti sebelumnya
+        if ($result['status'] === 'sukses') {
+            return back()->with('success', $result['pesan']);
+        } elseif ($result['status'] === 'sudah_hadir') {
+            return back()->with('warning', $result['pesan']);
+        } else {
+            return back()->with('error', $result['pesan']);
+        }
+    }
+
+    /**
+     * Validate and process presensi logic (ekstrak shared logic).
+     * Returns array dengan status, pesan, dan nama (jika ada).
+     */
+    private function validateAndProcessPresensi(string $kode, Pelatihan $pelatihan): array
+    {
+        // Cek tanggal presensi: hanya boleh dalam rentang tanggal_mulai s/d tanggal_selesai
+        $today = now()->toDateString();
+        $tanggal_mulai = $pelatihan->tanggal_mulai->toDateString();
+        $tanggal_selesai = $pelatihan->tanggal_selesai->toDateString();
+
+        if ($today < $tanggal_mulai || $today > $tanggal_selesai) {
+            $mulai_format = $pelatihan->tanggal_mulai->format('d M Y');
+            $selesai_format = $pelatihan->tanggal_selesai->format('d M Y');
+
+            return [
+                'status' => 'error_validasi',
+                'pesan' => "Presensi hanya bisa dicatat pada tanggal pelatihan ($mulai_format - $selesai_format).",
+                'nama' => null,
+            ];
+        }
+
         // Cari pendaftaran dengan kode ini untuk pelatihan ini
         $pendaftaran = Pendaftaran::where('kode_presensi', $kode)
             ->where('pelatihan_id', $pelatihan->id)
@@ -336,25 +392,47 @@ class PelatihanController extends Controller
         if (! $pendaftaran) {
             $pendaftaranLain = Pendaftaran::where('kode_presensi', $kode)->first();
             if ($pendaftaranLain) {
-                return back()->with('error', 'Kode presensi tidak berlaku untuk pelatihan ini. Kode ini terdaftar untuk pelatihan lain.');
+                return [
+                    'status' => 'not_found',
+                    'pesan' => 'Kode presensi tidak berlaku untuk pelatihan ini. Kode ini terdaftar untuk pelatihan lain.',
+                    'nama' => null,
+                ];
             }
 
-            return back()->with('error', 'Kode presensi tidak ditemukan.');
+            return [
+                'status' => 'not_found',
+                'pesan' => 'Kode presensi tidak ditemukan.',
+                'nama' => null,
+            ];
         }
+
+        $nama = $pendaftaran->data_diri['nama'] ?? 'Peserta';
 
         // Cek status verifikasi
         if (! $pendaftaran->isDiverifikasi()) {
-            return back()->with('error', 'Pendaftaran belum diverifikasi. Tidak dapat melakukan presensi.');
+            return [
+                'status' => 'error_validasi',
+                'pesan' => 'Pendaftaran belum diverifikasi. Tidak dapat melakukan presensi.',
+                'nama' => $nama,
+            ];
         }
 
         // Cek apakah sudah pernah presensi
         if ($pendaftaran->isHadir()) {
-            return back()->with('warning', "Peserta {$pendaftaran->data_diri['nama']} sudah pernah presensi pada {$pendaftaran->hadir_at->format('d M Y H:i')}.");
+            return [
+                'status' => 'sudah_hadir',
+                'pesan' => "Peserta $nama sudah pernah presensi pada {$pendaftaran->hadir_at->format('d M Y H:i')}.",
+                'nama' => $nama,
+            ];
         }
 
         // Tandai hadir
         $pendaftaran->tandaiHadir();
 
-        return back()->with('success', "Presensi berhasil! Peserta: {$pendaftaran->data_diri['nama']}.");
+        return [
+            'status' => 'sukses',
+            'pesan' => "Presensi berhasil! Peserta: $nama.",
+            'nama' => $nama,
+        ];
     }
 }

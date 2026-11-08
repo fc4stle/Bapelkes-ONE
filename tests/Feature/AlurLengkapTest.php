@@ -10,6 +10,7 @@ use App\Models\Pelatihan;
 use App\Models\Pendaftaran;
 use App\Models\User;
 use App\Services\TiyasScorer;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Auth;
 use Tests\TestCase;
@@ -163,6 +164,9 @@ class AlurLengkapTest extends TestCase
         $response->assertSee('Terverifikasi');
 
         // ===== STEP 6: Panitia presensi =====
+        // Set waktu test ke dalam rentang tanggal pelatihan
+        Carbon::setTestNow($pelatihan->tanggal_mulai->startOfDay());
+
         $response = $this->actingAs($panitia)->post(route('pelatihan.presensi.proses', $pelatihan), [
             'kode_presensi' => $pendaftaran->kode_presensi,
         ]);

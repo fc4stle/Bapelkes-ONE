@@ -56,34 +56,227 @@
                         </div>
                     @endif
 
-                    <form method="POST" action="{{ route('pelatihan.presensi.proses', $pelatihan) }}" class="space-y-4">
-                        @csrf
-                        <div>
-                            <label for="kode_presensi" class="block text-sm font-medium text-gray-700">Kode Presensi</label>
-                            <input type="text" name="kode_presensi" id="kode_presensi" required
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[var(--color-primary)] focus:ring-[var(--color-primary)] sm:text-sm border px-3 py-2 font-mono uppercase"
-                                placeholder="Masukkan kode dari QR/Scanner"
-                                autofocus>
-                            @error('kode_presensi')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
+                    <div x-data="scanQrData()" x-init="initScanData()">
+                        <!-- Bagian Scan QR -->
+                        <div class="mb-8">
+                            <div class="flex items-center justify-between mb-4">
+                                <h2 class="text-lg font-semibold text-gray-900">Scan QR Code</h2>
+                            </div>
+
+                            <div class="border border-gray-200 rounded-lg overflow-hidden">
+                                <div id="qr_scanner_container" style="display: none; height: 300px;"></div>
+
+                                <div x-show="!scanActive && !cameraError" class="p-4 bg-gray-50 text-center">
+                                    <button type="button"
+                                        @click="startScan()"
+                                        class="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2"
+                                        style="background-color: var(--color-primary);">
+                                        <svg class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                        </svg>
+                                        Mulai Scan
+                                    </button>
+                                </div>
+
+                                <div x-show="scanActive" class="p-4 bg-gray-50">
+                                    <button type="button"
+                                        @click="stopScan()"
+                                        class="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2"
+                                        style="background-color: var(--color-danger);">
+                                        <svg class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                        Berhenti
+                                    </button>
+                                </div>
+
+                                <div x-show="cameraError" class="p-4 bg-red-50 border-t border-red-100">
+                                    <p class="text-sm text-red-700 font-medium mb-2">Kamera tidak dapat diakses</p>
+                                    <p class="text-xs text-red-600 mb-3" x-text="cameraError"></p>
+                                    <p class="text-xs text-red-600">Gunakan form input manual di bawah untuk melanjutkan presensi.</p>
+                                </div>
+
+                                <!-- Hasil Scan -->
+                                <div x-show="scanResult" class="p-4 border-t" :class="scanResult?.type === 'success' ? 'bg-green-50 border-green-100' : (scanResult?.type === 'warning' ? 'bg-yellow-50 border-yellow-100' : 'bg-red-50 border-red-100')">
+                                    <div class="flex items-start gap-3">
+                                        <div>
+                                            <p class="font-medium" :class="scanResult?.type === 'success' ? 'text-green-800' : (scanResult?.type === 'warning' ? 'text-yellow-800' : 'text-red-800')" x-text="scanResult?.pesan"></p>
+                                            <p x-show="scanResult?.nama" class="text-sm mt-1" :class="scanResult?.type === 'success' ? 'text-green-700' : (scanResult?.type === 'warning' ? 'text-yellow-700' : 'text-red-700')" x-text="'Peserta: ' + scanResult?.nama"></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
-                        <button type="submit" class="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2" style="background-color: var(--color-primary);">
-                            <svg class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            Tandai Hadir
-                        </button>
-                    </form>
+                        <!-- Form Manual -->
+                        <form method="POST" action="{{ route('pelatihan.presensi.proses', $pelatihan) }}" class="space-y-4">
+                            @csrf
+                            <div>
+                                <label for="kode_presensi" class="block text-sm font-medium text-gray-700">Kode Presensi (Manual)</label>
+                                <input type="text" name="kode_presensi" id="kode_presensi"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[var(--color-primary)] focus:ring-[var(--color-primary)] sm:text-sm border px-3 py-2 font-mono uppercase"
+                                    placeholder="Masukkan kode dari QR/Scanner"
+                                    autofocus>
+                                @error('kode_presensi')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
 
-                    <div class="mt-6 border-t border-gray-200 pt-4">
-                        <p class="text-xs text-gray-400">
-                            Tips: Gunakan aplikasi scanner QR code di HP untuk scan kartu peserta, lalu copy-paste hasilnya ke kolom di atas.
-                        </p>
+                            <button type="submit" class="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2" style="background-color: var(--color-primary);">
+                                <svg class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                Tandai Hadir
+                            </button>
+                        </form>
+
+                        <div class="mt-6 border-t border-gray-200 pt-4">
+                            <p class="text-xs text-gray-400">
+                                Tips: Gunakan "Mulai Scan" untuk scan langsung dari kamera, atau masukkan kode manual di form di atas.
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <script>
+        function scanQrData() {
+            return {
+                scanActive: false,
+                scanner: null,
+                scanResult: null,
+                cameraError: null,
+                lastScannedCode: null,
+                lastScannedTime: null,
+
+                initScanData() {
+                    // Pastikan CSRF token tersedia
+                    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+                    if (!csrfToken) {
+                        console.error('CSRF token not found');
+                    }
+                },
+
+                async startScan() {
+                    try {
+                        // Cek apakah Html5Qrcode sudah tersedia dari presensi-scan.js
+                        if (typeof window.Html5Qrcode === 'undefined') {
+                            this.cameraError = 'Library pemindai QR sedang dimuat. Coba lagi dalam beberapa detik.';
+                            this.scanActive = false;
+                            console.error('Html5Qrcode library not loaded');
+                            return;
+                        }
+
+                        this.cameraError = null;
+                        this.scanResult = null;
+                        this.scanActive = true;
+
+                        document.getElementById('qr_scanner_container').style.display = 'block';
+
+                        this.scanner = new window.Html5Qrcode('qr_scanner_container');
+
+                        await this.scanner.start(
+                            { facingMode: 'environment' },
+                            { fps: 10, qrbox: { width: 250, height: 250 } },
+                            (decodedText) => this.onQrSuccess(decodedText),
+                            (error) => this.onQrError(error)
+                        );
+                    } catch (error) {
+                        this.cameraError = 'Tidak dapat mengakses kamera. Pastikan browser mendukung akses kamera dan izin sudah diberikan.';
+                        this.scanActive = false;
+                        console.error('Scan init error:', error);
+                    }
+                },
+
+                async stopScan() {
+                    if (this.scanner) {
+                        try {
+                            await this.scanner.stop();
+                            this.scanner.clear();
+                        } catch (error) {
+                            console.error('Error stopping scanner:', error);
+                        }
+                        document.getElementById('qr_scanner_container').style.display = 'none';
+                    }
+                    this.scanActive = false;
+                    this.scanResult = null;
+                },
+
+                async onQrSuccess(decodedText) {
+                    const now = Date.now();
+
+                    // Cegah scan ganda: abaikan kode yang sama selama 3 detik
+                    if (this.lastScannedCode === decodedText && this.lastScannedTime && (now - this.lastScannedTime) < 3000) {
+                        return;
+                    }
+
+                    this.lastScannedCode = decodedText;
+                    this.lastScannedTime = now;
+
+                    const kode = decodedText.trim().toUpperCase();
+                    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+                    try {
+                        const response = await fetch('{{ route("pelatihan.presensi.proses", $pelatihan) }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': csrfToken,
+                                'Accept': 'application/json',
+                            },
+                            body: JSON.stringify({ kode_presensi: kode }),
+                        });
+
+                        const data = await response.json();
+                        console.log('Scan response:', { status: data.status, hadir_count: data.hadir_count, hasil: data.hasil });
+
+                        if (response.ok && data.status === 'sukses') {
+                            this.scanResult = {
+                                type: 'success',
+                                pesan: data.pesan || 'Presensi berhasil!',
+                                nama: data.nama,
+                            };
+                        } else if (response.ok && data.status === 'sudah_hadir') {
+                            this.scanResult = {
+                                type: 'warning',
+                                pesan: data.pesan || 'Peserta sudah hadir sebelumnya',
+                                nama: data.nama,
+                            };
+                        } else {
+                            this.scanResult = {
+                                type: 'error',
+                                pesan: data.pesan || 'Gagal mencatat presensi',
+                                nama: null,
+                            };
+                        }
+
+                        // Hapus hasil setelah 4 detik
+                        setTimeout(() => {
+                            this.scanResult = null;
+                        }, 4000);
+                    } catch (error) {
+                        this.scanResult = {
+                            type: 'error',
+                            pesan: 'Error jaringan atau server',
+                            nama: null,
+                        };
+                        console.error('Scan submit error:', error);
+                    }
+                },
+
+                onQrError(error) {
+                    // Abaikan error continuous scanning, hanya log warning penting
+                    if (!error.toString().includes('NotFoundException')) {
+                        console.debug('QR scan error:', error.toString());
+                    }
+                },
+            };
+        }
+    </script>
+
+    @push('scripts')
+        @vite('resources/js/presensi-scan.js')
+    @endpush
 </x-app-layout>
