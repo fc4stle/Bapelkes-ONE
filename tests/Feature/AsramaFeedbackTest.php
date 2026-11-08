@@ -74,4 +74,42 @@ class AsramaFeedbackTest extends TestCase
         $response = $this->actingAs($this->panitia)->get(route('panitia.asrama.show', $this->asrama));
         $response->assertSee('Kamar berhasil ditambahkan.');
     }
+
+    public function test_badge_status_kamar_tidak_mengandung_backslash(): void
+    {
+        // Create a full kamar setup with occupant to check badge rendering
+        $pelatihan = Pelatihan::factory()->create();
+        $user = User::factory()->create(['role' => 'peserta']);
+        Pendaftaran::factory()->create([
+            'peserta_id' => $user->id,
+            'pelatihan_id' => $pelatihan->id,
+            'kamar_id' => $this->kamar->id,
+            'check_in' => now()->format('Y-m-d'),
+            'check_out' => now()->addDays(3)->format('Y-m-d'),
+            'status_verifikasi' => 'diverifikasi',
+        ]);
+
+        // Fill kamar to capacity to trigger 'Penuh' status
+        for ($i = 0; $i < 2; $i++) {
+            Pendaftaran::factory()->create([
+                'peserta_id' => User::factory()->create(['role' => 'peserta'])->id,
+                'pelatihan_id' => $pelatihan->id,
+                'kamar_id' => $this->kamar->id,
+                'check_in' => now()->format('Y-m-d'),
+                'check_out' => now()->addDays(3)->format('Y-m-d'),
+                'status_verifikasi' => 'diverifikasi',
+            ]);
+        }
+
+        $response = $this->actingAs($this->panitia)->get(route('panitia.asrama.show', $this->asrama));
+
+        // Verify that badge contains the expected style without backslash
+        $response->assertSee('style="background-color: var(--color-danger);', false);
+
+        // Verify that there's no backslash-quote in the HTML response for the badge
+        $content = $response->getContent();
+        // Check that we don't have text-white\" style=\"background-color in the response
+        $this->assertStringNotContainsString('text-white\" style=\"background-color', $content, 
+            'Badge HTML contains backslash before style attribute (HTML malformed)');
+    }
 }

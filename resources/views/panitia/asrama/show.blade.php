@@ -14,7 +14,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <!-- Session Error Message -->
             @if (session('error'))
-                <div class="mb-6 p-4 rounded-lg" style="border-left: 4px solid var(--color-danger); background-color: var(--color-surface); color: var(--color-text);">
+                <div class="mb-6 p-4 rounded-lg" style="border-left: 4px solid var(--color-primary); background-color: var(--color-surface); color: var(--color-text);">
                     <p class="font-medium">{{ session('error') }}</p>
                 </div>
             @endif
@@ -125,7 +125,7 @@
                                             </p>
                                         </div>
                                         <div class="flex flex-col gap-2">
-                                            <span class="px-3 py-1 text-xs font-medium rounded-full text-white @if ($kamar['status'] === 'Penuh') text-white\" style=\"background-color: var(--color-danger); @else text-gray-700\" style=\"background-color: var(--color-accent); @endif">
+                                            <span class="px-3 py-1 text-xs font-medium rounded-full text-white @if ($kamar['status'] === 'Penuh') text-white" style="background-color: var(--color-danger); @else text-gray-700" style="background-color: var(--color-accent); @endif">
                                                 {{ $kamar['status'] }}
                                             </span>
                                             <button
@@ -219,7 +219,7 @@
             <h3 class="text-lg font-semibold mb-4" style="color: var(--color-text);">Ubah Kapasitas Kamar</h3>
             <p class="text-sm text-gray-600 mb-4">Kamar: <strong x-text="nomorKamar"></strong></p>
 
-            <form :action="`/panitia/kamar/${kamarId}`" method="POST" @submit.prevent="$el.submit();">
+            <form :action="`/panitia/kamar/${kamarId}`" method="POST" @submit.prevent="$el.submit()">
                 @csrf
                 @method('PATCH')
 
@@ -277,7 +277,7 @@
             <p class="text-sm text-gray-600 mb-1">Peserta: <strong x-text="namaPeserta"></strong></p>
             <p class="text-sm text-gray-600 mb-4">Kamar Saat Ini: <strong x-text="kamarSkrg"></strong></p>
 
-            <form :action="`/panitia/pendaftaran/${pendaftaranId}/kamar`" method="POST" @submit.prevent="$el.submit();">
+            <form :action="`/panitia/pendaftaran/${pendaftaranId}/kamar`" method="POST" @submit.prevent="$el.submit()">
                 @csrf
                 @method('PATCH')
 
@@ -321,3 +321,4 @@
         </div>
     </div>
 </x-app-layout>
+
