@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'name' => env('APP_NAME', 'Bapelkes ONE'),
+    'name' => env('APP_NAME', 'Sistem Informasi Portal Pelatihan Terpadu'),
 
     /*
     |--------------------------------------------------------------------------

@@ -1,7 +1,6 @@
-# BAPELKES ONE
+# Sistem Informasi Portal Pelatihan Terpadu
 
-Portal terpadu pendaftaran pelatihan untuk Bapelkes DIY — proyek kelompok mata kuliah **Praktik Aplikasi
-Web (INF60295)**, Program Studi Teknologi Informasi S1, Fakultas Teknik, Universitas Negeri Yogyakarta.
+Portal terpadu pelatihan dan layanan peserta — proyek akademik mata kuliah **Praktik Aplikasi Web (INF60295)**, Program Studi Teknologi Informasi S1, Fakultas Teknik, Universitas Negeri Yogyakarta, dengan studi kasus layanan pelatihan Bapelkes DIY.
 
 ## Anggota Kelompok
 
