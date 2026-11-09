@@ -281,7 +281,7 @@ class PelatihanController extends Controller
             ->count();
 
         // 4. Pelatihan selesai tanpa TIYAS
-        $pelatihan_tanpa_tiyas = Pelatihan::where('status', 'selesai')
+        $pelatihan_tanpa_tiyas = Pelatihan::query()->sudahSelesai()
             ->whereDoesntHave('pendaftarans.tiyasResponse')
             ->count();
 
@@ -301,7 +301,7 @@ class PelatihanController extends Controller
             ->first();
 
         // 5. Daftar 5 pelatihan selesai dengan TIYAS terbaru
-        $tiyas_terbaru = Pelatihan::where('status', 'selesai')
+        $tiyas_terbaru = Pelatihan::query()->sudahSelesai()
             ->has('tiyasResponses')
             ->withCount('tiyasResponses')
             ->latest('tanggal_selesai')

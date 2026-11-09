@@ -74,7 +74,7 @@
                                     <button type="submit" class="text-sm text-[var(--color-danger)] hover:opacity-75">Batalkan</button>
                                 </form>
                             </div>
-                        @elseif ($pendaftaran->status_verifikasi === 'diverifikasi' && $pendaftaran->pelatihan->status->value === 'selesai')
+                        @elseif ($pendaftaran->status_verifikasi === 'diverifikasi' && $pendaftaran->pelatihan->sudahSelesai())
                             @if ($pendaftaran->tiyasResponse()->exists())
                                 <div class="mt-[var(--sp-2)]">
                                     <span class="inline-block px-2 py-1 text-xs font-semibold text-white rounded" style="background-color: var(--color-success);">Evaluasi sudah diisi</span>
@@ -130,7 +130,7 @@
                                                 <button type="submit" class="text-[var(--color-danger)] hover:opacity-75">Batalkan</button>
                                             </form>
                                         </div>
-                                    @elseif ($pendaftaran->status_verifikasi === 'diverifikasi' && $pendaftaran->pelatihan->status->value === 'selesai')
+                                    @elseif ($pendaftaran->status_verifikasi === 'diverifikasi' && $pendaftaran->pelatihan->sudahSelesai())
                                         @if ($pendaftaran->tiyasResponse()->exists())
                                             <span class="inline-block px-2 py-1 text-xs font-semibold text-white rounded" style="background-color: var(--color-success);">Evaluasi sudah diisi</span>
                                         @else

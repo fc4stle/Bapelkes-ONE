@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Pelatihan;
 use App\Models\Pendaftaran;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -379,12 +380,21 @@ class DashboardPanitiaTest extends TestCase
 
     public function test_pelatihan_tanpa_tiyas_hitung_benar(): void
     {
+        // Set test time ke 2026-11-15 untuk ensure tanggal_selesai di masa depan konsisten
+        Carbon::setTestNow(Carbon::parse('2026-11-15'));
+
+        // Bersihkan self::$pelatihan dari setUp() supaya tidak mengganggu test
+        // (setUp membuat pelatihan dengan status=dibuka dan tanggal=2026-08-03 yang sudah lewat)
+        Pelatihan::where('id', $this->pelatihan->id)->delete();
+
         $pelatihan_selesai_1 = Pelatihan::factory()->create([
             'status' => 'selesai',
+            'tanggal_selesai' => Carbon::parse('2026-11-20'), // Masa depan, tapi status selesai
         ]);
 
         $pelatihan_selesai_2 = Pelatihan::factory()->create([
             'status' => 'selesai',
+            'tanggal_selesai' => Carbon::parse('2026-11-20'),
         ]);
 
         // Pelatihan selesai 2 punya TIYAS
@@ -409,8 +419,10 @@ class DashboardPanitiaTest extends TestCase
 
         $response->assertStatus(200);
 
-        // Hanya pelatihan_selesai_1 yang tanpa TIYAS
+        // Hanya pelatihan_selesai_1 yang tanpa TIYAS (pelatihan 2 punya tiyasResponse)
         $this->assertEquals(1, $response->viewData('pelatihan_tanpa_tiyas'));
+
+        Carbon::setTestNow(); // Reset
     }
 
     public function test_asrama_pending_hitung_benar(): void
