@@ -52,6 +52,7 @@ Route::middleware(['auth'])->group(function () {
 
 Route::middleware(['auth', 'role:panitia,admin'])->group(function () {
     Route::get('/panitia/dashboard', [PelatihanController::class, 'dashboard'])->name('panitia.dashboard');
+    Route::get('/panitia/presensi', [PelatihanController::class, 'pilihPresensi'])->name('panitia.presensi.index');
     Route::get('/pelatihan/{pelatihan}/pendaftar', [PelatihanController::class, 'pendaftar'])->name('pelatihan.pendaftar');
     Route::get('/pelatihan/{pelatihan}/pendaftar/export', [PelatihanController::class, 'exportPendaftar'])->name('pelatihan.pendaftar.export');
     Route::get('/pelatihan/{pelatihan}/kehadiran/export', [PelatihanController::class, 'kehadiranExport'])->name('pelatihan.kehadiran.export');

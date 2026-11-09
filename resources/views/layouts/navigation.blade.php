@@ -34,6 +34,10 @@
                             Kelola Pelatihan
                         </x-nav-link>
 
+                        <x-nav-link :href="route('panitia.presensi.index')" :active="request()->routeIs('panitia.presensi.*', 'pelatihan.presensi')">
+                            Presensi
+                        </x-nav-link>
+
                         @if (auth()->user()->isAdmin())
                             <x-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')">
                                 Kelola Pengguna
@@ -227,6 +231,10 @@
 
                     <x-responsive-nav-link :href="route('pelatihans.index')" :active="request()->routeIs('pelatihans.index', 'pelatihans.show', 'pelatihans.create', 'pelatihans.edit')">
                         Kelola Pelatihan
+                    </x-responsive-nav-link>
+
+                    <x-responsive-nav-link :href="route('panitia.presensi.index')" :active="request()->routeIs('panitia.presensi.*', 'pelatihan.presensi')">
+                        Presensi
                     </x-responsive-nav-link>
 
                     @if (auth()->user()->isAdmin())
