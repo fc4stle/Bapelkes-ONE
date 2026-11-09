@@ -173,7 +173,7 @@ class PelatihanController extends Controller
                 ->where('status_verifikasi', 'diverifikasi')
                 ->with(['peserta', 'kamar.asrama'])
                 ->orderBy('data_diri->nama')
-                ->cursor();
+                ->get();
 
             $no = 1;
             foreach ($pendaftarans as $pendaftaran) {
@@ -185,17 +185,19 @@ class PelatihanController extends Controller
                 $statusVerifikasi = $this->escapeForCSV($pendaftaran->status_verifikasi ?? '');
 
                 // Status kehadiran
-                $kehadiran = $pendaftaran->hadir_at ? 'Hadir' : 'Belum';
+                $kehadiran = $this->escapeForCSV($pendaftaran->hadir_at ? 'Hadir' : 'Belum');
 
                 // Waktu hadir
-                $waktuHadir = $pendaftaran->hadir_at ? $pendaftaran->hadir_at->format('d/m/Y H:i') : '';
+                $waktuHadir = $this->escapeForCSV($pendaftaran->hadir_at ? $pendaftaran->hadir_at->format('d/m/Y H:i') : '');
 
                 // Kamar (nomor_kamar + nama asrama, atau kosong)
                 $kamar = '';
                 if ($pendaftaran->kamar) {
-                    $nomorKamar = $this->escapeForCSV($pendaftaran->kamar->nomor_kamar ?? '');
-                    $namaAsrama = $this->escapeForCSV($pendaftaran->kamar->asrama->nama ?? '');
+                    $nomorKamar = $pendaftaran->kamar->nomor_kamar ?? '';
+                    $namaAsrama = $pendaftaran->kamar->asrama->nama ?? '';
                     $kamar = $nomorKamar && $namaAsrama ? "{$nomorKamar} ({$namaAsrama})" : '';
+                    // Escape the combined kamar value
+                    $kamar = $this->escapeForCSV($kamar);
                 }
 
                 fputcsv($output, [
@@ -222,11 +224,17 @@ class PelatihanController extends Controller
 
     /**
      * Escape cell content for CSV to prevent injection.
+     * Prepends single quote to cells starting with =, +, -, @, TAB, or CR.
      */
     private function escapeForCSV(string $value): string
     {
         // Cegah CSV injection dengan memberi awalan tanda petik tunggal
-        if (in_array($value[0] ?? '', ['=', '+', '-', '@'], true)) {
+        if ($value === '') {
+            return $value;
+        }
+
+        $firstChar = $value[0];
+        if (in_array($firstChar, ['=', '+', '-', '@', "\t", "\r"], true)) {
             return '\''.$value;
         }
 
