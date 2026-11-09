@@ -450,13 +450,13 @@ class PelatihanController extends Controller
      */
     public function pilihPresensi()
     {
-        $today = now()->toDate(); // Use toDate() instead of toDateString() for consistency
+        $today = today()->toDateString();
 
         // Get pelatihan yang sedang berlangsung hari ini (status bukan draft)
         $pelatihanBerlangsung = Pelatihan::query()
             ->where('status', '!=', 'draft')
-            ->where('tanggal_mulai', '<=', $today)
-            ->where('tanggal_selesai', '>=', $today)
+            ->whereDate('tanggal_mulai', '<=', $today)
+            ->whereDate('tanggal_selesai', '>=', $today)
             ->withCount([
                 'pendaftarans as hadir_count' => fn ($q) => $q->where('status_verifikasi', 'diverifikasi')->whereNotNull('hadir_at'),
                 'pendaftarans as diverifikasi_count' => fn ($q) => $q->where('status_verifikasi', 'diverifikasi'),

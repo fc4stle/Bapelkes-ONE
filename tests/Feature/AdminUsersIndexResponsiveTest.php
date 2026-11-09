@@ -151,4 +151,25 @@ class AdminUsersIndexResponsiveTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('showResetPasswordModal');
     }
+
+    /**
+     * Test: Table wrapper has overflow-x-auto for horizontal scroll on mobile
+     */
+    public function test_table_wrapper_has_overflow_x_auto(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        User::factory()->create(['role' => 'panitia']);
+
+        $this->actingAs($admin);
+        $response = $this->get(route('admin.users.index'));
+
+        $response->assertStatus(200);
+        $content = $response->getContent();
+
+        // Verify overflow-x-auto is present
+        $this->assertStringContainsString('overflow-x-auto', $content);
+
+        // Verify overflow-hidden is NOT present (old implementation)
+        $this->assertStringNotContainsString('border overflow-hidden', $content);
+    }
 }
