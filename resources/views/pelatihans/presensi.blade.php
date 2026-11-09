@@ -82,8 +82,24 @@
                                 <h2 class="text-lg font-semibold text-gray-900">Scan QR Code</h2>
                             </div>
 
+                            <!-- Hasil Scan (Di atas video) -->
+                            <div x-show="scanResult" class="mb-4 p-4 rounded-lg" :class="scanResult?.type === 'success' ? 'bg-green-50 border border-green-100' : (scanResult?.type === 'warning' ? 'bg-yellow-50 border border-yellow-100' : 'bg-red-50 border border-red-100')">
+                                <div class="flex flex-col gap-3">
+                                    <div>
+                                        <p class="text-lg font-bold" :class="scanResult?.type === 'success' ? 'text-green-800' : (scanResult?.type === 'warning' ? 'text-yellow-800' : 'text-red-800')" x-text="scanResult?.pesan"></p>
+                                        <p x-show="scanResult?.nama" class="text-sm mt-1" :class="scanResult?.type === 'success' ? 'text-green-700' : (scanResult?.type === 'warning' ? 'text-yellow-700' : 'text-red-700')" x-text="'Peserta: ' + scanResult?.nama"></p>
+                                    </div>
+                                    <button type="button"
+                                        @click="continueScan()"
+                                        class="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2"
+                                        style="background-color: var(--color-primary);">
+                                        Scan peserta berikutnya
+                                    </button>
+                                </div>
+                            </div>
+
                             <div class="border border-gray-200 rounded-lg overflow-hidden">
-                                <div id="qr_scanner_container" style="display: none; height: 300px;"></div>
+                                <div id="qr_scanner_container" style="display: none; width: 100%; overflow: hidden; position: relative;"></div>
 
                                 <div x-show="!scanActive && !cameraError && !scanResult" class="p-4 bg-gray-50 text-center">
                                     <button type="button"
@@ -113,22 +129,6 @@
                                     <p class="text-sm text-red-700 font-medium mb-2">Kamera tidak dapat diakses</p>
                                     <p class="text-xs text-red-600 mb-3" x-text="cameraError"></p>
                                     <p class="text-xs text-red-600">Gunakan form input manual di bawah untuk melanjutkan presensi.</p>
-                                </div>
-
-                                <!-- Hasil Scan (Tetap Tampil) -->
-                                <div x-show="scanResult" class="p-4 border-t" :class="scanResult?.type === 'success' ? 'bg-green-50 border-green-100' : (scanResult?.type === 'warning' ? 'bg-yellow-50 border-yellow-100' : 'bg-red-50 border-red-100')">
-                                    <div class="flex flex-col gap-3">
-                                        <div>
-                                            <p class="text-lg font-bold" :class="scanResult?.type === 'success' ? 'text-green-800' : (scanResult?.type === 'warning' ? 'text-yellow-800' : 'text-red-800')" x-text="scanResult?.pesan"></p>
-                                            <p x-show="scanResult?.nama" class="text-sm mt-1" :class="scanResult?.type === 'success' ? 'text-green-700' : (scanResult?.type === 'warning' ? 'text-yellow-700' : 'text-red-700')" x-text="'Peserta: ' + scanResult?.nama"></p>
-                                        </div>
-                                        <button type="button"
-                                            @click="continueScan()"
-                                            class="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2"
-                                            style="background-color: var(--color-primary);">
-                                            Scan peserta berikutnya
-                                        </button>
-                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -233,6 +233,7 @@
                 continueScan() {
                     this.scanResult = null;
                     if (this.scanner) {
+                        document.getElementById('qr_scanner_container').style.display = 'block';
                         this.scanner.resume();
                     }
                 },
@@ -294,7 +295,8 @@
                             };
                         }
 
-                        // Pause scanner
+                        // Hide scanner and pause scanner
+                        document.getElementById('qr_scanner_container').style.display = 'none';
                         if (this.scanner) {
                             this.scanner.pause(true);
                         }
