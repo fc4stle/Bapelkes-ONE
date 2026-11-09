@@ -55,12 +55,12 @@
                 </form>
             </div>
 
-            <!-- Users Table -->
+            <!-- Users Table (Responsive) -->
             @if ($users->count() > 0)
-                <div class="overflow-x-auto rounded-[var(--radius-btn)] border" style="border-color: var(--color-accent);">
-                    <table class="w-full">
-                        <thead>
-                            <tr style="background-color: var(--color-bg);">
+                <div class="rounded-[var(--radius-btn)] border overflow-hidden" style="border-color: var(--color-accent);">
+                    <table class="block md:table w-full">
+                        <thead class="hidden md:table-header-group" style="background-color: var(--color-bg);">
+                            <tr>
                                 <th class="px-4 py-3 text-left text-sm font-semibold" style="color: var(--color-primary);">Nama</th>
                                 <th class="px-4 py-3 text-left text-sm font-semibold" style="color: var(--color-primary);">Email</th>
                                 <th class="px-4 py-3 text-left text-sm font-semibold" style="color: var(--color-primary);">Role</th>
@@ -69,62 +69,62 @@
                                 <th class="px-4 py-3 text-left text-sm font-semibold" style="color: var(--color-primary);">Aksi</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody class="block md:table-row-group">
                             @foreach ($users as $user)
-                                <tr class="border-t" style="border-color: var(--color-accent);" x-data="{ showResetPasswordModal: {{ (string) old('reset_user_id') === (string) $user->id && $errors->has('password') ? 'true' : 'false' }} }">
-                                    <td class="px-4 py-3 text-sm">{{ $user->name }}</td>
-                                    <td class="px-4 py-3 text-sm">{{ $user->email }}</td>
-                                    <td class="px-4 py-3 text-sm">
+                                <tr class="block md:table-row mb-4 md:mb-0 border-b md:border-b rounded-lg md:rounded-none p-4 md:p-0" style="border-color: var(--color-accent);" x-data="{ showResetPasswordModal: {{ (string) old('reset_user_id') === (string) $user->id && $errors->has('password') ? 'true' : 'false' }} }">
+                                    <td class="block md:table-cell px-4 py-3 text-sm break-all before:content-[attr(data-label)] before:block before:md:hidden before:font-bold before:text-xs before:mb-1" data-label="Nama">{{ $user->name }}</td>
+                                    <td class="block md:table-cell px-4 py-3 text-sm break-all before:content-[attr(data-label)] before:block before:md:hidden before:font-bold before:text-xs before:mb-1" data-label="Email">{{ $user->email }}</td>
+                                    <td class="block md:table-cell px-4 py-3 text-sm before:content-[attr(data-label)] before:block before:md:hidden before:font-bold before:text-xs before:mb-1" data-label="Role">
                                         @if ($user->isAdmin())
                                             <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold" style="background-color: var(--color-bg); color: var(--color-primary);">Admin</span>
                                         @else
                                             <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold" style="background-color: var(--color-bg); color: var(--color-primary);">Panitia</span>
                                         @endif
                                     </td>
-                                    <td class="px-4 py-3 text-sm">
+                                    <td class="block md:table-cell px-4 py-3 text-sm before:content-[attr(data-label)] before:block before:md:hidden before:font-bold before:text-xs before:mb-1" data-label="Status">
                                         @if ($user->isAktif())
                                             <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold text-white" style="background-color: #10b981;">Aktif</span>
                                         @else
                                             <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold text-white" style="background-color: #ef4444;">Nonaktif</span>
                                         @endif
                                     </td>
-                                    <td class="px-4 py-3 text-sm">{{ $user->created_at->format('d M Y') }}</td>
-                                    <td class="px-4 py-3 text-sm">
-                                        <div class="flex items-center gap-2 flex-wrap">
+                                    <td class="block md:table-cell px-4 py-3 text-sm before:content-[attr(data-label)] before:block before:md:hidden before:font-bold before:text-xs before:mb-1" data-label="Tanggal Daftar">{{ $user->created_at->format('d M Y') }}</td>
+                                    <td class="block md:table-cell px-4 py-3 text-sm before:content-[attr(data-label)] before:block before:md:hidden before:font-bold before:text-xs before:mb-1" data-label="Aksi">
+                                        <div class="flex flex-wrap gap-2 items-start md:items-center">
                                             @if ($user->id !== auth()->user()->id)
                                                 <!-- Reset Password Button -->
-                                                <button @click="showResetPasswordModal = true" type="button" class="text-xs font-semibold px-3 py-1 rounded-[var(--radius-btn)] text-white" style="background-color: var(--color-warning);">
+                                                <button @click="showResetPasswordModal = true" type="button" class="text-xs font-semibold px-3 py-2 md:py-1 rounded-[var(--radius-btn)] text-white min-h-10 md:min-h-auto w-full md:w-auto" style="background-color: var(--color-warning);">
                                                     Atur Ulang Sandi
                                                 </button>
 
                                                 <!-- Change Role Form -->
-                                                <form method="POST" action="{{ route('admin.users.updateRole', $user) }}" class="inline-flex items-center gap-2">
+                                                <form method="POST" action="{{ route('admin.users.updateRole', $user) }}" class="inline-flex items-center gap-2 w-full md:w-auto flex-wrap md:flex-nowrap">
                                                     @csrf
                                                     @method('PATCH')
-                                                    <select name="role" class="px-2 py-1 text-xs rounded border" style="border-color: var(--color-accent);">
+                                                    <select name="role" class="px-2 py-2 md:py-1 text-xs rounded border flex-1 md:flex-none md:w-auto" style="border-color: var(--color-accent);">
                                                         <option value="peserta" @selected($user->role === 'peserta')>Peserta</option>
                                                         <option value="panitia" @selected($user->role === 'panitia')>Panitia</option>
                                                         <option value="admin" @selected($user->role === 'admin')>Admin</option>
                                                     </select>
-                                                    <button type="submit" class="text-xs font-semibold px-3 py-1 rounded-[var(--radius-btn)] text-white" style="background-color: var(--color-primary);">
+                                                    <button type="submit" class="text-xs font-semibold px-3 py-2 md:py-1 rounded-[var(--radius-btn)] text-white min-h-10 md:min-h-auto flex-1 md:flex-none md:w-auto" style="background-color: var(--color-primary);">
                                                         Ubah
                                                     </button>
                                                 </form>
 
                                                 <!-- Nonaktifkan / Aktifkan Form -->
                                                 @if ($user->isAktif())
-                                                    <form method="POST" action="{{ route('admin.users.nonaktifkan', $user) }}" style="display: inline;" onsubmit="return confirm('Yakin nonaktifkan akun ini?');">
+                                                    <form method="POST" action="{{ route('admin.users.nonaktifkan', $user) }}" style="display: inline;" class="w-full md:w-auto" onsubmit="return confirm('Yakin nonaktifkan akun ini?');">
                                                         @csrf
                                                         @method('PATCH')
-                                                        <button type="submit" class="text-xs font-semibold px-3 py-1 rounded-[var(--radius-btn)] text-white" style="background-color: #ef4444;">
+                                                        <button type="submit" class="text-xs font-semibold px-3 py-2 md:py-1 rounded-[var(--radius-btn)] text-white min-h-10 md:min-h-auto w-full" style="background-color: #ef4444;">
                                                             Nonaktifkan
                                                         </button>
                                                     </form>
                                                 @else
-                                                    <form method="POST" action="{{ route('admin.users.aktifkan', $user) }}" style="display: inline;" onsubmit="return confirm('Yakin aktifkan akun ini?');">
+                                                    <form method="POST" action="{{ route('admin.users.aktifkan', $user) }}" style="display: inline;" class="w-full md:w-auto" onsubmit="return confirm('Yakin aktifkan akun ini?');">
                                                         @csrf
                                                         @method('PATCH')
-                                                        <button type="submit" class="text-xs font-semibold px-3 py-1 rounded-[var(--radius-btn)] text-white" style="background-color: #10b981;">
+                                                        <button type="submit" class="text-xs font-semibold px-3 py-2 md:py-1 rounded-[var(--radius-btn)] text-white min-h-10 md:min-h-auto w-full" style="background-color: #10b981;">
                                                             Aktifkan
                                                         </button>
                                                     </form>
