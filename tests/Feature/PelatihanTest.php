@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Pelatihan;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Date;
 use Tests\TestCase;
 
 class PelatihanTest extends TestCase
@@ -182,5 +183,121 @@ class PelatihanTest extends TestCase
         $response = $this->delete(route('pelatihans.destroy', ['pelatihan' => 99999]));
 
         $response->assertStatus(404);
+    }
+
+    // Tests untuk pilihPresensi dengan berbagai skenario tanggal
+    public function test_pilih_presensi_tanggal_selesai_hari_ini_jam_0000(): void
+    {
+        $today = now()->startOfDay();
+        Date::setTestNow($today->clone()->setHour(10)->setMinute(30));
+
+        $pelatihan = Pelatihan::factory()->create([
+            'tanggal_mulai' => $today->clone()->subDay(),
+            'tanggal_selesai' => $today,
+            'status' => 'dibuka',
+        ]);
+
+        $response = $this->get(route('panitia.presensi.index'));
+
+        $response->assertStatus(302);
+        $response->assertRedirect(route('pelatihan.presensi', $pelatihan));
+    }
+
+    public function test_pilih_presensi_tanggal_selesai_hari_ini_jam_1030(): void
+    {
+        $today = now()->startOfDay();
+        Date::setTestNow($today->clone()->setHour(10)->setMinute(30));
+
+        $pelatihan = Pelatihan::factory()->create([
+            'tanggal_mulai' => $today->clone()->subDay(),
+            'tanggal_selesai' => $today,
+            'status' => 'dibuka',
+        ]);
+
+        $response = $this->get(route('panitia.presensi.index'));
+
+        $response->assertStatus(302);
+        $response->assertRedirect(route('pelatihan.presensi', $pelatihan));
+    }
+
+    public function test_pilih_presensi_tanggal_selesai_hari_ini_jam_2359(): void
+    {
+        $today = now()->startOfDay();
+        Date::setTestNow($today->clone()->setHour(23)->setMinute(59));
+
+        $pelatihan = Pelatihan::factory()->create([
+            'tanggal_mulai' => $today->clone()->subDay(),
+            'tanggal_selesai' => $today,
+            'status' => 'dibuka',
+        ]);
+
+        $response = $this->get(route('panitia.presensi.index'));
+
+        $response->assertStatus(302);
+        $response->assertRedirect(route('pelatihan.presensi', $pelatihan));
+    }
+
+    public function test_pilih_presensi_tanggal_selesai_kemarin(): void
+    {
+        $today = now()->startOfDay();
+        Date::setTestNow($today->clone()->setHour(0)->setMinute(1));
+
+        // tanggal_selesai = kemarin dari perspektif hari ini
+        $pelatihan = Pelatihan::factory()->create([
+            'tanggal_mulai' => $today->clone()->subDays(2),
+            'tanggal_selesai' => $today->clone()->subDay(),
+            'status' => 'dibuka',
+        ]);
+
+        $response = $this->get(route('panitia.presensi.index'));
+
+        $response->assertStatus(200);
+        $response->assertViewIs('pelatihans.presensi-pilih');
+        $response->assertDontSee($pelatihan->nama);
+    }
+
+    public function test_pilih_presensi_tanggal_mulai_besok(): void
+    {
+        $today = now()->startOfDay();
+        Date::setTestNow($today);
+
+        $pelatihan = Pelatihan::factory()->create([
+            'tanggal_mulai' => $today->clone()->addDay(),
+            'tanggal_selesai' => $today->clone()->addDays(3),
+            'status' => 'dibuka',
+        ]);
+
+        $response = $this->get(route('panitia.presensi.index'));
+
+        $response->assertStatus(200);
+        $response->assertViewIs('pelatihans.presensi-pilih');
+        $response->assertDontSee($pelatihan->nama);
+    }
+
+    public function test_pilih_presensi_multiple_pelatihan_ends_today(): void
+    {
+        $today = now()->startOfDay();
+        Date::setTestNow($today->clone()->setHour(10)->setMinute(30));
+
+        $pelatihan1 = Pelatihan::factory()->create([
+            'nama' => 'Pelatihan 1',
+            'tanggal_mulai' => $today->clone()->subDay(),
+            'tanggal_selesai' => $today,
+            'status' => 'dibuka',
+        ]);
+
+        $pelatihan2 = Pelatihan::factory()->create([
+            'nama' => 'Pelatihan 2',
+            'tanggal_mulai' => $today->clone()->subDay(),
+            'tanggal_selesai' => $today,
+            'status' => 'dibuka',
+        ]);
+
+        $response = $this->get(route('panitia.presensi.index'));
+
+        $response->assertStatus(200);
+        $response->assertViewIs('pelatihans.presensi-pilih');
+        $response->assertSee('Pelatihan 1');
+        $response->assertSee('Pelatihan 2');
     }
 }

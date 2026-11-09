@@ -445,6 +445,43 @@ class PelatihanController extends Controller
     }
 
     /**
+     * Show presensi selection page or redirect to single pelatihan presensi.
+     * Only shows pelatihan that are currently ongoing (today is between tanggal_mulai and tanggal_selesai).
+     */
+    public function pilihPresensi()
+    {
+        $today = today()->toDateString();
+
+        // Get pelatihan yang sedang berlangsung hari ini (status bukan draft)
+        $pelatihanBerlangsung = Pelatihan::query()
+            ->where('status', '!=', 'draft')
+            ->whereDate('tanggal_mulai', '<=', $today)
+            ->whereDate('tanggal_selesai', '>=', $today)
+            ->withCount([
+                'pendaftarans as hadir_count' => fn ($q) => $q->where('status_verifikasi', 'diverifikasi')->whereNotNull('hadir_at'),
+                'pendaftarans as diverifikasi_count' => fn ($q) => $q->where('status_verifikasi', 'diverifikasi'),
+            ])
+            ->get();
+
+        // Jika hanya satu pelatihan, langsung redirect ke halaman presensinya
+        if ($pelatihanBerlangsung->count() === 1) {
+            return redirect()->route('pelatihan.presensi', $pelatihanBerlangsung->first());
+        }
+
+        // Jika tidak ada, tampilkan halaman kosong
+        if ($pelatihanBerlangsung->count() === 0) {
+            return view('pelatihans.presensi-pilih', [
+                'pelatihans' => collect(),
+            ]);
+        }
+
+        // Jika lebih dari satu, tampilkan halaman daftar
+        return view('pelatihans.presensi-pilih', [
+            'pelatihans' => $pelatihanBerlangsung,
+        ]);
+    }
+
+    /**
      * Process the presensi submission (panitia only).
      */
     public function prosesPresensi(Request $request, Pelatihan $pelatihan)

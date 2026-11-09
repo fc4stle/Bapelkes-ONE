@@ -57,7 +57,7 @@
 
             <!-- Users Table (Responsive) -->
             @if ($users->count() > 0)
-                <div class="rounded-[var(--radius-btn)] border overflow-hidden" style="border-color: var(--color-accent);">
+                <div class="rounded-[var(--radius-btn)] border overflow-x-auto" style="border-color: var(--color-accent);">
                     <table class="block md:table w-full">
                         <thead class="hidden md:table-header-group" style="background-color: var(--color-bg);">
                             <tr>
