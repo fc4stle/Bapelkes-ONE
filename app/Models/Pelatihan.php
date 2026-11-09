@@ -81,4 +81,43 @@ class Pelatihan extends Model
     {
         return $this->sisaKuota() <= 0;
     }
+
+    /**
+     * Satu sumber kebenaran: pelatihan sudah selesai
+     * - Status === Selesai, ATAU
+     * - Tanggal selesai lebih awal dari HARI INI (bukan termasuk hari tersebut, kecuali status sudah selesai)
+     */
+    public function sudahSelesai(): bool
+    {
+        // Jika status sudah manual 'selesai', langsung return true
+        if ($this->status === StatusPelatihan::Selesai) {
+            return true;
+        }
+
+        // Jika status belum 'selesai', cek apakah tanggal_selesai sudah lewat
+        // Membandingkan TANGGAL saja (bukan waktu): tanggal_selesai harus < hari ini
+        // Pada hari tanggal_selesai sendiri (pukul berapa pun), pelatihan BELUM selesai
+        return $this->tanggal_selesai->copy()->startOfDay()->lt(today());
+    }
+
+    /**
+     * Scope: Pelatihan yang sudah selesai
+     * Menggunakan logika yang sama dengan sudahSelesai()
+     */
+    public function scopeSudahSelesai($query)
+    {
+        return $query
+            ->where('status', StatusPelatihan::Selesai)
+            ->orWhereDate('tanggal_selesai', '<', now()->toDate());
+    }
+
+    /**
+     * Scope: Pelatihan yang belum selesai
+     */
+    public function scopeBelumSelesai($query)
+    {
+        return $query
+            ->where('status', '!=', StatusPelatihan::Selesai)
+            ->whereDate('tanggal_selesai', '>=', now()->toDate());
+    }
 }

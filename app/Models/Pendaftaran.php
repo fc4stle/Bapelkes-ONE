@@ -128,7 +128,7 @@ class Pendaftaran extends Model
 
     public function isPelatihanSelesai(): bool
     {
-        return $this->pelatihan && $this->pelatihan->tanggal_selesai->isPast();
+        return $this->pelatihan && $this->pelatihan->sudahSelesai();
     }
 
     public function bisaDownloadSertifikat(): bool
@@ -292,7 +292,7 @@ class Pendaftaran extends Model
         }
 
         // c) diverifikasi, pelatihan selesai (tanpa syarat hadir)
-        if ($this->isDiverifikasi() && $this->pelatihan->status->value === 'selesai') {
+        if ($this->isDiverifikasi() && $this->pelatihan->sudahSelesai()) {
             $aksi = [];
 
             if ($this->bisaDownloadSertifikat()) {
@@ -321,7 +321,7 @@ class Pendaftaran extends Model
         }
 
         // d) diverifikasi, belum hadir, pelatihan BELUM selesai
-        if ($this->isDiverifikasi() && ! $this->isHadir() && $this->pelatihan->status->value !== 'selesai') {
+        if ($this->isDiverifikasi() && ! $this->isHadir() && ! $this->pelatihan->sudahSelesai()) {
             return [
                 'judul' => 'Pendaftaran terverifikasi',
                 'deskripsi' => 'Tunjukkan kartu peserta saat hari pertama ('.$this->pelatihan->tanggal_mulai->translatedFormat('d M Y').').',
@@ -333,7 +333,7 @@ class Pendaftaran extends Model
         }
 
         // e) diverifikasi, sudah hadir, pelatihan BELUM selesai
-        if ($this->isDiverifikasi() && $this->isHadir() && $this->pelatihan->status->value !== 'selesai') {
+        if ($this->isDiverifikasi() && $this->isHadir() && ! $this->pelatihan->sudahSelesai()) {
             return [
                 'judul' => 'Anda sudah hadir',
                 'deskripsi' => 'Pelatihan berlangsung sampai '.$this->pelatihan->tanggal_selesai->translatedFormat('d M Y').'.',
