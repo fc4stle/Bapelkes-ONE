@@ -94,9 +94,10 @@ class Pelatihan extends Model
             return true;
         }
 
-        // Jika status belum 'selesai', cek apakah tanggal_selesai sudah lewat (bukan hari ini)
-        // Tanggal selesai < hari ini (zona waktu aplikasi)
-        return $this->tanggal_selesai->lessThan(now()->toDate());
+        // Jika status belum 'selesai', cek apakah tanggal_selesai sudah lewat
+        // Membandingkan TANGGAL saja (bukan waktu): tanggal_selesai harus < hari ini
+        // Pada hari tanggal_selesai sendiri (pukul berapa pun), pelatihan BELUM selesai
+        return $this->tanggal_selesai->copy()->startOfDay()->lt(today());
     }
 
     /**

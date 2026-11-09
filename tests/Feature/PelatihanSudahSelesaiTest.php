@@ -310,4 +310,76 @@ class PelatihanSudahSelesaiTest extends TestCase
         $this->assertTrue($pelatihan_sudah_selesai->pluck('id')->contains($pelatihan_2->id));
         $this->assertFalse($pelatihan_sudah_selesai->pluck('id')->contains($pelatihan_3->id));
     }
+
+    // ============ Edge case: hari terakhir pada berbagai jam ============
+
+    public function test_sudah_selesai_false_pada_hari_terakhir_pukul_pagi(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2026-11-15 10:30:00'));
+
+        $pelatihan = Pelatihan::factory()->create([
+            'status' => 'dibuka',
+            'tanggal_selesai' => Carbon::parse('2026-11-15'), // Hari yang sama
+        ]);
+
+        $this->assertFalse($pelatihan->sudahSelesai());
+    }
+
+    public function test_sudah_selesai_false_pada_hari_terakhir_pukul_malam(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2026-11-15 23:59:00'));
+
+        $pelatihan = Pelatihan::factory()->create([
+            'status' => 'dibuka',
+            'tanggal_selesai' => Carbon::parse('2026-11-15'), // Hari yang sama
+        ]);
+
+        $this->assertFalse($pelatihan->sudahSelesai());
+    }
+
+    public function test_sudah_selesai_true_keesokan_harinya_jam_satu_pagi(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2026-11-16 00:01:00'));
+
+        $pelatihan = Pelatihan::factory()->create([
+            'status' => 'dibuka',
+            'tanggal_selesai' => Carbon::parse('2026-11-15'),
+        ]);
+
+        $this->assertTrue($pelatihan->sudahSelesai());
+    }
+
+    public function test_konsistensi_method_dan_scope_pada_hari_terakhir_berbagai_jam(): void
+    {
+        // Tes consistency: method sudahSelesai() hasil yang sama dengan scope
+
+        $pelatihan = Pelatihan::factory()->create([
+            'status' => 'dibuka',
+            'tanggal_selesai' => Carbon::parse('2026-11-15'),
+        ]);
+
+        // Test pagi hari (10:30)
+        Carbon::setTestNow(Carbon::parse('2026-11-15 10:30:00'));
+        $method_result = $pelatihan->sudahSelesai();
+        $scope_result = Pelatihan::query()->sudahSelesai()->whereKey($pelatihan->id)->exists();
+        $this->assertEquals($method_result, $scope_result, 'Konsistensi pada jam 10:30');
+
+        // Test sore hari (14:00)
+        Carbon::setTestNow(Carbon::parse('2026-11-15 14:00:00'));
+        $method_result = $pelatihan->sudahSelesai();
+        $scope_result = Pelatihan::query()->sudahSelesai()->whereKey($pelatihan->id)->exists();
+        $this->assertEquals($method_result, $scope_result, 'Konsistensi pada jam 14:00');
+
+        // Test malam hari (23:59)
+        Carbon::setTestNow(Carbon::parse('2026-11-15 23:59:00'));
+        $method_result = $pelatihan->sudahSelesai();
+        $scope_result = Pelatihan::query()->sudahSelesai()->whereKey($pelatihan->id)->exists();
+        $this->assertEquals($method_result, $scope_result, 'Konsistensi pada jam 23:59');
+
+        // Test keesokan harinya (00:01)
+        Carbon::setTestNow(Carbon::parse('2026-11-16 00:01:00'));
+        $method_result = $pelatihan->sudahSelesai();
+        $scope_result = Pelatihan::query()->sudahSelesai()->whereKey($pelatihan->id)->exists();
+        $this->assertEquals($method_result, $scope_result, 'Konsistensi pada jam 00:01 esok hari');
+    }
 }

@@ -110,13 +110,10 @@ class TiyasTest extends TestCase
     }
 
     /**
-     * Test: peserta 403 jika pelatihan status 'dibuka' meski tanggal_selesai masa lalu.
-     */
-    /**
      * Test: peserta BOLEH isi TIYAS jika tanggal_selesai lewat (meski status masih dibuka).
      * Ini adalah perilaku baru: tanggal_selesai adalah sumber kebenaran utama, bukan status manual.
      */
-    public function test_peserta_403_status_dibuka_tanggal_masa_lalu()
+    public function test_peserta_boleh_isi_tiyas_status_dibuka_tanggal_masa_lalu()
     {
         $peserta = User::factory()->create(['role' => 'peserta']);
         $pelatihan = Pelatihan::factory()->create([
