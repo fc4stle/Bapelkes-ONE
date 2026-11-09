@@ -143,12 +143,98 @@ class PelatihanController extends Controller
     }
 
     /**
+     * Export rekap kehadiran to CSV (panitia only).
+     */
+    public function kehadiranExport(Pelatihan $pelatihan)
+    {
+        $fileName = 'rekap-kehadiran-'.str($pelatihan->nama)->slug('-').'-'.now()->format('Ymd').'.csv';
+
+        return response()->streamDownload(function () use ($pelatihan) {
+            $output = fopen('php://output', 'w');
+
+            // BOM UTF-8 agar terbuka benar di Excel
+            fprintf($output, chr(0xEF).chr(0xBB).chr(0xBF));
+
+            // Header CSV
+            fputcsv($output, [
+                'No',
+                'Nama',
+                'Email',
+                'Profesi',
+                'Instansi',
+                'Status Verifikasi',
+                'Kehadiran',
+                'Waktu Hadir',
+                'Kamar',
+            ]);
+
+            // Data pendaftaran dengan eager loading - hanya diverifikasi, urut nama
+            $pendaftarans = $pelatihan->pendaftarans()
+                ->where('status_verifikasi', 'diverifikasi')
+                ->with(['peserta', 'kamar.asrama'])
+                ->orderBy('data_diri->nama')
+                ->get();
+
+            $no = 1;
+            foreach ($pendaftarans as $pendaftaran) {
+                $dataDiri = $pendaftaran->data_diri ?? [];
+                $nama = $this->escapeForCSV($dataDiri['nama'] ?? '');
+                $email = $this->escapeForCSV($pendaftaran->peserta?->email ?? '');
+                $profesi = $this->escapeForCSV($dataDiri['profesi'] ?? '');
+                $instansi = $this->escapeForCSV($dataDiri['instansi'] ?? '');
+                $statusVerifikasi = $this->escapeForCSV($pendaftaran->status_verifikasi ?? '');
+
+                // Status kehadiran
+                $kehadiran = $this->escapeForCSV($pendaftaran->hadir_at ? 'Hadir' : 'Belum');
+
+                // Waktu hadir
+                $waktuHadir = $this->escapeForCSV($pendaftaran->hadir_at ? $pendaftaran->hadir_at->format('d/m/Y H:i') : '');
+
+                // Kamar (nomor_kamar + nama asrama, atau kosong)
+                $kamar = '';
+                if ($pendaftaran->kamar) {
+                    $nomorKamar = $pendaftaran->kamar->nomor_kamar ?? '';
+                    $namaAsrama = $pendaftaran->kamar->asrama->nama ?? '';
+                    $kamar = $nomorKamar && $namaAsrama ? "{$nomorKamar} ({$namaAsrama})" : '';
+                    // Escape the combined kamar value
+                    $kamar = $this->escapeForCSV($kamar);
+                }
+
+                fputcsv($output, [
+                    $no,
+                    $nama,
+                    $email,
+                    $profesi,
+                    $instansi,
+                    $statusVerifikasi,
+                    $kehadiran,
+                    $waktuHadir,
+                    $kamar,
+                ]);
+
+                $no++;
+            }
+
+            fclose($output);
+        }, $fileName, [
+            'Content-Type' => 'text/csv; charset=utf-8',
+            'Content-Disposition' => 'attachment; filename="'.$fileName.'"',
+        ]);
+    }
+
+    /**
      * Escape cell content for CSV to prevent injection.
+     * Prepends single quote to cells starting with =, +, -, @, TAB, or CR.
      */
     private function escapeForCSV(string $value): string
     {
         // Cegah CSV injection dengan memberi awalan tanda petik tunggal
-        if (in_array($value[0] ?? '', ['=', '+', '-', '@'], true)) {
+        if ($value === '') {
+            return $value;
+        }
+
+        $firstChar = $value[0];
+        if (in_array($firstChar, ['=', '+', '-', '@', "\t", "\r"], true)) {
             return '\''.$value;
         }
 
