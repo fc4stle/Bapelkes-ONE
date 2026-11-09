@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password', 'role'])]
+#[Fillable(['name', 'email', 'password', 'role', 'dinonaktifkan_at'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -38,6 +38,11 @@ class User extends Authenticatable
         return $this->role === 'peserta';
     }
 
+    public function isAktif(): bool
+    {
+        return $this->dinonaktifkan_at === null;
+    }
+
     /**
      * @return HasMany<Pendaftaran, $this>
      */
@@ -62,6 +67,7 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
+            'dinonaktifkan_at' => 'datetime',
             'password' => 'hashed',
         ];
     }

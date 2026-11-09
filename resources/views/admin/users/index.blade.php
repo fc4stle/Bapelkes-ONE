@@ -64,6 +64,7 @@
                                 <th class="px-4 py-3 text-left text-sm font-semibold" style="color: var(--color-primary);">Nama</th>
                                 <th class="px-4 py-3 text-left text-sm font-semibold" style="color: var(--color-primary);">Email</th>
                                 <th class="px-4 py-3 text-left text-sm font-semibold" style="color: var(--color-primary);">Role</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold" style="color: var(--color-primary);">Status</th>
                                 <th class="px-4 py-3 text-left text-sm font-semibold" style="color: var(--color-primary);">Tanggal Daftar</th>
                                 <th class="px-4 py-3 text-left text-sm font-semibold" style="color: var(--color-primary);">Aksi</th>
                             </tr>
@@ -80,9 +81,16 @@
                                             <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold" style="background-color: var(--color-bg); color: var(--color-primary);">Panitia</span>
                                         @endif
                                     </td>
+                                    <td class="px-4 py-3 text-sm">
+                                        @if ($user->isAktif())
+                                            <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold text-white" style="background-color: #10b981;">Aktif</span>
+                                        @else
+                                            <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold text-white" style="background-color: #ef4444;">Nonaktif</span>
+                                        @endif
+                                    </td>
                                     <td class="px-4 py-3 text-sm">{{ $user->created_at->format('d M Y') }}</td>
                                     <td class="px-4 py-3 text-sm">
-                                        <div class="flex items-center gap-2">
+                                        <div class="flex items-center gap-2 flex-wrap">
                                             @if ($user->id !== auth()->user()->id)
                                                 <!-- Reset Password Button -->
                                                 <button @click="showResetPasswordModal = true" type="button" class="text-xs font-semibold px-3 py-1 rounded-[var(--radius-btn)] text-white" style="background-color: var(--color-warning);">
@@ -102,6 +110,25 @@
                                                         Ubah
                                                     </button>
                                                 </form>
+
+                                                <!-- Nonaktifkan / Aktifkan Form -->
+                                                @if ($user->isAktif())
+                                                    <form method="POST" action="{{ route('admin.users.nonaktifkan', $user) }}" style="display: inline;" onsubmit="return confirm('Yakin nonaktifkan akun ini?');">
+                                                        @csrf
+                                                        @method('PATCH')
+                                                        <button type="submit" class="text-xs font-semibold px-3 py-1 rounded-[var(--radius-btn)] text-white" style="background-color: #ef4444;">
+                                                            Nonaktifkan
+                                                        </button>
+                                                    </form>
+                                                @else
+                                                    <form method="POST" action="{{ route('admin.users.aktifkan', $user) }}" style="display: inline;" onsubmit="return confirm('Yakin aktifkan akun ini?');">
+                                                        @csrf
+                                                        @method('PATCH')
+                                                        <button type="submit" class="text-xs font-semibold px-3 py-1 rounded-[var(--radius-btn)] text-white" style="background-color: #10b981;">
+                                                            Aktifkan
+                                                        </button>
+                                                    </form>
+                                                @endif
                                             @else
                                                 <span class="text-xs text-gray-500">—</span>
                                             @endif
