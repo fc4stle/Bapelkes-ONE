@@ -259,6 +259,7 @@ class PelatihanController extends Controller
             ->get()
             ->map(function ($pendaftaran) {
                 return [
+                    'id' => $pendaftaran->id,
                     'nama' => $pendaftaran->data_diri['nama'] ?? 'Peserta',
                     'hadir_at' => $pendaftaran->hadir_at->format('H:i'),
                 ];
@@ -474,6 +475,7 @@ class PelatihanController extends Controller
             'status' => 'sukses',
             'pesan' => "Presensi berhasil! Peserta: $nama.",
             'nama' => $nama,
+            'id' => $pendaftaran->id,
             'hadir_at' => $pendaftaran->hadir_at->format('H:i'),
             'hadir_count' => $pelatihan->pendaftarans()
                 ->where('status_verifikasi', 'diverifikasi')

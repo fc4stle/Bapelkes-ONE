@@ -64,7 +64,7 @@
                                 <span x-text="currentHadirCount"></span> dari <span x-text="totalCount"></span> peserta hadir
                             </p>
                             <div class="space-y-2">
-                                <template x-for="item in hadirList" :key="item.nama">
+                                <template x-for="item in hadirList" :key="item.id">
                                     <div class="flex items-center justify-between text-sm bg-white p-2 rounded border border-blue-100">
                                         <span class="font-medium text-gray-900" x-text="item.nama"></span>
                                         <span class="text-gray-500" x-text="item.hadir_at"></span>
@@ -177,7 +177,7 @@
                 lastScannedTime: null,
                 currentHadirCount: {{ $hadir_count }},
                 totalCount: {{ $total_count }},
-                hadirList: {{ json_encode($hadir_list) }},
+                hadirList: @json($hadir_list),
 
                 initScanData() {
                     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
@@ -272,6 +272,7 @@
                             // Update hitungan dan daftar
                             this.currentHadirCount = data.hadir_count;
                             this.hadirList.unshift({
+                                id: data.id,
                                 nama: data.nama,
                                 hadir_at: data.hadir_at,
                             });
@@ -295,7 +296,7 @@
 
                         // Pause scanner
                         if (this.scanner) {
-                            this.scanner.pause();
+                            this.scanner.pause(true);
                         }
                     } catch (error) {
                         this.scanResult = {

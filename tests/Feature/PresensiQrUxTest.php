@@ -235,4 +235,99 @@ class PresensiQrUxTest extends TestCase
             'Daftar harus urut terbaru (DESC)'
         );
     }
+
+    /**
+     * Test: Nama dengan tanda kutip & karakter khusus di halaman presensi tidak escaped &quot;.
+     */
+    public function test_presensi_nama_dengan_quotes_tidak_escaped(): void
+    {
+        $tanggal_mulai = now()->startOfDay();
+        Carbon::setTestNow($tanggal_mulai);
+
+        $this->pelatihan->update([
+            'tanggal_mulai' => $tanggal_mulai,
+            'tanggal_selesai' => $tanggal_mulai->clone()->addDays(5),
+        ]);
+
+        $namaKhusus = 'Dewi "Ayu" O\'Neil';
+        $pendaftaran = Pendaftaran::factory()
+            ->for($this->pelatihan)
+            ->create([
+                'status_verifikasi' => 'diverifikasi',
+                'hadir_at' => now(),
+                'data_diri' => [
+                    'nama' => $namaKhusus,
+                ],
+            ]);
+
+        $response = $this->actingAs($this->panitia)
+            ->get(route('pelatihan.presensi', $this->pelatihan));
+
+        $response->assertStatus(200);
+
+        // Pastikan teks JSON valid (tidak &quot;) di dalam <script>
+        $this->assertStringNotContainsString('&quot;nama&quot;', $response->getContent());
+
+        // Pastikan nama aman dalam JSON (@json() menggunakan escaping yang tepat untuk JS)
+        // Cari <script> section dan pastikan berisi nama dengan escape yang aman
+        preg_match('/<script[^>]*>.*?hadirList:\s*(\[.*?\]),/s', $response->getContent(), $matches);
+        $this->assertNotEmpty($matches, 'hadirList tidak ditemukan di <script>');
+
+        // Parse JSON dari hadirList dan cek nama ada
+        $hadirListJson = json_decode($matches[1], true);
+        $this->assertIsArray($hadirListJson);
+        $this->assertGreaterThan(0, count($hadirListJson));
+        $this->assertEquals($namaKhusus, $hadirListJson[0]['nama']);
+    }
+
+    /**
+     * Test: Dua peserta bernama sama muncul di daftar dengan id berbeda.
+     */
+    public function test_dua_peserta_nama_sama_keduanya_muncul_dengan_id_berbeda(): void
+    {
+        $tanggal_mulai = now()->startOfDay();
+        Carbon::setTestNow($tanggal_mulai);
+
+        $this->pelatihan->update([
+            'tanggal_mulai' => $tanggal_mulai,
+            'tanggal_selesai' => $tanggal_mulai->clone()->addDays(5),
+        ]);
+
+        $namaSama = 'Budi Santoso';
+        $p1 = Pendaftaran::factory()
+            ->for($this->pelatihan)
+            ->create([
+                'status_verifikasi' => 'diverifikasi',
+                'hadir_at' => now()->addMinutes(1),
+                'data_diri' => ['nama' => $namaSama],
+            ]);
+
+        $p2 = Pendaftaran::factory()
+            ->for($this->pelatihan)
+            ->create([
+                'status_verifikasi' => 'diverifikasi',
+                'hadir_at' => now(),
+                'data_diri' => ['nama' => $namaSama],
+            ]);
+
+        $response = $this->actingAs($this->panitia)
+            ->get(route('pelatihan.presensi', $this->pelatihan));
+
+        $response->assertStatus(200);
+        $hadirList = $response->viewData('hadir_list');
+
+        // Keduanya ada di daftar
+        $this->assertCount(2, $hadirList);
+
+        // ID berbeda
+        $this->assertNotEquals($hadirList[0]['id'], $hadirList[1]['id']);
+        $this->assertEqualsCanonicalizing(
+            [$p1->id, $p2->id],
+            [$hadirList[0]['id'], $hadirList[1]['id']]
+        );
+
+        // Keduanya punya nama yang sama
+        $this->assertEquals($namaSama, $hadirList[0]['nama']);
+        $this->assertEquals($namaSama, $hadirList[1]['nama']);
+    }
 }
