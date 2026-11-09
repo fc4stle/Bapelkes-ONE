@@ -114,7 +114,7 @@ class StatistikController extends Controller
                 'nama' => $pelatihan->nama,
                 'tanggal_mulai' => $pelatihan->tanggal_mulai,
                 'tanggal_selesai' => $pelatihan->tanggal_selesai,
-                'status' => $pelatihan->status->value,
+                'status' => $pelatihan->status,
                 'kuota' => $pelatihan->kuota,
                 'total_pendaftar' => $totalPendaftar,
                 'total_terverifikasi' => $totalTerverifikasi,

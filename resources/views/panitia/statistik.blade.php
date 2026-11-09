@@ -93,15 +93,15 @@
                                         <!-- Status -->
                                         <td class="px-6 py-4">
                                             @php
-                                                $statusConfig = [
-                                                    'rencana' => ['bg' => '#f3e8ff', 'text' => '#6b21a8', 'label' => 'Rencana'],
-                                                    'berjalan' => ['bg' => '#fef3c7', 'text' => '#92400e', 'label' => 'Berjalan'],
-                                                    'selesai' => ['bg' => '#dcfce7', 'text' => '#15803d', 'label' => 'Selesai'],
+                                                $statusColors = [
+                                                    'draft' => 'bg-gray-100 text-gray-800',
+                                                    'dibuka' => 'bg-green-100 text-green-800',
+                                                    'ditutup' => 'bg-yellow-100 text-yellow-800',
+                                                    'selesai' => 'bg-blue-100 text-blue-800',
                                                 ];
-                                                $config = $statusConfig[$pelatihan['status']] ?? ['bg' => '#f3f4f6', 'text' => '#6b7280', 'label' => ucfirst($pelatihan['status'])];
                                             @endphp
-                                            <span class="px-3 py-1 rounded-full text-xs font-semibold" style="background-color: {{ $config['bg'] }}; color: {{ $config['text'] }};">
-                                                {{ $config['label'] }}
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $statusColors[$pelatihan['status']->value] ?? 'bg-gray-100 text-gray-800' }}">
+                                                {{ $pelatihan['status']->label() }}
                                             </span>
                                         </td>
 

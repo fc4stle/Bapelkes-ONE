@@ -387,4 +387,50 @@ class StatistikPelatihanTest extends TestCase
         // Verifikasi overflow-x-auto untuk tabel responsif
         $response->assertSee('overflow-x-auto');
     }
+
+    public function test_status_badge_enum_draft_dibuka_ditutup_selesai(): void
+    {
+        $panitia = User::factory()->create(['role' => 'panitia']);
+
+        // Buat 4 pelatihan dengan semua status enum
+        $pelatihan_draft = Pelatihan::factory()->create([
+            'nama' => 'Pelatihan Draft',
+            'status' => 'draft',
+        ]);
+        $pelatihan_dibuka = Pelatihan::factory()->create([
+            'nama' => 'Pelatihan Dibuka',
+            'status' => 'dibuka',
+        ]);
+        $pelatihan_ditutup = Pelatihan::factory()->create([
+            'nama' => 'Pelatihan Ditutup',
+            'status' => 'ditutup',
+        ]);
+        $pelatihan_selesai = Pelatihan::factory()->create([
+            'nama' => 'Pelatihan Selesai',
+            'status' => 'selesai',
+        ]);
+
+        $response = $this->actingAs($panitia)->get(route('panitia.statistik.index'));
+
+        $response->assertStatus(200);
+
+        // Verifikasi semua status label ada
+        $response->assertSee('Draft');
+        $response->assertSee('Dibuka');
+        $response->assertSee('Ditutup');
+        $response->assertSee('Selesai');
+
+        // Verifikasi badge styling (Tailwind classes)
+        // Draft: bg-gray-100 text-gray-800
+        $response->assertSeeInOrder(['Pelatihan Draft', 'bg-gray-100', 'text-gray-800'], false);
+        // Dibuka: bg-green-100 text-green-800
+        $response->assertSeeInOrder(['Pelatihan Dibuka', 'bg-green-100', 'text-green-800'], false);
+        // Ditutup: bg-yellow-100 text-yellow-800
+        $response->assertSeeInOrder(['Pelatihan Ditutup', 'bg-yellow-100', 'text-yellow-800'], false);
+        // Selesai: bg-blue-100 text-blue-800
+        $response->assertSeeInOrder(['Pelatihan Selesai', 'bg-blue-100', 'text-blue-800'], false);
+
+        // Verifikasi struktur badge HTML
+        $response->assertSee('px-2 inline-flex text-xs leading-5 font-semibold rounded-full');
+    }
 }
