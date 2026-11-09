@@ -57,6 +57,25 @@
                     @endif
 
                     <div x-data="scanQrData()" x-init="initScanData()">
+                        <!-- Kartu Kehadiran -->
+                        <div class="mb-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                            <h3 class="font-semibold text-blue-900 mb-3">Kehadiran</h3>
+                            <p class="text-lg font-bold text-blue-900 mb-3">
+                                <span x-text="currentHadirCount"></span> dari <span x-text="totalCount"></span> peserta hadir
+                            </p>
+                            <div class="space-y-2">
+                                <template x-for="item in hadirList" :key="item.id">
+                                    <div class="flex items-center justify-between text-sm bg-white p-2 rounded border border-blue-100">
+                                        <span class="font-medium text-gray-900" x-text="item.nama"></span>
+                                        <span class="text-gray-500" x-text="item.hadir_at"></span>
+                                    </div>
+                                </template>
+                                <div x-show="hadirList.length === 0" class="text-sm text-gray-500 italic p-2">
+                                    Belum ada yang hadir.
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Bagian Scan QR -->
                         <div class="mb-8">
                             <div class="flex items-center justify-between mb-4">
@@ -66,7 +85,7 @@
                             <div class="border border-gray-200 rounded-lg overflow-hidden">
                                 <div id="qr_scanner_container" style="display: none; height: 300px;"></div>
 
-                                <div x-show="!scanActive && !cameraError" class="p-4 bg-gray-50 text-center">
+                                <div x-show="!scanActive && !cameraError && !scanResult" class="p-4 bg-gray-50 text-center">
                                     <button type="button"
                                         @click="startScan()"
                                         class="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2"
@@ -78,7 +97,7 @@
                                     </button>
                                 </div>
 
-                                <div x-show="scanActive" class="p-4 bg-gray-50">
+                                <div x-show="scanActive && !scanResult" class="p-4 bg-gray-50">
                                     <button type="button"
                                         @click="stopScan()"
                                         class="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2"
@@ -96,13 +115,19 @@
                                     <p class="text-xs text-red-600">Gunakan form input manual di bawah untuk melanjutkan presensi.</p>
                                 </div>
 
-                                <!-- Hasil Scan -->
+                                <!-- Hasil Scan (Tetap Tampil) -->
                                 <div x-show="scanResult" class="p-4 border-t" :class="scanResult?.type === 'success' ? 'bg-green-50 border-green-100' : (scanResult?.type === 'warning' ? 'bg-yellow-50 border-yellow-100' : 'bg-red-50 border-red-100')">
-                                    <div class="flex items-start gap-3">
+                                    <div class="flex flex-col gap-3">
                                         <div>
-                                            <p class="font-medium" :class="scanResult?.type === 'success' ? 'text-green-800' : (scanResult?.type === 'warning' ? 'text-yellow-800' : 'text-red-800')" x-text="scanResult?.pesan"></p>
+                                            <p class="text-lg font-bold" :class="scanResult?.type === 'success' ? 'text-green-800' : (scanResult?.type === 'warning' ? 'text-yellow-800' : 'text-red-800')" x-text="scanResult?.pesan"></p>
                                             <p x-show="scanResult?.nama" class="text-sm mt-1" :class="scanResult?.type === 'success' ? 'text-green-700' : (scanResult?.type === 'warning' ? 'text-yellow-700' : 'text-red-700')" x-text="'Peserta: ' + scanResult?.nama"></p>
                                         </div>
+                                        <button type="button"
+                                            @click="continueScan()"
+                                            class="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2"
+                                            style="background-color: var(--color-primary);">
+                                            Scan peserta berikutnya
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -150,9 +175,11 @@
                 cameraError: null,
                 lastScannedCode: null,
                 lastScannedTime: null,
+                currentHadirCount: {{ $hadir_count }},
+                totalCount: {{ $total_count }},
+                hadirList: @json($hadir_list),
 
                 initScanData() {
-                    // Pastikan CSRF token tersedia
                     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
                     if (!csrfToken) {
                         console.error('CSRF token not found');
@@ -161,7 +188,6 @@
 
                 async startScan() {
                     try {
-                        // Cek apakah Html5Qrcode sudah tersedia dari presensi-scan.js
                         if (typeof window.Html5Qrcode === 'undefined') {
                             this.cameraError = 'Library pemindai QR sedang dimuat. Coba lagi dalam beberapa detik.';
                             this.scanActive = false;
@@ -204,10 +230,16 @@
                     this.scanResult = null;
                 },
 
+                continueScan() {
+                    this.scanResult = null;
+                    if (this.scanner) {
+                        this.scanner.resume();
+                    }
+                },
+
                 async onQrSuccess(decodedText) {
                     const now = Date.now();
 
-                    // Cegah scan ganda: abaikan kode yang sama selama 3 detik
                     if (this.lastScannedCode === decodedText && this.lastScannedTime && (now - this.lastScannedTime) < 3000) {
                         return;
                     }
@@ -230,7 +262,6 @@
                         });
 
                         const data = await response.json();
-                        console.log('Scan response:', { status: data.status, hadir_count: data.hadir_count, hasil: data.hasil });
 
                         if (response.ok && data.status === 'sukses') {
                             this.scanResult = {
@@ -238,6 +269,17 @@
                                 pesan: data.pesan || 'Presensi berhasil!',
                                 nama: data.nama,
                             };
+                            // Update hitungan dan daftar
+                            this.currentHadirCount = data.hadir_count;
+                            this.hadirList.unshift({
+                                id: data.id,
+                                nama: data.nama,
+                                hadir_at: data.hadir_at,
+                            });
+                            // Jaga hanya 50 terbaru
+                            if (this.hadirList.length > 50) {
+                                this.hadirList.pop();
+                            }
                         } else if (response.ok && data.status === 'sudah_hadir') {
                             this.scanResult = {
                                 type: 'warning',
@@ -252,10 +294,10 @@
                             };
                         }
 
-                        // Hapus hasil setelah 4 detik
-                        setTimeout(() => {
-                            this.scanResult = null;
-                        }, 4000);
+                        // Pause scanner
+                        if (this.scanner) {
+                            this.scanner.pause(true);
+                        }
                     } catch (error) {
                         this.scanResult = {
                             type: 'error',
@@ -267,7 +309,6 @@
                 },
 
                 onQrError(error) {
-                    // Abaikan error continuous scanning, hanya log warning penting
                     if (!error.toString().includes('NotFoundException')) {
                         console.debug('QR scan error:', error.toString());
                     }
