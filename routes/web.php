@@ -7,6 +7,7 @@ use App\Http\Controllers\KamarController;
 use App\Http\Controllers\PelatihanController;
 use App\Http\Controllers\PendaftaranController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\StatistikController;
 use App\Http\Controllers\TiyasController;
 use Illuminate\Support\Facades\Route;
 
@@ -53,6 +54,7 @@ Route::middleware(['auth'])->group(function () {
 Route::middleware(['auth', 'role:panitia,admin'])->group(function () {
     Route::get('/panitia/dashboard', [PelatihanController::class, 'dashboard'])->name('panitia.dashboard');
     Route::get('/panitia/presensi', [PelatihanController::class, 'pilihPresensi'])->name('panitia.presensi.index');
+    Route::get('/panitia/statistik', [StatistikController::class, 'index'])->name('panitia.statistik.index');
     Route::get('/pelatihan/{pelatihan}/pendaftar', [PelatihanController::class, 'pendaftar'])->name('pelatihan.pendaftar');
     Route::get('/pelatihan/{pelatihan}/pendaftar/export', [PelatihanController::class, 'exportPendaftar'])->name('pelatihan.pendaftar.export');
     Route::get('/pelatihan/{pelatihan}/kehadiran/export', [PelatihanController::class, 'kehadiranExport'])->name('pelatihan.kehadiran.export');
