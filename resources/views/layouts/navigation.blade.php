@@ -38,6 +38,10 @@
                             Presensi
                         </x-nav-link>
 
+                        <x-nav-link :href="route('panitia.statistik.index')" :active="request()->routeIs('panitia.statistik.*')">
+                            Statistik
+                        </x-nav-link>
+
                         @if (auth()->user()->isAdmin())
                             <x-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')">
                                 Kelola Pengguna
@@ -235,6 +239,10 @@
 
                     <x-responsive-nav-link :href="route('panitia.presensi.index')" :active="request()->routeIs('panitia.presensi.*', 'pelatihan.presensi')">
                         Presensi
+                    </x-responsive-nav-link>
+
+                    <x-responsive-nav-link :href="route('panitia.statistik.index')" :active="request()->routeIs('panitia.statistik.*')">
+                        Statistik
                     </x-responsive-nav-link>
 
                     @if (auth()->user()->isAdmin())
