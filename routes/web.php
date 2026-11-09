@@ -20,7 +20,7 @@ Route::get('/pelatihan/{pelatihan}/detail', [PelatihanController::class, 'detail
 
 Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
@@ -79,6 +79,8 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::resource('users', AdminUserController::class)->only(['index', 'create', 'store']);
     Route::patch('/users/{user}/role', [AdminUserController::class, 'updateRole'])->name('users.updateRole');
     Route::patch('/users/{user}/password', [AdminUserController::class, 'resetPassword'])->name('users.resetPassword');
+    Route::patch('/users/{user}/nonaktifkan', [AdminUserController::class, 'nonaktifkan'])->name('users.nonaktifkan');
+    Route::patch('/users/{user}/aktifkan', [AdminUserController::class, 'aktifkan'])->name('users.aktifkan');
 });
 
 require __DIR__.'/auth.php';

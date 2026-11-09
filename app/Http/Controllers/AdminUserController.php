@@ -124,4 +124,51 @@ class AdminUserController extends Controller
         return redirect()->route('admin.users.index')
             ->with('success', "Kata sandi {$user->name} berhasil diatur ulang.");
     }
+
+    /**
+     * Nonaktifkan user (set dinonaktifkan_at).
+     * Aturan: admin tidak boleh menonaktifkan dirinya sendiri,
+     * dan tidak boleh menonaktifkan admin terakhir yang masih aktif.
+     */
+    public function nonaktifkan(Request $request, User $user): RedirectResponse
+    {
+        // Admin tidak boleh menonaktifkan dirinya sendiri
+        if ($request->user()->id === $user->id) {
+            return redirect()->back()
+                ->with('error', 'Anda tidak bisa menonaktifkan akun diri sendiri.');
+        }
+
+        // Cek: jika user adalah admin aktif, pastikan masih ada admin aktif lain
+        if ($user->isAdmin() && $user->isAktif()) {
+            $adminAktifCount = User::where('role', 'admin')
+                ->whereNull('dinonaktifkan_at')
+                ->count();
+            if ($adminAktifCount <= 1) {
+                return redirect()->back()
+                    ->with('error', 'Harus tetap ada minimal 1 admin yang aktif.');
+            }
+        }
+
+        $user->forceFill(['dinonaktifkan_at' => now()])->save();
+
+        return redirect()->back()
+            ->with('success', "Akun {$user->name} berhasil dinonaktifkan.");
+    }
+
+    /**
+     * Aktifkan user (set dinonaktifkan_at to null).
+     */
+    public function aktifkan(Request $request, User $user): RedirectResponse
+    {
+        // Admin tidak boleh mengaktifkan dirinya sendiri (seharusnya tidak mungkin terjadi, tapi safe check)
+        if ($request->user()->id === $user->id && $user->isAdmin()) {
+            return redirect()->back()
+                ->with('error', 'Anda tidak bisa mengaktifkan akun diri sendiri.');
+        }
+
+        $user->forceFill(['dinonaktifkan_at' => null])->save();
+
+        return redirect()->back()
+            ->with('success', "Akun {$user->name} berhasil diaktifkan.");
+    }
 }
