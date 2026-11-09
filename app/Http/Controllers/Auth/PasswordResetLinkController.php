@@ -46,7 +46,6 @@ class PasswordResetLinkController extends Controller
                             ->withErrors(['email' => __($status)]);
         } catch (Throwable $e) {
             Log::error('Password reset link failed to send', [
-                'email' => $request->email,
                 'exception' => $e::class,
             ]);
 

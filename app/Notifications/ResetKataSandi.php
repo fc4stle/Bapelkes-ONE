@@ -35,7 +35,6 @@ class ResetKataSandi extends Notification
         ], false));
 
         $expireMinutes = config('auth.passwords.users.expire');
-        $appName = config('app.name');
 
         return (new MailMessage)
             ->subject('Atur Ulang Kata Sandi - Portal Pelatihan Terpadu')

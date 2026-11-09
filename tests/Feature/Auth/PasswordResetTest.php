@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Notifications\ResetKataSandi;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Password;
 use Tests\TestCase;
@@ -210,5 +211,79 @@ class PasswordResetTest extends TestCase
         ]);
 
         $response->assertSessionHasErrors(['email']);
+    }
+
+    public function test_smtp_failure_returns_302_with_friendly_error(): void
+    {
+        Notification::fake();
+
+        $user = User::factory()->create();
+
+        // Mock Password::sendResetLink untuk throw exception
+        Password::shouldReceive('sendResetLink')
+            ->once()
+            ->andThrow(new \RuntimeException('SMTP connection failed'));
+
+        $response = $this->post('/forgot-password', ['email' => $user->email]);
+
+        // Assert: status 302 (redirect), bukan 500
+        $response->assertStatus(302);
+
+        // Assert: session punya error 'email' dengan pesan ramah
+        $response->assertSessionHasErrors(['email']);
+
+        // Assert: email input tetap terisi (old input)
+        $response->assertSessionHas('_old_input.email', $user->email);
+
+        // Extract error message dari session untuk verifikasi isi
+        $errorMessage = session('errors')->first('email');
+
+        // Assert: pesan error memuat teks ramah
+        $this->assertStringContainsString(
+            'Email belum dapat dikirim saat ini',
+            $errorMessage
+        );
+
+        // Assert: pesan error TIDAK mengandung 'SMTP connection failed'
+        $this->assertStringNotContainsString(
+            'SMTP connection failed',
+            $errorMessage
+        );
+    }
+
+    public function test_smtp_failure_logs_error_without_sensitive_data(): void
+    {
+        Log::spy();
+
+        $user = User::factory()->create();
+
+        // Mock Password::sendResetLink untuk throw exception
+        Password::shouldReceive('sendResetLink')
+            ->once()
+            ->andThrow(new \RuntimeException('smtp down'));
+
+        $this->post('/forgot-password', ['email' => $user->email]);
+
+        // Assert: Log::error dipanggil sekali
+        Log::shouldHaveReceived('error')
+            ->once()
+            ->withArgs(function ($message, $context) {
+                // Verifikasi message
+                if ($message !== 'Password reset link failed to send') {
+                    return false;
+                }
+
+                // Verifikasi konteks HANYA berisi 'exception', tidak ada 'email' atau token
+                if (! isset($context['exception'])) {
+                    return false;
+                }
+
+                // Verifikasi tidak ada email di konteks
+                if (isset($context['email'])) {
+                    return false;
+                }
+
+                return true;
+            });
     }
 }
