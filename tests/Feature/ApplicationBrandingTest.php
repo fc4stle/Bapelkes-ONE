@@ -269,6 +269,43 @@ class ApplicationBrandingTest extends TestCase
     }
 
     /**
+     * Guest layout memiliki kolom tunggal dengan max-w-md
+     */
+    public function test_guest_layout_has_single_column_max_width(): void
+    {
+        $response = $this->get(route('login'));
+
+        $response->assertStatus(200);
+        $response->assertSee('max-w-md');
+    }
+
+    /**
+     * Guest layout memiliki vertical padding py-8 sm:py-12
+     */
+    public function test_guest_layout_has_responsive_vertical_padding(): void
+    {
+        $response = $this->get(route('login'));
+
+        $response->assertStatus(200);
+        $response->assertSee('py-8 sm:py-12');
+    }
+
+    /**
+     * Guest layout TIDAK memiliki max-w-xs (pembatas subjudul lama)
+     */
+    public function test_guest_layout_does_not_have_max_w_xs(): void
+    {
+        $layoutPath = resource_path('views/layouts/guest.blade.php');
+        $layoutContent = file_get_contents($layoutPath);
+
+        $this->assertStringNotContainsString(
+            'max-w-xs',
+            $layoutContent,
+            'Guest layout tidak boleh memiliki max-w-xs yang membatasi subjudul'
+        );
+    }
+
+    /**
      * Guest layout memiliki header block dengan class mb-6 untuk spacing
      */
     public function test_guest_layout_has_header_block_with_margin_bottom(): void
