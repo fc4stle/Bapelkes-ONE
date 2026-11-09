@@ -149,7 +149,7 @@ class AdminUserController extends Controller
             }
         }
 
-        $user->update(['dinonaktifkan_at' => now()]);
+        $user->forceFill(['dinonaktifkan_at' => now()])->save();
 
         return redirect()->back()
             ->with('success', "Akun {$user->name} berhasil dinonaktifkan.");
@@ -166,7 +166,7 @@ class AdminUserController extends Controller
                 ->with('error', 'Anda tidak bisa mengaktifkan akun diri sendiri.');
         }
 
-        $user->update(['dinonaktifkan_at' => null]);
+        $user->forceFill(['dinonaktifkan_at' => null])->save();
 
         return redirect()->back()
             ->with('success', "Akun {$user->name} berhasil diaktifkan.");

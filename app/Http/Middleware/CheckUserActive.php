@@ -27,7 +27,7 @@ class CheckUserActive
                 $request->session()->regenerateToken();
 
                 return redirect('/login')
-                    ->with('message', 'Akun Anda dinonaktifkan. Hubungi admin.');
+                    ->with('status', 'Akun Anda dinonaktifkan. Hubungi admin.');
             }
         }
 

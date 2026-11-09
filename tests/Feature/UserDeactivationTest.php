@@ -63,14 +63,14 @@ class UserDeactivationTest extends TestCase
         // Login user terlebih dahulu
         $this->actingAs($user);
 
-        // Simulasikan user dinonaktifkan oleh admin
-        $user->update(['dinonaktifkan_at' => now()]);
+        // Simulasikan user dinonaktifkan oleh admin (gunakan forceFill, bukan update)
+        $user->forceFill(['dinonaktifkan_at' => now()])->save();
 
         // Request berikutnya ke route yang protected harus ter-logout dan redirect ke login
         $response = $this->get('/profile');
 
         $response->assertRedirect('/login');
-        $response->assertSessionHas('message', 'Akun Anda dinonaktifkan. Hubungi admin.');
+        $response->assertSessionHas('status', 'Akun Anda dinonaktifkan. Hubungi admin.');
         $this->assertGuest();
     }
 
@@ -209,5 +209,100 @@ class UserDeactivationTest extends TestCase
         $response->assertSee('User Nonaktif');
         $response->assertSee('Aktif');
         $response->assertSee('Nonaktif');
+    }
+
+    /**
+     * Test: admin yang sedang login lalu dinonaktifkan mendapat redirect ke login saat membuka admin.users.index
+     */
+    public function test_admin_redirected_to_login_when_deactivated_mid_session(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin', 'dinonaktifkan_at' => null]);
+
+        // Admin logged in
+        $this->actingAs($admin);
+
+        // Admin dinonaktifkan (simulate by another admin)
+        $admin->forceFill(['dinonaktifkan_at' => now()])->save();
+
+        // Admin coba akses admin.users.index, harus redirect ke login dengan status message
+        $response = $this->get(route('admin.users.index'));
+
+        $response->assertRedirect('/login');
+        $response->assertSessionHas('status', 'Akun Anda dinonaktifkan. Hubungi admin.');
+        $this->assertGuest();
+    }
+
+    /**
+     * Test: panitia nonaktif dengan sesi aktif redirect ke login saat membuka pelatihans.index
+     */
+    public function test_panitia_redirected_to_login_when_deactivated_mid_session(): void
+    {
+        $panitia = User::factory()->create(['role' => 'panitia', 'dinonaktifkan_at' => null]);
+
+        // Panitia logged in
+        $this->actingAs($panitia);
+
+        // Panitia dinonaktifkan
+        $panitia->forceFill(['dinonaktifkan_at' => now()])->save();
+
+        // Panitia coba akses pelatihans.index, harus redirect ke login
+        $response = $this->get(route('pelatihans.index'));
+
+        $response->assertRedirect('/login');
+        $response->assertSessionHas('status', 'Akun Anda dinonaktifkan. Hubungi admin.');
+        $this->assertGuest();
+    }
+
+    /**
+     * Test: setelah redirect, halaman login menampilkan teks status message
+     */
+    public function test_login_page_displays_deactivation_message_after_redirect(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin', 'dinonaktifkan_at' => null]);
+
+        // Admin logged in
+        $this->actingAs($admin);
+
+        // Admin dinonaktifkan
+        $admin->forceFill(['dinonaktifkan_at' => now()])->save();
+
+        // Admin coba akses route terproteksi
+        $response = $this->get(route('admin.users.index'));
+
+        // Follow redirect ke login
+        $response->assertRedirect('/login');
+
+        // Get login page dengan session status
+        $loginResponse = $this->get('/login');
+        $loginResponse->assertSee('Akun Anda dinonaktifkan. Hubungi admin.');
+    }
+
+    /**
+     * Test: User::create() tidak mengisi dinonaktifkan_at (mass assignment protection)
+     */
+    public function test_user_create_does_not_mass_assign_dinonaktifkan_at(): void
+    {
+        $user = User::create([
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => bcrypt('password123'),
+            'role' => 'peserta',
+            'dinonaktifkan_at' => now(),
+        ]);
+
+        // dinonaktifkan_at harus null karena tidak di-fillable
+        $this->assertNull($user->fresh()->dinonaktifkan_at);
+    }
+
+    /**
+     * Test: forceFill memungkinkan set dinonaktifkan_at (untuk admin controller)
+     */
+    public function test_forcefill_can_set_dinonaktifkan_at(): void
+    {
+        $user = User::factory()->create(['dinonaktifkan_at' => null]);
+
+        $user->forceFill(['dinonaktifkan_at' => now()])->save();
+
+        $this->assertNotNull($user->fresh()->dinonaktifkan_at);
     }
 }
