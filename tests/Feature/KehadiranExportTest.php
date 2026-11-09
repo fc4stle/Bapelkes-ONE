@@ -452,8 +452,15 @@ class KehadiranExportTest extends TestCase
             ->get(route('pelatihan.kehadiran.export', $this->pelatihan));
 
         $content = $response->streamedContent();
-        // Just verify that response doesn't error and contains escaped value
-        $this->assertStringContainsString("'\t", $content, 'Tab at start should be escaped with single quote');
+        $rows = $this->parseCSV($content);
+
+        $dataRows = array_slice($rows, 1);
+        // Find row with tab injection
+        $injectionRow = array_values(array_filter($dataRows, fn ($row) => str_contains($row[1], '=1+1')));
+        $this->assertCount(1, $injectionRow, 'Should find injection row with tab+formula');
+
+        // Check nama is escaped with single quote at start
+        $this->assertTrue(str_starts_with($injectionRow[0][1], "'"), 'Tab at start should be escaped with single quote');
     }
 
     public function test_csv_injection_prevention_carriage_return(): void
