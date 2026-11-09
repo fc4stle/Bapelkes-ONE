@@ -239,7 +239,32 @@ class PelatihanController extends Controller
      */
     public function presensi(Pelatihan $pelatihan)
     {
-        return view('pelatihans.presensi', compact('pelatihan'));
+        // Hitung peserta yang sudah hadir
+        $hadir_count = $pelatihan->pendaftarans()
+            ->where('status_verifikasi', 'diverifikasi')
+            ->whereNotNull('hadir_at')
+            ->count();
+
+        // Total peserta yang diverifikasi
+        $total_count = $pelatihan->pendaftarans()
+            ->where('status_verifikasi', 'diverifikasi')
+            ->count();
+
+        // Daftar peserta yang hadir (50 terbaru, urut hadir_at DESC)
+        $hadir_list = $pelatihan->pendaftarans()
+            ->where('status_verifikasi', 'diverifikasi')
+            ->whereNotNull('hadir_at')
+            ->orderByDesc('hadir_at')
+            ->limit(50)
+            ->get()
+            ->map(function ($pendaftaran) {
+                return [
+                    'nama' => $pendaftaran->data_diri['nama'] ?? 'Peserta',
+                    'hadir_at' => $pendaftaran->hadir_at->format('H:i'),
+                ];
+            });
+
+        return view('pelatihans.presensi', compact('pelatihan', 'hadir_count', 'total_count', 'hadir_list'));
     }
 
     /**
@@ -449,6 +474,11 @@ class PelatihanController extends Controller
             'status' => 'sukses',
             'pesan' => "Presensi berhasil! Peserta: $nama.",
             'nama' => $nama,
+            'hadir_at' => $pendaftaran->hadir_at->format('H:i'),
+            'hadir_count' => $pelatihan->pendaftarans()
+                ->where('status_verifikasi', 'diverifikasi')
+                ->whereNotNull('hadir_at')
+                ->count(),
         ];
     }
 }
