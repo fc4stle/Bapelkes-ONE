@@ -350,6 +350,7 @@ class KartuPesertaTest extends TestCase
         $response->assertStatus(200);
         // Pita kartu harus menampilkan
         $response->assertSee('Kartu Peserta Digital');
-        $response->assertSee('Bapelkes Dinkes DIY');
+        $response->assertSee('Studi Kasus: Bapelkes DIY');
+        $response->assertSee('Dokumen simulasi proyek akademik UNY — bukan dokumen resmi.');
     }
 }

@@ -97,11 +97,17 @@
             pointer-events: none;
             font-weight: bold;
         }
+        .footer-note {
+            font-size: 9px;
+            color: #64748b;
+            text-align: center;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
     <div class="sertifikat">
-        <div class="watermark">BAPELKES</div>
+        <div class="watermark">CONTOH</div>
         <div class="header">
             <h1>BADAN PELATIHAN KESEHATAN</h1>
             <h2>Sertifikat Penyelesaian</h2>
@@ -127,11 +133,14 @@
             </div>
             <div class="stempel">
                 <p>__________</p>
-                <p style="font-size: 11px; margin-top: 5px;">Kepala Bapelkes</p>
+                <p style="font-size: 11px; margin-top: 5px;">Kepala (simulasi)</p>
             </div>
             <div class="tanggal">
                 <p>Diterbitkan: {{ $pendaftaran->sertifikat_generated_at->format('d M Y') }}</p>
             </div>
+        </div>
+        <div class="footer-note">
+            Dokumen simulasi proyek akademik UNY — bukan sertifikat resmi Bapelkes.
         </div>
     </div>
 </body>
