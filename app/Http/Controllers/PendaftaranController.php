@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\StatusPelatihan;
+use App\Models\AktivitasLog;
 use App\Models\Kamar;
 use App\Models\Pelatihan;
 use App\Models\Pendaftaran;
@@ -276,6 +277,8 @@ class PendaftaranController extends Controller
 
         $pendaftaran->verifikasi(Auth::user());
 
+        AktivitasLog::catat('verifikasi_pendaftaran', "Memverifikasi pendaftaran {$pendaftaran->peserta->name} untuk {$pendaftaran->pelatihan->nama}", $pendaftaran);
+
         return back()->with('success', 'Pendaftaran berhasil diverifikasi.');
     }
 
@@ -291,6 +294,8 @@ class PendaftaranController extends Controller
         ]);
 
         $pendaftaran->tolak(Auth::user(), $validated['alasan_penolakan']);
+
+        AktivitasLog::catat('tolak_pendaftaran', "Menolak pendaftaran {$pendaftaran->peserta->name} untuk {$pendaftaran->pelatihan->nama}", $pendaftaran);
 
         return back()->with('success', 'Pendaftaran berhasil ditolak.');
     }
@@ -434,6 +439,9 @@ class PendaftaranController extends Controller
 
             // Kirim notifikasi SETELAH transaction berhasil
             $pendaftaran->peserta->notify(new KamarDipindah($pendaftaran, $kamarTujuan->nomor_kamar));
+
+            // Catat aktivitas setelah aksi berhasil
+            AktivitasLog::catat('pindah_kamar', "Memindahkan {$pendaftaran->peserta->name} ke kamar {$kamarTujuan->nomor_kamar}", $pendaftaran);
         } catch (ValidationException $e) {
             return back()->withErrors($e->errors());
         }

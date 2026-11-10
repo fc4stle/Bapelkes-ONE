@@ -6,6 +6,7 @@ use App\Enums\MetodePelatihan;
 use App\Enums\StatusPelatihan;
 use App\Http\Requests\StorePelatihanRequest;
 use App\Http\Requests\UpdatePelatihanRequest;
+use App\Models\AktivitasLog;
 use App\Models\Pelatihan;
 use App\Models\Pendaftaran;
 use App\Notifications\PelatihanSelesai;
@@ -313,7 +314,9 @@ class PelatihanController extends Controller
     {
         $validated = $request->validated();
 
-        Pelatihan::create($validated);
+        $pelatihan = Pelatihan::create($validated);
+
+        AktivitasLog::catat('tambah_pelatihan', "Menambahkan pelatihan {$pelatihan->nama}", $pelatihan);
 
         return redirect()
             ->route('pelatihans.index')
@@ -346,6 +349,8 @@ class PelatihanController extends Controller
 
         $pelatihan->update($validated);
 
+        AktivitasLog::catat('ubah_pelatihan', "Mengubah pelatihan {$pelatihan->nama}", $pelatihan);
+
         // Kirim notifikasi PelatihanSelesai jika status berubah menjadi 'selesai'
         if ($statusSebelumnya !== 'selesai' && $pelatihan->status === StatusPelatihan::Selesai) {
             // Ambil semua pendaftaran yang diverifikasi dan hadir
@@ -370,7 +375,10 @@ class PelatihanController extends Controller
      */
     public function destroy(Pelatihan $pelatihan)
     {
+        $namaPelatihan = $pelatihan->nama;
         $pelatihan->delete();
+
+        AktivitasLog::catat('hapus_pelatihan', "Menghapus pelatihan {$namaPelatihan}", $pelatihan);
 
         return redirect()
             ->route('pelatihans.index')
