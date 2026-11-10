@@ -55,6 +55,14 @@ class Pelatihan extends Model
     }
 
     /**
+     * @return HasMany<Pengumuman, $this>
+     */
+    public function pengumumans(): HasMany
+    {
+        return $this->hasMany(Pengumuman::class);
+    }
+
+    /**
      * @return HasManyThrough<TiyasResponse, Pendaftaran>
      */
     public function tiyasResponses(): HasManyThrough
