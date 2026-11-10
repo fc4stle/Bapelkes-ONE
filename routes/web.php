@@ -6,6 +6,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\KamarController;
 use App\Http\Controllers\PelatihanController;
 use App\Http\Controllers\PendaftaranController;
+use App\Http\Controllers\PengumumanController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\StatistikController;
 use App\Http\Controllers\TiyasController;
@@ -60,6 +61,8 @@ Route::middleware(['auth', 'role:panitia,admin'])->group(function () {
     Route::get('/pelatihan/{pelatihan}/kehadiran/export', [PelatihanController::class, 'kehadiranExport'])->name('pelatihan.kehadiran.export');
     Route::get('/pelatihan/{pelatihan}/presensi', [PelatihanController::class, 'presensi'])->name('pelatihan.presensi');
     Route::post('/pelatihan/{pelatihan}/presensi', [PelatihanController::class, 'prosesPresensi'])->name('pelatihan.presensi.proses');
+    Route::get('/pelatihan/{pelatihan}/pengumuman', [PengumumanController::class, 'index'])->name('pelatihan.pengumuman.index');
+    Route::post('/pelatihan/{pelatihan}/pengumuman', [PengumumanController::class, 'store'])->name('pelatihan.pengumuman.store');
     Route::patch('/pendaftarans/{pendaftaran}/verifikasi', [PendaftaranController::class, 'verifikasi'])->name('pendaftarans.verifikasi');
     Route::patch('/pendaftarans/{pendaftaran}/tolak', [PendaftaranController::class, 'tolak'])->name('pendaftarans.tolak');
     Route::get('/pelatihans/{pelatihan}/tiyas', [TiyasController::class, 'hasil'])->name('tiyas.hasil');
