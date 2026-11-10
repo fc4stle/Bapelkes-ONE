@@ -74,7 +74,7 @@ class PengumumanController extends Controller
                     'id' => (string) Str::uuid(),
                     'notifiable_type' => 'App\\Models\\User',
                     'notifiable_id' => $pendaftaran->peserta_id,
-                    'type' => 'App\\Notifications\\PengumumanPelatihan',
+                    'type' => 'pengumuman-pelatihan',
                     'data' => json_encode([
                         'pendaftaran_id' => $pendaftaran->id,
                         'judul_pelatihan' => $pelatihan->nama,

@@ -45,6 +45,16 @@ class PengumumanPelatihanTest extends TestCase
             ->assertViewHas('pelatihan', $this->pelatihan);
     }
 
+    public function test_pengumuman_link_appears_on_pendaftar_page(): void
+    {
+        $response = $this->actingAs($this->admin)
+            ->get(route('pelatihan.pendaftar', $this->pelatihan));
+
+        $response->assertStatus(200)
+            ->assertSee(route('pelatihan.pengumuman.index', $this->pelatihan))
+            ->assertSee('Pengumuman');
+    }
+
     public function test_panitia_can_access_pengumuman_index_page(): void
     {
         $response = $this->actingAs($this->panitia)
@@ -137,7 +147,7 @@ class PengumumanPelatihanTest extends TestCase
 
         // Check notifications table directly
         $notifications = DB::table('notifications')
-            ->where('type', 'App\\Notifications\\PengumumanPelatihan')
+            ->where('type', 'pengumuman-pelatihan')
             ->whereIn('notifiable_id', [$peserta1->id, $peserta2->id])
             ->get();
 
@@ -211,17 +221,17 @@ class PengumumanPelatihanTest extends TestCase
         // Check only verified peserta got notification
         $verifiedNotif = DB::table('notifications')
             ->where('notifiable_id', $verified->id)
-            ->where('type', 'App\\Notifications\\PengumumanPelatihan')
+            ->where('type', 'pengumuman-pelatihan')
             ->count();
 
         $pendingNotif = DB::table('notifications')
             ->where('notifiable_id', $pending->id)
-            ->where('type', 'App\\Notifications\\PengumumanPelatihan')
+            ->where('type', 'pengumuman-pelatihan')
             ->count();
 
         $rejectedNotif = DB::table('notifications')
             ->where('notifiable_id', $rejected->id)
-            ->where('type', 'App\\Notifications\\PengumumanPelatihan')
+            ->where('type', 'pengumuman-pelatihan')
             ->count();
 
         $this->assertEquals(1, $verifiedNotif);
@@ -427,7 +437,7 @@ class PengumumanPelatihanTest extends TestCase
         $this->assertStringContainsString('&quot;', $content);
     }
 
-    public function test_result_count_text_displays_correct_number(): void
+    public function test_flash_message_shows_recipient_count(): void
     {
         $peserta1 = User::factory()->create(['role' => 'peserta']);
         $peserta2 = User::factory()->create(['role' => 'peserta']);
@@ -448,7 +458,8 @@ class PengumumanPelatihanTest extends TestCase
                 'isi' => 'Isi test broadcast',
             ]);
 
-        $response->assertSessionHas('success', 'Pengumuman terkirim ke 2 peserta.');
+        $response->assertSessionHas('success', 'Pengumuman terkirim ke 2 peserta.')
+            ->assertRedirect(route('pelatihan.pengumuman.index', $this->pelatihan));
     }
 
     public function test_no_n_plus_one_queries_on_pengumuman_send(): void
@@ -501,5 +512,46 @@ class PengumumanPelatihanTest extends TestCase
             $queryCount2,
             "Query count increased from {$queryCount1} to {$queryCount2}: N+1 detected"
         );
+    }
+
+    public function test_peserta_can_click_notification_to_open_url_and_mark_as_read(): void
+    {
+        $peserta = User::factory()->create(['role' => 'peserta']);
+
+        Pendaftaran::factory()
+            ->for($this->pelatihan)
+            ->for($peserta, 'peserta')
+            ->create(['status_verifikasi' => 'diverifikasi']);
+
+        // Send announcement
+        $this->actingAs($this->admin)
+            ->post(route('pelatihan.pengumuman.store', $this->pelatihan), [
+                'judul' => 'Test Click Notification',
+                'isi' => 'Isi untuk test klik notifikasi.',
+            ]);
+
+        // Get notification from table
+        $notification = DB::table('notifications')
+            ->where('notifiable_id', $peserta->id)
+            ->where('type', 'pengumuman-pelatihan')
+            ->first();
+
+        $this->assertNotNull($notification);
+        $this->assertNull($notification->read_at);
+
+        // Click notification as peserta
+        $response = $this->actingAs($peserta)
+            ->get(route('notifikasi.buka', $notification->id));
+
+        // Should redirect to the URL specified in notification data
+        $data = json_decode($notification->data, true);
+        $response->assertRedirect($data['url']);
+
+        // Verify notification is marked as read
+        $updatedNotif = DB::table('notifications')
+            ->where('id', $notification->id)
+            ->first();
+
+        $this->assertNotNull($updatedNotif->read_at);
     }
 }
