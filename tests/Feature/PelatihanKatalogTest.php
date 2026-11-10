@@ -174,6 +174,6 @@ class PelatihanKatalogTest extends TestCase
         $response = $this->get(route('pelatihan.katalog', ['q' => 'tidak_ada']));
 
         $response->assertStatus(200);
-        $response->assertSee('Tidak ada pelatihan ditemukan');
+        $response->assertSee('Tidak ada pelatihan yang cocok dengan pencarian Anda.');
     }
 }
