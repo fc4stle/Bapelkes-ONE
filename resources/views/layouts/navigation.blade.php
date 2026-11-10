@@ -46,6 +46,10 @@
                             <x-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')">
                                 Kelola Pengguna
                             </x-nav-link>
+
+                            <x-nav-link :href="route('admin.aktivitas.index')" :active="request()->routeIs('admin.aktivitas.*')">
+                                Aktivitas
+                            </x-nav-link>
                         @endif
                     @else
                         <x-nav-link :href="route('pendaftarans.index')" :active="request()->routeIs('pendaftarans.index', 'pendaftarans.edit', 'pelatihan.daftar')">
@@ -248,6 +252,10 @@
                     @if (auth()->user()->isAdmin())
                         <x-responsive-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')">
                             Kelola Pengguna
+                        </x-responsive-nav-link>
+
+                        <x-responsive-nav-link :href="route('admin.aktivitas.index')" :active="request()->routeIs('admin.aktivitas.*')">
+                            Aktivitas
                         </x-responsive-nav-link>
                     @endif
                 @else

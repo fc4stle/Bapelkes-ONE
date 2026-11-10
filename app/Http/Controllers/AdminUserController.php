@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ResetUserPasswordRequest;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRoleRequest;
+use App\Models\AktivitasLog;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -97,6 +98,8 @@ class AdminUserController extends Controller
 
         $user->update(['role' => $validated['role']]);
 
+        AktivitasLog::catat('ubah_role_user', "Mengubah role {$user->name} menjadi {$validated['role']}", $user);
+
         return redirect()->back()
             ->with('success', 'Role berhasil diubah.');
     }
@@ -151,6 +154,8 @@ class AdminUserController extends Controller
 
         $user->forceFill(['dinonaktifkan_at' => now()])->save();
 
+        AktivitasLog::catat('nonaktifkan_user', "Menonaktifkan akun {$user->name}", $user);
+
         return redirect()->back()
             ->with('success', "Akun {$user->name} berhasil dinonaktifkan.");
     }
@@ -167,6 +172,8 @@ class AdminUserController extends Controller
         }
 
         $user->forceFill(['dinonaktifkan_at' => null])->save();
+
+        AktivitasLog::catat('aktifkan_user', "Mengaktifkan akun {$user->name}", $user);
 
         return redirect()->back()
             ->with('success', "Akun {$user->name} berhasil diaktifkan.");

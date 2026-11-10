@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AktivitasController;
 use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\AsramaController;
 use App\Http\Controllers\DashboardController;
@@ -88,6 +89,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::patch('/users/{user}/password', [AdminUserController::class, 'resetPassword'])->name('users.resetPassword');
     Route::patch('/users/{user}/nonaktifkan', [AdminUserController::class, 'nonaktifkan'])->name('users.nonaktifkan');
     Route::patch('/users/{user}/aktifkan', [AdminUserController::class, 'aktifkan'])->name('users.aktifkan');
+    Route::get('/aktivitas', [AktivitasController::class, 'index'])->name('aktivitas.index');
 });
 
 require __DIR__.'/auth.php';

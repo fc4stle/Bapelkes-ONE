@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\StatusPelatihan;
+use App\Models\AktivitasLog;
 use App\Models\Kamar;
 use App\Models\Pelatihan;
 use App\Models\Pendaftaran;
@@ -274,7 +275,14 @@ class PendaftaranController extends Controller
     {
         $this->authorize('verify', $pendaftaran);
 
+        // Load relationships sebelum aksi untuk keamanan deskripsi
+        $pendaftaran->load(['peserta', 'pelatihan']);
+
         $pendaftaran->verifikasi(Auth::user());
+
+        $namaPeserta = $pendaftaran->peserta->name ?? 'peserta';
+        $namaPelatihan = $pendaftaran->pelatihan->nama ?? 'pelatihan';
+        AktivitasLog::catat('verifikasi_pendaftaran', "Memverifikasi pendaftaran {$namaPeserta} untuk {$namaPelatihan}", $pendaftaran);
 
         return back()->with('success', 'Pendaftaran berhasil diverifikasi.');
     }
@@ -290,7 +298,14 @@ class PendaftaranController extends Controller
             'alasan_penolakan' => ['required', 'string', 'min:3', 'max:1000'],
         ]);
 
+        // Load relationships sebelum aksi untuk keamanan deskripsi
+        $pendaftaran->load(['peserta', 'pelatihan']);
+
         $pendaftaran->tolak(Auth::user(), $validated['alasan_penolakan']);
+
+        $namaPeserta = $pendaftaran->peserta->name ?? 'peserta';
+        $namaPelatihan = $pendaftaran->pelatihan->nama ?? 'pelatihan';
+        AktivitasLog::catat('tolak_pendaftaran', "Menolak pendaftaran {$namaPeserta} untuk {$namaPelatihan}", $pendaftaran);
 
         return back()->with('success', 'Pendaftaran berhasil ditolak.');
     }
@@ -432,8 +447,15 @@ class PendaftaranController extends Controller
                 $pendaftaran->update(['kamar_id' => $kamarTujuan->id]);
             });
 
+            // Load relationships untuk keamanan deskripsi
+            $pendaftaran->load(['peserta']);
+
             // Kirim notifikasi SETELAH transaction berhasil
             $pendaftaran->peserta->notify(new KamarDipindah($pendaftaran, $kamarTujuan->nomor_kamar));
+
+            // Catat aktivitas setelah aksi berhasil
+            $namaPeserta = $pendaftaran->peserta->name ?? 'peserta';
+            AktivitasLog::catat('pindah_kamar', "Memindahkan {$namaPeserta} ke kamar {$kamarTujuan->nomor_kamar}", $pendaftaran);
         } catch (ValidationException $e) {
             return back()->withErrors($e->errors());
         }
