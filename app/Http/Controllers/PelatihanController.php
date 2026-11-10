@@ -29,14 +29,68 @@ class PelatihanController extends Controller
      */
     public function katalog(Request $request)
     {
-        $search = $request->query('q');
+        // Validasi dan set default jika invalid (jangan error)
+        $search = null;
+        $waktu = 'semua';
+        $urut = 'terdekat';
+
+        // Cek dan validasi q
+        if ($request->filled('q')) {
+            $q = $request->query('q');
+            if (is_string($q) && strlen($q) <= 100) {
+                $search = $q;
+            }
+        }
+
+        // Cek dan validasi waktu
+        if ($request->filled('waktu')) {
+            $w = $request->query('waktu');
+            if (in_array($w, ['semua', 'akan_datang', 'berlangsung', 'selesai'])) {
+                $waktu = $w;
+            }
+        }
+
+        // Cek dan validasi urut
+        if ($request->filled('urut')) {
+            $u = $request->query('urut');
+            if (in_array($u, ['terdekat', 'terbaru'])) {
+                $urut = $u;
+            }
+        }
+
         $metode = MetodePelatihan::tryFrom((string) $request->query('metode'));
+        $today = today()->toDateString();
 
         $pelatihans = Pelatihan::query()
             ->where('status', StatusPelatihan::Dibuka)
-            ->when($search, fn ($query) => $query->where('nama', 'like', '%'.$search.'%'))
+            // Eager load jumlah pendaftar (terverifikasi) untuk menghindari N+1
+            ->withCount(['pendaftarans' => fn ($q) => $q->where('status_verifikasi', 'diverifikasi')])
+            // Cari: nama dan lokasi, case-insensitive, escape % dan _
+            ->when($search, function ($query) use ($search) {
+                $escaped = str_replace(['%', '_'], ['\\%', '\\_'], $search);
+
+                return $query->where(function ($q) use ($escaped) {
+                    $q->whereRaw("LOWER(nama) LIKE LOWER(?) ESCAPE '\\'", ['%'.$escaped.'%'])
+                        ->orWhereRaw("LOWER(lokasi) LIKE LOWER(?) ESCAPE '\\'", ['%'.$escaped.'%']);
+                });
+            })
+            // Filter waktu
+            ->when($waktu !== 'semua', function ($query) use ($waktu, $today) {
+                return match ($waktu) {
+                    'akan_datang' => $query->whereDate('tanggal_mulai', '>', $today),
+                    'berlangsung' => $query->whereDate('tanggal_mulai', '<=', $today)
+                        ->whereDate('tanggal_selesai', '>=', $today),
+                    'selesai' => $query->whereDate('tanggal_selesai', '<', $today),
+                    default => $query,
+                };
+            })
+            // Filter metode
             ->when($metode, fn ($query) => $query->where('metode', $metode))
-            ->latest()
+            // Urut
+            ->when($urut === 'terdekat', fn ($query) => $query->orderBy('tanggal_mulai'))
+            ->when($urut === 'terbaru', fn ($query) => $query->orderByDesc('tanggal_mulai'))
+            // Default jika tidak ada kondisi urut
+            ->when($urut !== 'terdekat' && $urut !== 'terbaru', fn ($query) => $query->orderBy('tanggal_mulai'))
             ->paginate(10)
             ->withQueryString();
 
@@ -44,6 +98,9 @@ class PelatihanController extends Controller
             'pelatihans' => $pelatihans,
             'search' => $search,
             'metode' => $metode?->value,
+            'waktu' => $waktu,
+            'urut' => $urut,
+            'hasCriteria' => (bool) ($search || $metode || $waktu !== 'semua'),
         ]);
     }
 

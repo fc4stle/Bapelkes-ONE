@@ -69,6 +69,11 @@ class Pelatihan extends Model
 
     public function jumlahPendaftar(): int
     {
+        // Gunakan eager loaded count jika tersedia (dari withCount dalam katalog)
+        if (isset($this->attributes['pendaftarans_count'])) {
+            return (int) $this->pendaftarans_count;
+        }
+
         return $this->pendaftarans()->where('status_verifikasi', 'diverifikasi')->count();
     }
 

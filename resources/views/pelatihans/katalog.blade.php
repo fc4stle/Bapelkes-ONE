@@ -9,40 +9,82 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Filter Card -->
         <div class="bg-white shadow rounded-[var(--radius-card)] p-4 sm:p-6 mb-6 border border-gray-200">
-            <form method="GET" action="{{ route('pelatihan.katalog') }}" class="flex flex-col gap-4 sm:flex-row sm:items-end">
-                <div class="flex-1">
-                    <x-input-label for="q" value="Cari Pelatihan" />
-                    <x-text-input type="text" name="q" id="q" value="{{ $search }}" placeholder="Cari nama pelatihan..." class="mt-1 block w-full" />
+            <form method="GET" action="{{ route('pelatihan.katalog') }}" class="grid grid-cols-1 md:grid-cols-5 gap-4 md:items-end">
+                <!-- Pencarian q -->
+                <div>
+                    <x-input-label for="q" value="Cari" />
+                    <x-text-input type="text" name="q" id="q" value="{{ $search }}" placeholder="Nama / lokasi..." class="mt-1 block w-full" />
                 </div>
 
+                <!-- Filter Waktu -->
+                <div>
+                    <x-input-label for="waktu" value="Waktu" />
+                    <select name="waktu" id="waktu" class="mt-1 block w-full rounded-[var(--radius-btn)] border-gray-300 shadow-sm focus:border-[var(--color-primary)] focus:ring-[var(--color-primary)] sm:text-sm border px-3 py-2">
+                        <option value="semua" {{ $waktu === 'semua' ? 'selected' : '' }}>Semua</option>
+                        <option value="akan_datang" {{ $waktu === 'akan_datang' ? 'selected' : '' }}>Akan Datang</option>
+                        <option value="berlangsung" {{ $waktu === 'berlangsung' ? 'selected' : '' }}>Berlangsung</option>
+                        <option value="selesai" {{ $waktu === 'selesai' ? 'selected' : '' }}>Selesai</option>
+                    </select>
+                </div>
+
+                <!-- Filter Urut -->
+                <div>
+                    <x-input-label for="urut" value="Urutkan" />
+                    <select name="urut" id="urut" class="mt-1 block w-full rounded-[var(--radius-btn)] border-gray-300 shadow-sm focus:border-[var(--color-primary)] focus:ring-[var(--color-primary)] sm:text-sm border px-3 py-2">
+                        <option value="terdekat" {{ $urut === 'terdekat' ? 'selected' : '' }}>Tanggal Terdekat</option>
+                        <option value="terbaru" {{ $urut === 'terbaru' ? 'selected' : '' }}>Tanggal Terbaru</option>
+                    </select>
+                </div>
+
+                <!-- Filter Metode (tetap di sini untuk backward compat) -->
                 <div>
                     <x-input-label for="metode" value="Metode" />
                     <select name="metode" id="metode" class="mt-1 block w-full rounded-[var(--radius-btn)] border-gray-300 shadow-sm focus:border-[var(--color-primary)] focus:ring-[var(--color-primary)] sm:text-sm border px-3 py-2">
-                        <option value="">Semua Metode</option>
+                        <option value="">Semua</option>
                         @foreach (\App\Enums\MetodePelatihan::cases() as $metodeOption)
                             <option value="{{ $metodeOption->value }}" {{ $metode === $metodeOption->value ? 'selected' : '' }}>{{ $metodeOption->label() }}</option>
                         @endforeach
                     </select>
                 </div>
 
+                <!-- Tombol Aksi -->
                 <div class="flex items-center gap-[var(--sp-3)]">
                     <x-primary-button type="submit">Cari</x-primary-button>
-                    @if ($search || $metode)
-                        <a href="{{ route('pelatihan.katalog') }}" class="text-sm text-gray-500 hover:text-gray-700">Reset</a>
+                    @if ($hasCriteria)
+                        <a href="{{ route('pelatihan.katalog') }}" class="text-sm font-medium text-gray-500 hover:text-gray-700 px-3 py-2 rounded-[var(--radius-btn)] hover:bg-gray-100">Reset</a>
                     @endif
                 </div>
             </form>
         </div>
 
+        <!-- Results Summary -->
+        @if ($pelatihans->total() > 0)
+            <div class="mb-4 text-sm text-gray-600">
+                <span class="font-medium">{{ $pelatihans->total() }} pelatihan ditemukan</span>
+            </div>
+        @endif
+
         <!-- Pelatihan Grid -->
         @if ($pelatihans->isEmpty())
-            <div class="text-center py-12">
-                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                <h3 class="mt-2 text-sm font-medium text-[var(--color-text)]">Tidak ada pelatihan ditemukan</h3>
-                <p class="mt-1 text-sm text-gray-500">Coba ubah kata kunci pencarian atau filter metode.</p>
-            </div>
+            @if ($hasCriteria)
+                <!-- Hasil kosong dari pencarian -->
+                <div class="text-center py-12">
+                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <h3 class="mt-2 text-sm font-medium text-[var(--color-text)]">Tidak ada pelatihan yang cocok dengan pencarian Anda.</h3>
+                    <p class="mt-1 text-sm text-gray-500">Coba ubah kata kunci atau filter.</p>
+                </div>
+            @else
+                <!-- Empty state awal (belum ada pelatihan sama sekali) -->
+                <div class="text-center py-12">
+                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <h3 class="mt-2 text-sm font-medium text-[var(--color-text)]">Tidak ada pelatihan ditemukan</h3>
+                    <p class="mt-1 text-sm text-gray-500">Pelatihan akan ditampilkan di sini.</p>
+                </div>
+            @endif
         @else
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[var(--sp-4)]">
                 @foreach ($pelatihans as $pelatihan)
