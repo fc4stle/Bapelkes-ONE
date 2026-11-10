@@ -352,5 +352,77 @@ class KartuPesertaTest extends TestCase
         $response->assertSee('Kartu Peserta Digital');
         $response->assertSee('Studi Kasus: Bapelkes DIY');
         $response->assertSee('Dokumen simulasi proyek akademik UNY — bukan dokumen resmi.');
+        // Memastikan teks lama tidak ada
+        $response->assertDontSee('Bapelkes Dinkes DIY');
+    }
+
+    public function test_kartu_peserta_tidak_lihat_teks_resmi_lama(): void
+    {
+        $pendaftaran = Pendaftaran::factory()->create([
+            'peserta_id' => $this->peserta->id,
+            'pelatihan_id' => $this->pelatihan->id,
+            'status_verifikasi' => 'diverifikasi',
+            'verified_by' => $this->panitia->id,
+            'verified_at' => now(),
+            'kode_presensi' => 'NOOLDTEXT123456',
+            'kode_generated_at' => now(),
+            'data_diri' => ['nama' => 'Test User', 'nik' => '1616161616161616', 'kontak' => '0816161616', 'profesi' => 'Perawat', 'instansi' => 'RS Test'],
+        ]);
+
+        $response = $this->actingAs($this->peserta)
+            ->get(route('pendaftarans.kartu', $pendaftaran));
+
+        $response->assertStatus(200);
+        $response->assertDontSee('Bapelkes Dinkes DIY');
+    }
+
+    public function test_sertifikat_view_menampilkan_catatan_simulasi(): void
+    {
+        $pendaftaran = Pendaftaran::factory()->create([
+            'peserta_id' => $this->peserta->id,
+            'pelatihan_id' => $this->pelatihan->id,
+            'status_verifikasi' => 'diverifikasi',
+            'verified_by' => $this->panitia->id,
+            'verified_at' => now(),
+            'kode_sertifikat' => 'CERT123456789',
+            'sertifikat_generated_at' => now(),
+            'data_diri' => ['nama' => 'Test Peserta', 'nik' => '1717171717171717', 'kontak' => '0817171717', 'profesi' => 'Perawat', 'instansi' => 'RS Test'],
+        ]);
+
+        $html = view('pendaftarans.sertifikat_pdf', [
+            'pendaftaran' => $pendaftaran,
+        ])->render();
+
+        $this->assertStringContainsString('Dokumen simulasi proyek akademik UNY — bukan sertifikat resmi Bapelkes.', $html);
+        $this->assertStringContainsString('Kepala (simulasi)', $html);
+        $this->assertStringContainsString('CONTOH', $html);
+        $this->assertStringNotContainsString('Kepala Bapelkes', $html);
+    }
+
+    public function test_sertifikat_unduh_pdf_response(): void
+    {
+        // Ubah pelatihan agar sudah selesai (tanggal_selesai di masa lalu)
+        $this->pelatihan->update([
+            'tanggal_selesai' => now()->subDay(),
+            'status' => 'selesai',
+        ]);
+
+        $pendaftaran = Pendaftaran::factory()->create([
+            'peserta_id' => $this->peserta->id,
+            'pelatihan_id' => $this->pelatihan->id,
+            'status_verifikasi' => 'diverifikasi',
+            'verified_by' => $this->panitia->id,
+            'verified_at' => now(),
+            'hadir_at' => now()->subHours(2), // Peserta sudah hadir
+            'kode_sertifikat' => 'CERT987654321',
+            'sertifikat_generated_at' => now(),
+            'data_diri' => ['nama' => 'Test Peserta 2', 'nik' => '1818181818181818', 'kontak' => '0818181818', 'profesi' => 'Perawat', 'instansi' => 'RS Test'],
+        ]);
+
+        $response = $this->actingAs($this->peserta)
+            ->get(route('pendaftarans.sertifikat', $pendaftaran));
+
+        $response->assertStatus(200);
+        $response->assertHeader('Content-Type', 'application/pdf');
     }
 }
