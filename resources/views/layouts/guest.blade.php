@@ -23,7 +23,7 @@
             <div class="w-full max-w-md">
                 <a href="/" class="block text-center mb-6">
                     <h1 class="text-2xl sm:text-3xl font-bold leading-snug" style="color: var(--color-primary);">{{ config('app.name', 'Sistem Informasi Portal Pelatihan Terpadu') }}</h1>
-                    <p class="text-sm mt-2" style="color: var(--color-text);">Portal terpadu pelatihan dan layanan peserta Bapelkes DIY</p>
+                    <p class="text-sm mt-2" style="color: var(--color-text);">Portal terpadu pelatihan dan layanan peserta — studi kasus Bapelkes DIY</p>
                 </a>
                 <div class="p-6 sm:p-8 rounded-[var(--radius-card)] overflow-hidden" style="background-color: var(--color-surface); box-shadow: var(--shadow-card);">
                     {{ $slot }}

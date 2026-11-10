@@ -315,4 +315,48 @@ class ApplicationBrandingTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('mb-6');
     }
+
+    /**
+     * Beranda menampilkan tagline studi kasus yang benar
+     */
+    public function test_beranda_displays_correct_case_study_tagline(): void
+    {
+        $response = $this->get('/');
+
+        $response->assertStatus(200);
+        $response->assertSee('Portal terpadu pelatihan dan layanan peserta — studi kasus Bapelkes DIY');
+    }
+
+    /**
+     * Beranda tidak menampilkan tagline lama tanpa "studi kasus"
+     */
+    public function test_beranda_does_not_display_old_tagline(): void
+    {
+        $response = $this->get('/');
+
+        $response->assertStatus(200);
+        $response->assertDontSee('Portal terpadu pelatihan dan layanan peserta Bapelkes DIY');
+    }
+
+    /**
+     * Halaman login menampilkan tagline studi kasus yang benar
+     */
+    public function test_login_page_displays_correct_case_study_tagline(): void
+    {
+        $response = $this->get(route('login'));
+
+        $response->assertStatus(200);
+        $response->assertSee('Portal terpadu pelatihan dan layanan peserta — studi kasus Bapelkes DIY');
+    }
+
+    /**
+     * Halaman login tidak menampilkan tagline lama tanpa "studi kasus"
+     */
+    public function test_login_page_does_not_display_old_tagline(): void
+    {
+        $response = $this->get(route('login'));
+
+        $response->assertStatus(200);
+        $response->assertDontSee('Portal terpadu pelatihan dan layanan peserta Bapelkes DIY');
+    }
 }

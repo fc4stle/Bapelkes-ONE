@@ -59,7 +59,7 @@
                         <div class="flex items-center justify-between">
                             <div>
                                 <h3 class="text-lg font-semibold text-white">Kartu Peserta Digital</h3>
-                                <p class="text-white text-sm">Bapelkes Dinkes DIY</p>
+                                <p class="text-white text-sm">Studi Kasus: Bapelkes DIY</p>
                             </div>
                             <svg class="h-8 w-8 flex-shrink-0 opacity-80" style="color: white;" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M3 5a2 2 0 012-2h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5zm10.7 12.7L9 13l-2.7 2.7-1.4-1.4L9 10.2l6.1 6.1-1.4 1.4z"/>
@@ -139,9 +139,14 @@
 
                     <div class="bg-gray-50 px-6 py-4">
                         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                            <p class="text-xs text-gray-500">
-                                Diverifikasi oleh: {{ $pendaftaran->verifier->name ?? 'Panitia' }} pada {{ $pendaftaran->verified_at->format('d M Y H:i') }}
-                            </p>
+                            <div class="flex-1">
+                                <p class="text-xs text-gray-500 mb-2">
+                                    Diverifikasi oleh: {{ $pendaftaran->verifier->name ?? 'Panitia' }} pada {{ $pendaftaran->verified_at->format('d M Y H:i') }}
+                                </p>
+                                <p class="text-xs text-gray-400">
+                                    Dokumen simulasi proyek akademik UNY — bukan dokumen resmi.
+                                </p>
+                            </div>
                             <button onclick="window.print()" class="print:hidden w-full sm:w-auto inline-flex items-center justify-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
                                 Cetak
                             </button>
