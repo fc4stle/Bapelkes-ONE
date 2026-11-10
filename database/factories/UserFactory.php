@@ -43,34 +43,4 @@ class UserFactory extends Factory
             'email_verified_at' => null,
         ]);
     }
-
-    /**
-     * Indicate that the user should be an admin.
-     */
-    public function admin(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'role' => 'admin',
-        ]);
-    }
-
-    /**
-     * Indicate that the user should be a panitia.
-     */
-    public function panitia(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'role' => 'panitia',
-        ]);
-    }
-
-    /**
-     * Indicate that the user should be a peserta.
-     */
-    public function peserta(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'role' => 'peserta',
-        ]);
-    }
 }

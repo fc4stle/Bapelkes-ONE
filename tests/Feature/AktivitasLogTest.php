@@ -3,14 +3,19 @@
 namespace Tests\Feature;
 
 use App\Models\AktivitasLog;
+use App\Models\Kamar;
 use App\Models\Pelatihan;
+use App\Models\Pendaftaran;
 use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Tests\TestCase;
 
 class AktivitasLogTest extends TestCase
 {
+    use RefreshDatabase;
+
     protected User $admin;
 
     protected User $panitia;
@@ -23,9 +28,9 @@ class AktivitasLogTest extends TestCase
     {
         parent::setUp();
 
-        $this->admin = User::factory()->admin()->create();
-        $this->panitia = User::factory()->panitia()->create();
-        $this->peserta = User::factory()->peserta()->create();
+        $this->admin = User::factory()->create(['role' => 'admin']);
+        $this->panitia = User::factory()->create(['role' => 'panitia']);
+        $this->peserta = User::factory()->create(['role' => 'peserta']);
         $this->guest = User::factory()->create(['role' => 'guest']);
     }
 
@@ -184,6 +189,113 @@ class AktivitasLogTest extends TestCase
         $this->assertEquals($this->panitia->id, $log->user_id);
     }
 
+    public function test_verifikasi_pendaftaran_membuat_satu_log_dengan_aksi_verifikasi_dan_deskripsi_memuat_nama_peserta(): void
+    {
+        $pelatihan = Pelatihan::factory()->create(['status' => 'dibuka']);
+        $pesertaUser = User::factory()->create(['role' => 'peserta', 'name' => 'Budi Santoso']);
+        $pendaftaran = Pendaftaran::factory()->create([
+            'peserta_id' => $pesertaUser->id,
+            'pelatihan_id' => $pelatihan->id,
+            'status_verifikasi' => 'pending',
+            'data_diri' => [
+                'nik' => '1234567890123456',
+                'kontak' => '08123456789',
+                'profesi' => 'Perawat',
+                'instansi' => 'RS Dr. Sardjito',
+            ],
+        ]);
+
+        AktivitasLog::query()->delete();
+
+        $response = $this->actingAs($this->panitia)
+            ->patch(route('pendaftarans.verifikasi', $pendaftaran));
+
+        $response->assertRedirect();
+
+        $log = AktivitasLog::latest()->first();
+        $this->assertNotNull($log);
+        $this->assertEquals('verifikasi_pendaftaran', $log->aksi);
+        $this->assertStringContainsString('Budi Santoso', $log->deskripsi);
+        $this->assertStringContainsString($pelatihan->nama, $log->deskripsi);
+        $this->assertEquals($this->panitia->id, $log->user_id);
+    }
+
+    public function test_tolak_pendaftaran_membuat_satu_log_dengan_aksi_tolak_dan_deskripsi_memuat_nama_peserta(): void
+    {
+        $pelatihan = Pelatihan::factory()->create(['status' => 'dibuka']);
+        $pesertaUser = User::factory()->create(['role' => 'peserta', 'name' => 'Andi Wijaya']);
+        $pendaftaran = Pendaftaran::factory()->create([
+            'peserta_id' => $pesertaUser->id,
+            'pelatihan_id' => $pelatihan->id,
+            'status_verifikasi' => 'pending',
+            'data_diri' => [
+                'nik' => '6543210987654321',
+                'kontak' => '08765432109',
+                'profesi' => 'Dokter',
+                'instansi' => 'RSUP Dr. M. Djamil',
+            ],
+        ]);
+
+        AktivitasLog::query()->delete();
+
+        $response = $this->actingAs($this->panitia)
+            ->patch(route('pendaftarans.tolak', $pendaftaran), [
+                'alasan_penolakan' => 'Data tidak lengkap',
+            ]);
+
+        $response->assertRedirect();
+
+        $log = AktivitasLog::latest()->first();
+        $this->assertNotNull($log);
+        $this->assertEquals('tolak_pendaftaran', $log->aksi);
+        $this->assertStringContainsString('Andi Wijaya', $log->deskripsi);
+        $this->assertStringContainsString($pelatihan->nama, $log->deskripsi);
+        $this->assertEquals($this->panitia->id, $log->user_id);
+    }
+
+    public function test_pindah_kamar_membuat_satu_log_dengan_aksi_pindah_kamar_dan_deskripsi_memuat_nama_peserta(): void
+    {
+        $pelatihan = Pelatihan::factory()->create(['status' => 'dibuka']);
+        $pesertaUser = User::factory()->create(['role' => 'peserta', 'name' => 'Citra Dewi']);
+        $pendaftaran = Pendaftaran::factory()->create([
+            'peserta_id' => $pesertaUser->id,
+            'pelatihan_id' => $pelatihan->id,
+            'status_verifikasi' => 'diverifikasi',
+            'butuh_asrama' => true,
+            'check_in' => now()->toDateString(),
+            'check_out' => now()->addDays(5)->toDateString(),
+            'data_diri' => [
+                'nik' => '1122334455667788',
+                'kontak' => '081122334455',
+                'profesi' => 'Bidan',
+                'instansi' => 'Puskesmas Sewon',
+            ],
+        ]);
+
+        // Buat kamar awal
+        $asrama = Kamar::factory()->create();
+        $pendaftaran->update(['kamar_id' => $asrama->id]);
+
+        // Buat kamar tujuan
+        $kamarBaru = Kamar::factory()->create();
+
+        AktivitasLog::query()->delete();
+
+        $response = $this->actingAs($this->admin)
+            ->patch(route('panitia.pendaftaran.pindah-kamar', $pendaftaran), [
+                'kamar_id' => $kamarBaru->id,
+            ]);
+
+        $response->assertRedirect();
+
+        $log = AktivitasLog::latest()->first();
+        $this->assertNotNull($log);
+        $this->assertEquals('pindah_kamar', $log->aksi);
+        $this->assertStringContainsString('Citra Dewi', $log->deskripsi);
+        $this->assertStringContainsString($kamarBaru->nomor_kamar, $log->deskripsi);
+        $this->assertEquals($this->admin->id, $log->user_id);
+    }
+
     /* ===== Validasi & Keamanan ===== */
 
     public function test_aksi_yang_gagal_validasi_tidak_membuat_log(): void
@@ -214,6 +326,30 @@ class AktivitasLogTest extends TestCase
         // Blade {{ }} otomatis escape HTML entities
         $this->assertStringNotContainsString('<script>', $response->getContent());
         $this->assertTrue(true); // View render without error is a pass
+    }
+
+    public function test_gagal_catat_aktivitas_tidak_menggagalkan_aksi_nonaktifkan_user(): void
+    {
+        AktivitasLog::query()->delete();
+
+        // Simulasikan gagal pencatatan dengan listener yang throw exception
+        // Register listener untuk AktivitasLog creating event
+        AktivitasLog::creating(function () {
+            throw new \Exception('Simulasi error pencatatan');
+        });
+
+        // Aksi seharusnya tetap berhasil meski pencatatan gagal
+        $response = $this->actingAs($this->admin)
+            ->patch(route('admin.users.nonaktifkan', $this->peserta));
+
+        // Verifikasi aksi tetap berhasil
+        $response->assertRedirect();
+        $this->peserta->refresh();
+        $this->assertNotNull($this->peserta->dinonaktifkan_at);
+
+        // Tidak ada log tercatat karena exception
+        $log = AktivitasLog::latest()->first();
+        $this->assertNull($log);
     }
 
     /* ===== Filter & Pencarian ===== */
