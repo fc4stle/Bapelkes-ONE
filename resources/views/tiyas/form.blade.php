@@ -127,7 +127,7 @@
                                     <h4 class="font-medium mb-4" style="color: var(--color-text);">{{ $namaDimensi }}</h4>
                                     <div class="space-y-6">
                                         @foreach ($butirs as $kodeButir => $teksButir)
-                                            <div class="p-3 sm:p-4 rounded-lg" style="background-color: var(--color-surface); border: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent);" data-item="{{ $kodeButir }}" data-invalid="false" @change="if (this.dataset.invalid === 'true') { const form = $el.closest('form'); const fields = form.querySelectorAll('[data-item]'); let allAnswered = true; for (const f of fields) { const fieldName = f.dataset.item; const radios = form.querySelectorAll(`input[name=\\"${fieldName}\\"]`); const checked = Array.from(radios).some(r => r.checked); if (!checked) { allAnswered = false; break; } } if (allAnswered) { this.dataset.invalid = 'false'; this.style.borderColor = 'color-mix(in srgb, var(--color-text) 15%, transparent)'; } }">
+                                            <div class="p-3 sm:p-4 rounded-lg" style="background-color: var(--color-surface); border: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent);" data-item="{{ $kodeButir }}" data-invalid="false" @change="onItemChange($event)">
                                                 <p class="text-[15px] leading-relaxed mb-4" style="color: var(--color-text);"><strong>{{ $kodeButir }}.</strong> {{ $teksButir }}</p>
                                                 <div class="grid grid-cols-4 gap-2">
                                                     @foreach ($config['skala'][$konstruk['skala']] as $nilai => $label)
@@ -163,10 +163,10 @@
                             <button type="button" x-show="currentStep > 1" @click="previousStep()" class="px-6 py-2 rounded-lg font-medium transition-colors duration-150" style="border: 1px solid color-mix(in srgb, var(--color-text) 20%, transparent); color: var(--color-text);">
                                 Kembali
                             </button>
-                            <button type="button" x-show="currentStep < 5" @click="nextStep()" class="px-6 py-2 rounded-lg font-medium text-white transition-all duration-150 hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed ml-auto sm:ml-0" style="background-color: var(--color-primary); flex: 1; display: flex; justify-content: center;" @media="(min-width: 640px)" style="flex: 0 1 auto;">
+                            <button type="button" x-show="currentStep < 5" @click="nextStep()" class="px-6 py-2 rounded-lg font-medium text-white transition-all duration-150 hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex-1 sm:flex-none sm:ml-auto" style="background-color: var(--color-primary);">
                                 Lanjut
                             </button>
-                            <button type="submit" x-show="currentStep === 5" class="px-6 py-2 rounded-lg font-medium text-white transition-all duration-150 hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed ml-auto sm:ml-0" style="background-color: var(--color-primary); flex: 1; display: flex; justify-content: center;" x-bind:disabled="submitting" @media="(min-width: 640px)" style="flex: 0 1 auto;">
+                            <button type="submit" x-show="currentStep === 5" class="px-6 py-2 rounded-lg font-medium text-white transition-all duration-150 hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex-1 sm:flex-none sm:ml-auto" style="background-color: var(--color-primary);" x-bind:disabled="submitting">
                                 <span x-show="!submitting">Simpan Evaluasi</span>
                                 <span x-show="submitting">Menyimpan...</span>
                             </button>
@@ -179,6 +179,15 @@
             </x-card>
         </div>
     </div>
+
+    <style>
+        [data-invalid="true"] {
+            border-color: var(--color-danger) !important;
+        }
+        [data-invalid="false"] {
+            border-color: color-mix(in srgb, var(--color-text) 15%, transparent) !important;
+        }
+    </style>
 
     <script>
         function tiyasForm(totalQuestions, initialStep, errorsFields) {
@@ -356,16 +365,21 @@
                     // Hapus penandaan lama dari semua kartu butir
                     form.querySelectorAll('[data-item]').forEach(item => {
                         item.dataset.invalid = 'false';
-                        item.style.borderColor = 'color-mix(in srgb, var(--color-text) 15%, transparent)';
                     });
                     // Tandai hanya kartu butir yang kosong
                     fields.forEach(fieldName => {
                         const itemCard = form.querySelector(`[data-item="${fieldName}"]`);
                         if (itemCard) {
                             itemCard.dataset.invalid = 'true';
-                            itemCard.style.borderColor = 'var(--color-danger)';
                         }
                     });
+                },
+
+                onItemChange(event) {
+                    const item = event.target.closest('[data-item]');
+                    if (!item) return;
+                    item.dataset.invalid = 'false';
+                    this.clearError();
                 },
 
                 scrollToFirstError(fieldName) {

@@ -1065,21 +1065,6 @@ class TiyasTest extends TestCase
         });
         $uniqueItems = array_values($uniqueItems); // Re-index array
 
-        // Debug: print semua items untuk cari extra
-        $extra = array_diff($uniqueItems, $expected);
-        $missing = array_diff($expected, $uniqueItems);
-
-        if ($extra || $missing) {
-            echo "\n=== DATA-ITEM DEBUG ===\n";
-            if ($extra) {
-                echo 'Extra items ('.count($extra).'): '.implode(', ', $extra)."\n";
-            }
-            if ($missing) {
-                echo 'Missing items ('.count($missing).'): '.implode(', ', $missing)."\n";
-            }
-            echo "=== END DEBUG ===\n";
-        }
-
         $this->assertCount($totalButir, $uniqueItems,
             'Total data-item unik harus sama dengan total butir dari config ('.$totalButir.')');
     }
@@ -1106,5 +1091,105 @@ class TiyasTest extends TestCase
         // Verifikasi tautan "Batalkan" ada dengan format "← Batalkan"
         $this->assertStringContainsString('Batalkan', $content,
             'Tautan Batalkan harus ada di form');
+    }
+
+    /**
+     * Test: form TIYAS kartu butir memiliki @change="onItemChange($event)".
+     */
+    public function test_form_tiyas_kartu_butir_memiliki_on_item_change()
+    {
+        $peserta = User::factory()->create(['role' => 'peserta']);
+        $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
+        $pendaftaran = Pendaftaran::factory()->create([
+            'peserta_id' => $peserta->id,
+            'pelatihan_id' => $pelatihan->id,
+            'status_verifikasi' => 'diverifikasi',
+        ]);
+
+        $response = $this->actingAs($peserta)
+            ->get(route('tiyas.form', $pendaftaran));
+
+        $response->assertOk()
+            ->assertSee('@change="onItemChange($event)"', false);
+    }
+
+    /**
+     * Test: tombol "Lanjut" tidak memiliki ganda style dan inline flex/justify-content.
+     */
+    public function test_tombol_lanjut_tidak_ganda_style()
+    {
+        $peserta = User::factory()->create(['role' => 'peserta']);
+        $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
+        $pendaftaran = Pendaftaran::factory()->create([
+            'peserta_id' => $peserta->id,
+            'pelatihan_id' => $pelatihan->id,
+            'status_verifikasi' => 'diverifikasi',
+        ]);
+
+        $response = $this->actingAs($peserta)
+            ->get(route('tiyas.form', $pendaftaran));
+
+        $response->assertOk();
+        $content = $response->getContent();
+
+        // Verifikasi tombol "Lanjut" ada dan class flex-1 sm:flex-none
+        $this->assertStringContainsString('class="px-6 py-2 rounded-lg font-medium text-white transition-all duration-150 hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex-1 sm:flex-none sm:ml-auto"', $content);
+        // Verifikasi tombol Lanjut hanya punya 1 style attribute dengan background-color
+        preg_match('/.*?<button[^>]*@click="nextStep\(\)"[^>]*style="[^"]*"/', $content, $matches);
+        $this->assertNotEmpty($matches, 'Tombol Lanjut harus ada dengan style attribute');
+        // Pastikan style attribute hanya 1 dan hanya background-color
+        $this->assertStringContainsString('style="background-color: var(--color-primary);"', $matches[0]);
+    }
+
+    /**
+     * Test: tombol "Simpan Evaluasi" tidak memiliki ganda style dan inline flex/justify-content.
+     */
+    public function test_tombol_simpan_evaluasi_tidak_ganda_style()
+    {
+        $peserta = User::factory()->create(['role' => 'peserta']);
+        $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
+        $pendaftaran = Pendaftaran::factory()->create([
+            'peserta_id' => $peserta->id,
+            'pelatihan_id' => $pelatihan->id,
+            'status_verifikasi' => 'diverifikasi',
+        ]);
+
+        $response = $this->actingAs($peserta)
+            ->get(route('tiyas.form', $pendaftaran));
+
+        $response->assertOk();
+        $content = $response->getContent();
+
+        // Verifikasi tombol submit (Simpan Evaluasi) ada dan class flex-1 sm:flex-none
+        $this->assertStringContainsString('class="px-6 py-2 rounded-lg font-medium text-white transition-all duration-150 hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex-1 sm:flex-none sm:ml-auto"', $content);
+        // Pastikan style attribute hanya 1 dan hanya background-color
+        preg_match('/.*?<button[^>]*type="submit"[^>]*style="[^"]*"/', $content, $matches);
+        $this->assertNotEmpty($matches, 'Tombol Simpan Evaluasi harus ada dengan style attribute');
+        $this->assertStringContainsString('style="background-color: var(--color-primary);"', $matches[0]);
+    }
+
+    /**
+     * Test: form TIYAS memiliki style block dengan rule [data-invalid].
+     */
+    public function test_form_tiyas_memiliki_style_block_data_invalid()
+    {
+        $peserta = User::factory()->create(['role' => 'peserta']);
+        $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
+        $pendaftaran = Pendaftaran::factory()->create([
+            'peserta_id' => $peserta->id,
+            'pelatihan_id' => $pelatihan->id,
+            'status_verifikasi' => 'diverifikasi',
+        ]);
+
+        $response = $this->actingAs($peserta)
+            ->get(route('tiyas.form', $pendaftaran));
+
+        $response->assertOk();
+        $content = $response->getContent();
+
+        // Verifikasi ada style block dengan rule untuk [data-invalid]
+        $this->assertStringContainsString('[data-invalid="true"]', $content);
+        $this->assertStringContainsString('[data-invalid="false"]', $content);
+        $this->assertStringContainsString('border-color: var(--color-danger)', $content);
     }
 }
