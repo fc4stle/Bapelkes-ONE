@@ -1,129 +1,230 @@
 <x-app-layout>
     <div class="py-12">
-        <div class="max-w-6xl mx-auto sm:px-6 lg:px-8">
-            <h1 class="text-3xl font-bold text-gray-900 mb-2">Hasil Evaluasi TIYAS</h1>
-            <p class="text-gray-600 mb-6">{{ $pelatihan->nama }}</p>
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- Header dengan judul, nama pelatihan, dan tombol Unduh CSV (selalu tampil) -->
+            <div class="mb-6">
+                <div class="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-4">
+                    <div>
+                        <h1 class="text-3xl font-bold" style="color: var(--color-text);">Hasil Evaluasi TIYAS</h1>
+                        <p style="color: var(--color-text); opacity: 0.7;" class="mt-1">{{ $pelatihan->nama }}</p>
+                    </div>
+                    <a href="{{ route('tiyas.export', $pelatihan) }}" class="px-4 py-2 rounded-lg font-medium hover:opacity-90 w-full sm:w-auto text-center" style="background-color: var(--color-success); color: white;">
+                        Unduh CSV
+                    </a>
+                </div>
+            </div>
 
             @if ($totalResponses === 0)
                 <x-card>
                     <div class="text-center py-8">
-                        <p class="text-gray-600">Belum ada peserta yang mengisi evaluasi.</p>
+                        <p style="color: var(--color-text);">Belum ada peserta yang mengisi evaluasi.</p>
                     </div>
                 </x-card>
             @else
-                <!-- Ringkasan -->
+                <!-- Ringkasan: N dari M peserta terverifikasi sudah mengisi evaluasi -->
                 <x-card class="mb-6">
-                    <p class="text-gray-700 mb-4">
-                        <strong>{{ $totalResponses }}</strong> dari <strong>{{ $totalDiverifikasi }}</strong> peserta terverifikasi sudah mengisi evaluasi.
-                    </p>
+                    <div class="flex flex-col gap-3">
+                        <p style="color: var(--color-text);">
+                            <strong>{{ $totalResponses }}</strong> dari <strong>{{ $totalDiverifikasi }}</strong> peserta terverifikasi sudah mengisi evaluasi.
+                        </p>
+                        <!-- Batang progres -->
+                        <div class="w-full" style="background-color: color-mix(in srgb, var(--color-text) 15%, transparent); border-radius: var(--radius-btn); overflow: hidden; height: 8px;">
+                            <div style="background-color: var(--color-primary); height: 100%; width: {{ $totalDiverifikasi > 0 ? round(($totalResponses / $totalDiverifikasi) * 100) : 0 }}%;"></div>
+                        </div>
+                    </div>
                 </x-card>
 
-                <!-- Skor Rata-rata (4 Kartu) -->
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                    @foreach (['TC' => 'Transfer Climate', 'TE' => 'Lingkungan Transfer', 'ITT' => 'Niat Transfer', 'YB' => 'Perilaku Pascapelatihan'] as $kode => $label)
+                <!-- Empat kartu skor: grid 2 kolom di HP, 4 kolom di desktop -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    @foreach (['TC', 'TE', 'ITT', 'YB'] as $kode)
+                        @php
+                            $konstruk = config('tiyas.konstruk')[$kode];
+                            $data = $skorRataRata[$kode];
+                            $judul = $konstruk['judul'];
+                            $skor = $data['skor'];
+                            $kategori = $data['kategori'];
+                            $warna = match($kategori) {
+                                'Tinggi' => 'var(--color-success)',
+                                'Sedang' => 'var(--color-accent)',
+                                'Rendah' => 'var(--color-danger)',
+                                default => 'var(--color-text)',
+                            };
+                        @endphp
                         <x-card>
-                            <h3 class="font-semibold text-gray-900 mb-2">{{ $label }}</h3>
-                            <div class="text-4xl font-bold mb-2" style="color: var(--color-primary);">
-                                {{ number_format($skorRataRata[$kode]['skor'], 2) }}
-                            </div>
-                            <div class="inline-block px-3 py-1 rounded-full text-xs font-semibold text-white"
-                                @if ($skorRataRata[$kode]['kategori'] === 'Tinggi')
-                                    style="background-color: var(--color-success);"
-                                @elseif ($skorRataRata[$kode]['kategori'] === 'Sedang')
-                                    style="background-color: var(--color-accent);"
-                                @else
-                                    style="background-color: var(--color-danger);"
-                                @endif
-                            >
-                                {{ $skorRataRata[$kode]['kategori'] }}
+                            <div class="flex flex-col h-full">
+                                <!-- Nama konstruk dan kode -->
+                                <h3 class="font-semibold text-sm sm:text-base" style="color: var(--color-text);">{{ $judul }}</h3>
+                                <p style="color: var(--color-text); opacity: 0.6;" class="text-xs">{{ $kode }}</p>
+
+                                <!-- Skor besar -->
+                                <div class="text-3xl sm:text-4xl font-bold my-2" style="color: var(--color-primary);">
+                                    {{ number_format($skor, 2) }}
+                                </div>
+                                <p style="color: var(--color-text); opacity: 0.7;" class="text-xs mb-3">dari 4,00</p>
+
+                                <!-- Batang progres horizontal -->
+                                <div class="w-full" style="background-color: color-mix(in srgb, var(--color-text) 15%, transparent); border-radius: 2px; overflow: hidden; height: 6px; margin-bottom: 8px;">
+                                    <div style="background-color: {{ $warna }}; height: 100%; width: {{ round(($skor / 4) * 100) }}%;"></div>
+                                </div>
+
+                                <!-- Badge kategori -->
+                                <div class="inline-block px-2 py-1 rounded text-xs font-semibold text-white w-fit" style="background-color: {{ $warna }};">
+                                    {{ $kategori }}
+                                </div>
                             </div>
                         </x-card>
                     @endforeach
                 </div>
 
-                <!-- Tabel Per Peserta -->
-                <x-card>
-                    <h2 class="text-xl font-semibold text-gray-900 mb-4">Ringkasan Per Peserta</h2>
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
+                <!-- Legenda: membaca dari config('tiyas.kategori') -->
+                <x-card class="mb-6">
+                    <p style="color: var(--color-text); opacity: 0.7;" class="text-xs">
+                        Skala 1–4.
+                        @php
+                            $kategori = config('tiyas.kategori');
+                            $legenda = [];
+                            foreach ($kategori as $item) {
+                                $legenda[] = $item['label'] . ' ≤ ' . number_format($item['maks'], 2);
+                            }
+                        @endphp
+                        {{ implode(' · ', $legenda) }}
+                    </p>
+                </x-card>
+
+                <!-- Ringkasan Per Peserta: kartu di HP, tabel di md+ -->
+                <x-card class="mb-6">
+                    <h2 class="text-xl font-semibold mb-4" style="color: var(--color-text);">Ringkasan Per Peserta</h2>
+
+                    <!-- Kartu per peserta (md:hidden) -->
+                    <div class="md:hidden space-y-4">
+                        @foreach ($dataPerPeserta as $data)
+                            <div style="border: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent); border-radius: var(--radius-card); padding: 1rem;">
+                                <div class="font-medium mb-3" style="color: var(--color-text);">{{ $data['nama'] }}</div>
+                                <div class="grid grid-cols-2 gap-2 mb-3">
+                                    @foreach (['TC', 'TE', 'ITT', 'YB'] as $kode)
+                                        @php
+                                            $skorData = $data['skor'][$kode];
+                                            $skorVal = $skorData['skor'];
+                                            $kategoriVal = $skorData['kategori'];
+                                            $warnaVal = match($kategoriVal) {
+                                                'Tinggi' => 'var(--color-success)',
+                                                'Sedang' => 'var(--color-accent)',
+                                                'Rendah' => 'var(--color-danger)',
+                                                default => 'var(--color-text)',
+                                            };
+                                        @endphp
+                                        <div class="text-xs">
+                                            <span style="color: var(--color-text); opacity: 0.7;">{{ $kode }}</span>
+                                            <div style="color: var(--color-primary);" class="font-semibold">{{ number_format($skorVal, 2) }}</div>
+                                            <div style="background-color: {{ $warnaVal }}; color: white;" class="inline-block px-1 py-0.5 rounded text-xs mt-1">{{ $kategoriVal }}</div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                                <a href="{{ route('tiyas.detail', $data['id']) }}" style="color: var(--color-primary);" class="text-sm hover:opacity-80">Detail →</a>
+                            </div>
+                        @endforeach
+                    </div>
+
+                    <!-- Tabel per peserta (hidden md:block) -->
+                    <div class="hidden md:block overflow-x-auto">
+                        <table class="min-w-full divide-y" style="border-color: color-mix(in srgb, var(--color-text) 15%, transparent);">
                             <thead style="background-color: var(--color-bg);">
                                 <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Nama Peserta</th>
-                                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider">TC</th>
-                                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider">TE</th>
-                                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider">ITT</th>
-                                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider">YB</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Aksi</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style="color: var(--color-text);">Nama Peserta</th>
+                                    <th class="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider" style="color: var(--color-text);">TC</th>
+                                    <th class="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider" style="color: var(--color-text);">TE</th>
+                                    <th class="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider" style="color: var(--color-text);">ITT</th>
+                                    <th class="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider" style="color: var(--color-text);">YB</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style="color: var(--color-text);">Aksi</th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-gray-200">
+                            <tbody class="divide-y" style="border-color: color-mix(in srgb, var(--color-text) 15%, transparent);">
                                 @foreach ($dataPerPeserta as $data)
-                                    <tr class="hover:bg-gray-50">
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $data['nama'] }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-700">{{ number_format($data['skor']['TC']['skor'], 2) }} <span class="text-xs text-gray-500">({{ $data['skor']['TC']['kategori'] }})</span></td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-700">{{ number_format($data['skor']['TE']['skor'], 2) }} <span class="text-xs text-gray-500">({{ $data['skor']['TE']['kategori'] }})</span></td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-700">{{ number_format($data['skor']['ITT']['skor'], 2) }} <span class="text-xs text-gray-500">({{ $data['skor']['ITT']['kategori'] }})</span></td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-700">{{ number_format($data['skor']['YB']['skor'], 2) }} <span class="text-xs text-gray-500">({{ $data['skor']['YB']['kategori'] }})</span></td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                            <a href="{{ route('tiyas.detail', $data['id']) }}" class="text-[var(--color-primary)] hover:opacity-80">
-                                                Detail
-                                            </a>
+                                    <tr style="background-color: transparent;" class="hover:opacity-75">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium" style="color: var(--color-text);">{{ $data['nama'] }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-center text-sm" style="color: var(--color-text);">
+                                            {{ number_format($data['skor']['TC']['skor'], 2) }}
+                                            <span style="opacity: 0.6;">({{ $data['skor']['TC']['kategori'] }})</span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-center text-sm" style="color: var(--color-text);">
+                                            {{ number_format($data['skor']['TE']['skor'], 2) }}
+                                            <span style="opacity: 0.6;">({{ $data['skor']['TE']['kategori'] }})</span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-center text-sm" style="color: var(--color-text);">
+                                            {{ number_format($data['skor']['ITT']['skor'], 2) }}
+                                            <span style="opacity: 0.6;">({{ $data['skor']['ITT']['kategori'] }})</span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-center text-sm" style="color: var(--color-text);">
+                                            {{ number_format($data['skor']['YB']['skor'], 2) }}
+                                            <span style="opacity: 0.6;">({{ $data['skor']['YB']['kategori'] }})</span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-left">
+                                            <a href="{{ route('tiyas.detail', $data['id']) }}" style="color: var(--color-primary);" class="hover:opacity-80">Detail</a>
                                         </td>
                                     </tr>
                                 @endforeach
                             </tbody>
                         </table>
                     </div>
-
-                    <!-- Link Export -->
-                    <div class="mt-6 pt-6 border-t">
-                        <a href="{{ route('tiyas.export', $pelatihan) }}" class="inline-block px-4 py-2 rounded-lg font-medium hover:opacity-90" style="background-color: var(--color-success); color: white;">
-                            Download CSV
-                        </a>
-                    </div>
                 </x-card>
 
-                <!-- Tabel Rata-rata Per Dimensi -->
-                @if (isset($rataRataDimensi) && !empty($rataRataDimensi))
-                    <x-card class="mt-6">
-                        <h2 class="text-xl font-semibold text-gray-900 mb-4">Rata-rata Per Dimensi</h2>
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full divide-y divide-gray-200">
-                                <thead style="background-color: var(--color-bg);">
-                                    <tr>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Konstruk</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Dimensi</th>
-                                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider">Rata-rata</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y divide-gray-200">
-                                    @foreach ($rataRataDimensi as $kodeKonstruk => $dimensis)
-                                        @php $isFirstRow = true; @endphp
-                                        @foreach ($dimensis as $namaDimensi => $rataRata)
-                                            <tr class="hover:bg-gray-50">
-                                                @if ($isFirstRow)
-                                                    <td rowspan="{{ count($dimensis) }}" class="px-6 py-4 font-medium text-gray-900 align-top">
-                                                        {{ $config['konstruk'][$kodeKonstruk]['nama'] }}
-                                                    </td>
-                                                    @php $isFirstRow = false; @endphp
-                                                @endif
-                                                <td class="px-6 py-4 text-sm text-gray-700">{{ $namaDimensi }}</td>
-                                                <td class="px-6 py-4 text-center text-sm font-medium" style="color: var(--color-primary);">{{ number_format($rataRata, 2) }}</td>
-                                            </tr>
-                                        @endforeach
+                <!-- Rata-rata Per Dimensi: kartu di HP, tabel di md+ -->
+                <x-card class="mb-6">
+                    <h2 class="text-xl font-semibold mb-4" style="color: var(--color-text);">Rata-rata Per Dimensi</h2>
+
+                    <!-- Kartu per konstruk (md:hidden) -->
+                    <div class="md:hidden space-y-4">
+                        @foreach (config('tiyas.konstruk') as $kodeKonstruk => $konstruk)
+                            <div style="border: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent); border-radius: var(--radius-card); padding: 1rem;">
+                                <h3 class="font-semibold text-sm mb-2" style="color: var(--color-text);">{{ $konstruk['judul'] }}</h3>
+                                <div class="space-y-1">
+                                    @foreach ($konstruk['dimensi'] as $namaDimensi => $butirs)
+                                        <div class="flex justify-between text-xs">
+                                            <span style="color: var(--color-text); opacity: 0.8;">{{ $namaDimensi }}</span>
+                                            <span style="color: var(--color-primary); font-medium;">{{ $rataRataDimensi[$kodeKonstruk][$namaDimensi] ?? 0 }}</span>
+                                        </div>
                                     @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                    </x-card>
-                @endif
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+
+                    <!-- Tabel dengan rowspan di md+ (hidden md:block) -->
+                    <div class="hidden md:block overflow-x-auto">
+                        <table class="min-w-full divide-y" style="border-color: color-mix(in srgb, var(--color-text) 15%, transparent);">
+                            <thead style="background-color: var(--color-bg);">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style="color: var(--color-text);">Konstruk</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style="color: var(--color-text);">Dimensi</th>
+                                    <th class="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider" style="color: var(--color-text);">Rata-rata</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y" style="border-color: color-mix(in srgb, var(--color-text) 15%, transparent);">
+                                @foreach (config('tiyas.konstruk') as $kodeKonstruk => $konstruk)
+                                    @php
+                                        $dimensiCount = count($konstruk['dimensi']);
+                                    @endphp
+                                    @foreach ($konstruk['dimensi'] as $namaDimensi => $butirs)
+                                        <tr style="background-color: transparent;" class="hover:opacity-75">
+                                            @if ($loop->first)
+                                                <td rowspan="{{ $dimensiCount }}" class="px-6 py-4 font-medium align-top" style="color: var(--color-text);">
+                                                    {{ $konstruk['judul'] }}
+                                                </td>
+                                            @endif
+                                            <td class="px-6 py-4 text-sm" style="color: var(--color-text);">{{ $namaDimensi }}</td>
+                                            <td class="px-6 py-4 text-center text-sm font-medium" style="color: var(--color-primary);">{{ $rataRataDimensi[$kodeKonstruk][$namaDimensi] ?? 0 }}</td>
+                                        </tr>
+                                    @endforeach
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </x-card>
             @endif
 
             <!-- Kembali -->
             <div class="mt-6">
-                <a href="{{ route('pelatihans.index') }}" class="text-[var(--color-primary)] hover:opacity-80">
-                    ← Kembali ke Pelatihan
-                </a>
+                <a href="{{ route('pelatihans.index') }}" style="color: var(--color-primary);" class="hover:opacity-80">← Kembali ke Pelatihan</a>
             </div>
         </div>
     </div>
