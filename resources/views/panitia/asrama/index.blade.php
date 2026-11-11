@@ -14,7 +14,7 @@
                 </div>
             @endif
 
-            <div class="bg-white shadow rounded-lg">
+            <div style="background-color: var(--color-surface); box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-radius: var(--radius-card);">
                 <div class="px-4 py-5 sm:p-6">
                     <div class="mb-6">
                         <h1 class="text-2xl font-bold mb-4" style="color: var(--color-text);">Daftar Asrama</h1>
@@ -65,7 +65,7 @@
                                 <a
                                     href="{{ route('panitia.asrama.show', $asrama['id']) }}"
                                     class="p-4 border border-gray-200 rounded-lg hover:shadow-md transition"
-                                    style="background-color: white;"
+                                    style="background-color: var(--color-surface);"
                                 >
                                     <h3 class="text-lg font-semibold mb-3" style="color: var(--color-primary);">
                                         {{ $asrama['nama'] }}
