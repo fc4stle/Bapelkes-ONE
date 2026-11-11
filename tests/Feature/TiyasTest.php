@@ -357,6 +357,183 @@ class TiyasTest extends TestCase
     }
 
     /**
+     * Test: hasil menampilkan tombol "Unduh CSV" (bukan "Download CSV").
+     */
+    public function test_hasil_tombol_unduh_csv()
+    {
+        $panitia = User::factory()->create(['role' => 'panitia']);
+        $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
+
+        $this->actingAs($panitia)
+            ->get(route('tiyas.hasil', $pelatihan))
+            ->assertOk()
+            ->assertSeeText('Unduh CSV')
+            ->assertDontSeeText('Download CSV');
+    }
+
+    /**
+     * Test: hasil menampilkan judul konstruk dalam bahasa Indonesia (Iklim Transfer, etc).
+     */
+    public function test_hasil_menampilkan_judul_konstruk_indonesia()
+    {
+        $panitia = User::factory()->create(['role' => 'panitia']);
+        $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
+        $peserta = User::factory()->create(['role' => 'peserta']);
+        $pendaftaran = Pendaftaran::factory()->create([
+            'peserta_id' => $peserta->id,
+            'pelatihan_id' => $pelatihan->id,
+        ]);
+        TiyasResponse::factory()->create(['pendaftaran_id' => $pendaftaran->id]);
+
+        $this->actingAs($panitia)
+            ->get(route('tiyas.hasil', $pelatihan))
+            ->assertOk()
+            ->assertSeeText('Iklim Transfer')
+            ->assertDontSeeText('Transfer Climate');
+    }
+
+    /**
+     * Test: hasil legenda membaca batas dari config('tiyas.kategori').
+     */
+    public function test_hasil_legenda_membaca_dari_config()
+    {
+        $panitia = User::factory()->create(['role' => 'panitia']);
+        $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
+        $peserta = User::factory()->create(['role' => 'peserta']);
+        $pendaftaran = Pendaftaran::factory()->create([
+            'peserta_id' => $peserta->id,
+            'pelatihan_id' => $pelatihan->id,
+        ]);
+        TiyasResponse::factory()->create(['pendaftaran_id' => $pendaftaran->id]);
+
+        // Default config: Rendah ≤ 2.00, Sedang ≤ 3.00, Tinggi ≤ 4.00
+        $this->actingAs($panitia)
+            ->get(route('tiyas.hasil', $pelatihan))
+            ->assertOk()
+            ->assertSeeText('Rendah ≤ 2.00')
+            ->assertSeeText('Sedang ≤ 3.00')
+            ->assertSeeText('Tinggi ≤ 4.00');
+
+        // Test dengan mengubah config
+        config()->set('tiyas.kategori', [
+            ['label' => 'Rendah', 'maks' => 1.50],
+            ['label' => 'Sedang', 'maks' => 2.50],
+            ['label' => 'Tinggi', 'maks' => 4.00],
+        ]);
+
+        $this->actingAs($panitia)
+            ->get(route('tiyas.hasil', $pelatihan))
+            ->assertOk()
+            ->assertSeeText('Rendah ≤ 1.50')
+            ->assertSeeText('Sedang ≤ 2.50')
+            ->assertSeeText('Tinggi ≤ 4.00');
+    }
+
+    /**
+     * Test: hasil menampilkan grid-cols-2 untuk kartu skor (responsive).
+     */
+    public function test_hasil_kartu_skor_grid_cols_2()
+    {
+        $panitia = User::factory()->create(['role' => 'panitia']);
+        $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
+        $peserta = User::factory()->create(['role' => 'peserta']);
+        $pendaftaran = Pendaftaran::factory()->create([
+            'peserta_id' => $peserta->id,
+            'pelatihan_id' => $pelatihan->id,
+        ]);
+        TiyasResponse::factory()->create(['pendaftaran_id' => $pendaftaran->id]);
+
+        $this->actingAs($panitia)
+            ->get(route('tiyas.hasil', $pelatihan))
+            ->assertOk()
+            ->assertSee('grid-cols-2');
+    }
+
+    /**
+     * Test: hasil menampilkan kartu per peserta (md:hidden) dan tabel (hidden md:block).
+     */
+    public function test_hasil_tampil_kartu_dan_tabel_responsive()
+    {
+        $panitia = User::factory()->create(['role' => 'panitia']);
+        $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
+        $peserta = User::factory()->create(['role' => 'peserta']);
+        $pendaftaran = Pendaftaran::factory()->create([
+            'peserta_id' => $peserta->id,
+            'pelatihan_id' => $pelatihan->id,
+        ]);
+        TiyasResponse::factory()->create(['pendaftaran_id' => $pendaftaran->id]);
+
+        $response = $this->actingAs($panitia)
+            ->get(route('tiyas.hasil', $pelatihan));
+
+        $response->assertOk();
+        // Cek kehadiran class responsive
+        $content = $response->getContent();
+        $this->assertStringContainsString('md:hidden', $content); // Kartu per peserta
+        $this->assertStringContainsString('hidden md:block', $content); // Tabel
+    }
+
+    /**
+     * Test: hasil skor rata-rata dan jumlah pengisi tetap benar.
+     */
+    public function test_hasil_skor_rata_rata_dan_jumlah_benar()
+    {
+        $panitia = User::factory()->create(['role' => 'panitia']);
+        $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
+
+        // Buat 3 peserta dengan response
+        for ($i = 0; $i < 3; $i++) {
+            $peserta = User::factory()->create(['role' => 'peserta']);
+            $pendaftaran = Pendaftaran::factory()->create([
+                'peserta_id' => $peserta->id,
+                'pelatihan_id' => $pelatihan->id,
+            ]);
+            TiyasResponse::factory()->create(['pendaftaran_id' => $pendaftaran->id]);
+        }
+
+        $response = $this->actingAs($panitia)
+            ->get(route('tiyas.hasil', $pelatihan))
+            ->assertOk();
+
+        // Verifikasi jumlah pengisi ditampilkan
+        $content = $response->getContent();
+        $this->assertStringContainsString('3</strong> dari <strong>', $content);
+    }
+
+    /**
+     * Test: hasil halaman hanya bisa dibuka panitia/admin (peserta 403).
+     */
+    public function test_hasil_halaman_hanya_panitia_admin()
+    {
+        $peserta = User::factory()->create(['role' => 'peserta']);
+        $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
+
+        $this->actingAs($peserta)
+            ->get(route('tiyas.hasil', $pelatihan))
+            ->assertForbidden();
+    }
+
+    /**
+     * Test: detail halaman ganti label konstruk dengan judul Indonesia.
+     */
+    public function test_detail_label_konstruk_bahasa_indonesia()
+    {
+        $panitia = User::factory()->create(['role' => 'panitia']);
+        $peserta = User::factory()->create(['role' => 'peserta']);
+        $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
+        $pendaftaran = Pendaftaran::factory()->create([
+            'peserta_id' => $peserta->id,
+            'pelatihan_id' => $pelatihan->id,
+        ]);
+        $tiyas = TiyasResponse::factory()->create(['pendaftaran_id' => $pendaftaran->id]);
+
+        $this->actingAs($panitia)
+            ->get(route('tiyas.detail', $tiyas))
+            ->assertOk()
+            ->assertSeeText('Iklim Transfer');
+    }
+
+    /**
      * Test: hasil menampilkan skor benar.
      */
     public function test_hasil_menampilkan_skor_benar()
