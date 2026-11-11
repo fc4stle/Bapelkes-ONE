@@ -9,6 +9,7 @@ use App\Services\TiyasScorer;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -23,9 +24,56 @@ class TiyasController extends Controller
     {
         $this->authorize('isiTiyas', $pendaftaran);
 
+        $config = config('tiyas');
+
+        // Hitung total pertanyaan dari config
+        $totalQuestions = 0;
+        foreach ($config['konstruk'] as $konstruk) {
+            foreach ($konstruk['dimensi'] as $dimensi) {
+                $totalQuestions += count($dimensi);
+            }
+        }
+
+        // Tentukan langkah awal berdasarkan error validasi (jika ada)
+        $initialStep = 1;
+        $errorsFields = [];
+
+        if ($errors = request()->session()->get('errors')) {
+            $errorsFields = array_keys($errors->getMessages());
+
+            // Tentukan langkah berdasarkan field yang error
+            if (count($errorsFields) > 0) {
+                $firstError = $errorsFields[0];
+
+                // Langkah 1: identitas
+                if (in_array($firstError, ['asal_instansi', 'asal_kabupaten', 'jenis_profesi', 'masa_kerja', 'waktu_sejak_selesai'])) {
+                    $initialStep = 1;
+                } else {
+                    // Langkah 2-5: cek konstruk
+                    $stepMap = [];
+                    $step = 2;
+                    foreach ($config['konstruk'] as $kodeKonstruk => $konstruk) {
+                        foreach ($konstruk['dimensi'] as $dimensi) {
+                            foreach ($dimensi as $kode => $text) {
+                                $stepMap[$kode] = $step;
+                            }
+                        }
+                        $step++;
+                    }
+
+                    if (isset($stepMap[$firstError])) {
+                        $initialStep = $stepMap[$firstError];
+                    }
+                }
+            }
+        }
+
         return view('tiyas.form', [
             'pendaftaran' => $pendaftaran,
-            'config' => config('tiyas'),
+            'config' => $config,
+            'totalQuestions' => $totalQuestions,
+            'initialStep' => $initialStep,
+            'errorsFields' => $errorsFields,
         ]);
     }
 
@@ -58,7 +106,13 @@ class TiyasController extends Controller
             }
         }
 
-        $validated = $request->validate($rules);
+        $validator = Validator::make($request->all(), $rules);
+        if ($validator->fails()) {
+            return redirect()->route('tiyas.form', $pendaftaran)
+                ->withErrors($validator)
+                ->withInput();
+        }
+        $validated = $validator->validated();
 
         // Pisahkan identitas dan jawaban
         $identitas = [
