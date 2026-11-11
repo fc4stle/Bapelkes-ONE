@@ -16,6 +16,13 @@
                 </div>
             </div>
 
+            <!-- Tautan Batalkan (di luar bar tombol) -->
+            <div class="mb-4">
+                <a href="{{ route('pendaftarans.index') }}" class="inline-flex items-center text-sm font-medium transition-colors duration-150 hover:opacity-80" style="color: var(--color-text);">
+                    ← Batalkan
+                </a>
+            </div>
+
             <x-card>
                 <h2 class="text-2xl font-bold mb-1" style="color: var(--color-text);">Evaluasi TIYAS</h2>
                 <p class="mb-6" style="color: var(--color-text); opacity: 0.7;">Isi kuesioner ini sesuai kondisi Anda. Tidak ada jawaban benar atau salah.</p>
@@ -29,7 +36,7 @@
                             <p class="text-sm mb-2" style="color: var(--color-text); opacity: 0.7;">Draf tersimpan otomatis di perangkat ini</p>
                         </div>
 
-                        <div class="p-4 rounded-lg" style="background-color: var(--color-bg); border: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent);">
+                        <div class="p-3 sm:p-4 rounded-lg" style="background-color: var(--color-bg); border: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent);">
                             <h3 class="font-semibold mb-3" style="color: var(--color-text);">Informasi Peserta</h3>
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
@@ -107,12 +114,8 @@
                     <!-- Langkah 2, 3, 4, 5: Bagian Pertanyaan (A, B, C, D) -->
                     @php
                         $stepCounter = 2;
-                        $konstrukToStep = [];
                     @endphp
                     @foreach ($config['konstruk'] as $kodeKonstruk => $konstruk)
-                        @php
-                            $konstrukToStep[$kodeKonstruk] = $stepCounter;
-                        @endphp
                         <div data-step="{{ $stepCounter }}" x-show="currentStep === {{ $stepCounter }}" class="space-y-6">
                             <div style="border-bottom: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent); padding-bottom: 1.5rem;">
                                 <h3 class="text-lg font-semibold mb-2" style="color: var(--color-text);">Bagian {{ $konstruk['bagian'] }}: {{ $konstruk['judul'] }}</h3>
@@ -124,7 +127,7 @@
                                     <h4 class="font-medium mb-4" style="color: var(--color-text);">{{ $namaDimensi }}</h4>
                                     <div class="space-y-6">
                                         @foreach ($butirs as $kodeButir => $teksButir)
-                                            <div class="p-4 rounded-lg" style="background-color: var(--color-surface); border: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent);" x-bind:style="errorFields.includes('{{ $kodeButir }}') ? 'border-color: var(--color-danger);' : ''">
+                                            <div class="p-3 sm:p-4 rounded-lg" style="background-color: var(--color-surface); border: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent);" data-item="{{ $kodeButir }}" data-invalid="false" @change="if (this.dataset.invalid === 'true') { const form = $el.closest('form'); const fields = form.querySelectorAll('[data-item]'); let allAnswered = true; for (const f of fields) { const fieldName = f.dataset.item; const radios = form.querySelectorAll(`input[name=\\"${fieldName}\\"]`); const checked = Array.from(radios).some(r => r.checked); if (!checked) { allAnswered = false; break; } } if (allAnswered) { this.dataset.invalid = 'false'; this.style.borderColor = 'color-mix(in srgb, var(--color-text) 15%, transparent)'; } }">
                                                 <p class="text-[15px] leading-relaxed mb-4" style="color: var(--color-text);"><strong>{{ $kodeButir }}.</strong> {{ $teksButir }}</p>
                                                 <div class="grid grid-cols-4 gap-2">
                                                     @foreach ($config['skala'][$konstruk['skala']] as $nilai => $label)
@@ -138,7 +141,7 @@
                                                                 required
                                                             >
                                                             <span class="font-bold text-lg">{{ $nilai }}</span>
-                                                            <span class="text-[11px] leading-tight text-center">{{ $label }}</span>
+                                                            <span class="text-[11px] leading-tight text-center break-words hyphens-auto">{{ $label }}</span>
                                                         </label>
                                                     @endforeach
                                                 </div>
@@ -154,25 +157,24 @@
                         @endphp
                     @endforeach
 
-                    <!-- Tombol Navigasi -->
-                    <div class="fixed bottom-0 left-0 right-0 p-4 flex gap-3" style="background-color: var(--color-surface); border-top: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent); padding-bottom: max(1rem, env(safe-area-inset-bottom));">
-                        <button type="button" x-show="currentStep > 1" @click="previousStep()" class="px-6 py-2 rounded-lg font-medium transition-colors duration-150" style="border: 1px solid color-mix(in srgb, var(--color-text) 20%, transparent); color: var(--color-text);">
-                            Kembali
-                        </button>
-                        <button type="button" x-show="currentStep < 5" @click="nextStep()" class="px-6 py-2 rounded-lg font-medium text-white transition-all duration-150 hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed" style="background-color: var(--color-primary);">
-                            Lanjut
-                        </button>
-                        <button type="submit" x-show="currentStep === 5" class="px-6 py-2 rounded-lg font-medium text-white transition-all duration-150 hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed" style="background-color: var(--color-primary);" x-bind:disabled="submitting">
-                            <span x-show="!submitting">Simpan Evaluasi</span>
-                            <span x-show="submitting">Menyimpan...</span>
-                        </button>
-                        <a href="{{ route('pendaftarans.index') }}" class="px-6 py-2 rounded-lg font-medium transition-colors duration-150 hover:opacity-80" style="border: 1px solid color-mix(in srgb, var(--color-text) 20%, transparent); color: var(--color-text); text-decoration: none; display: flex; align-items: center;">
-                            Batalkan
-                        </a>
+                    <!-- Tombol Navigasi (Fixed Bottom) -->
+                    <div class="fixed bottom-0 left-0 right-0" style="background-color: var(--color-surface); border-top: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent); padding-bottom: max(1rem, env(safe-area-inset-bottom));">
+                        <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center gap-3 py-4">
+                            <button type="button" x-show="currentStep > 1" @click="previousStep()" class="px-6 py-2 rounded-lg font-medium transition-colors duration-150" style="border: 1px solid color-mix(in srgb, var(--color-text) 20%, transparent); color: var(--color-text);">
+                                Kembali
+                            </button>
+                            <button type="button" x-show="currentStep < 5" @click="nextStep()" class="px-6 py-2 rounded-lg font-medium text-white transition-all duration-150 hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed ml-auto sm:ml-0" style="background-color: var(--color-primary); flex: 1; display: flex; justify-content: center;" @media="(min-width: 640px)" style="flex: 0 1 auto;">
+                                Lanjut
+                            </button>
+                            <button type="submit" x-show="currentStep === 5" class="px-6 py-2 rounded-lg font-medium text-white transition-all duration-150 hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed ml-auto sm:ml-0" style="background-color: var(--color-primary); flex: 1; display: flex; justify-content: center;" x-bind:disabled="submitting" @media="(min-width: 640px)" style="flex: 0 1 auto;">
+                                <span x-show="!submitting">Simpan Evaluasi</span>
+                                <span x-show="submitting">Menyimpan...</span>
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Spacer untuk button sticky -->
-                    <div class="h-20"></div>
+                    <div class="h-24"></div>
                 </form>
             </x-card>
         </div>
@@ -220,7 +222,10 @@
                         const data = new FormData(form);
                         const draftData = {};
                         for (let [key, value] of data.entries()) {
-                            draftData[key] = value;
+                            // Jangan simpan kunci yang diawali "_" (_token, _method, dll)
+                            if (!key.startsWith('_')) {
+                                draftData[key] = value;
+                            }
                         }
                         localStorage.setItem('tiyas-draft-{{ $pendaftaran->id }}', JSON.stringify(draftData));
                     } catch (e) {
@@ -236,6 +241,8 @@
                             const draftData = JSON.parse(draft);
                             const form = this.$el.closest('.max-w-2xl').querySelector('form');
                             for (let [key, value] of Object.entries(draftData)) {
+                                // Jangan pulihkan kunci yang diawali "_"
+                                if (key.startsWith('_')) continue;
                                 const field = form.elements[key];
                                 if (field) {
                                     if (field.type === 'radio') {
@@ -310,9 +317,13 @@
                     }
 
                     if (emptyFields.length > 0) {
-                        this.showError(emptyFields.length);
-                        this.markErrors(emptyFields);
-                        this.scrollToFirstError(emptyFields[0]);
+                        // SET currentStep dulu, lalu $nextTick, baru tampilkan error
+                        this.currentStep = step;
+                        this.$nextTick(() => {
+                            this.showError(emptyFields.length);
+                            this.markErrors(emptyFields);
+                            this.scrollToFirstError(emptyFields[0]);
+                        });
                         return false;
                     }
 
@@ -342,25 +353,26 @@
 
                 markErrors(fields) {
                     const form = this.$el.closest('.max-w-2xl').querySelector('form');
-                    form.querySelectorAll('[data-step]').forEach(step => {
-                        step.querySelectorAll('[style*="border"]').forEach(el => {
-                            el.style.borderColor = 'color-mix(in srgb, var(--color-text) 15%, transparent)';
-                        });
+                    // Hapus penandaan lama dari semua kartu butir
+                    form.querySelectorAll('[data-item]').forEach(item => {
+                        item.dataset.invalid = 'false';
+                        item.style.borderColor = 'color-mix(in srgb, var(--color-text) 15%, transparent)';
                     });
+                    // Tandai hanya kartu butir yang kosong
                     fields.forEach(fieldName => {
-                        const label = form.querySelector(`label:has(input[name="${fieldName}"])`);
-                        const container = form.querySelector(`input[name="${fieldName}"]`)?.closest('[style*="border"]');
-                        if (container) {
-                            container.style.borderColor = 'var(--color-danger)';
+                        const itemCard = form.querySelector(`[data-item="${fieldName}"]`);
+                        if (itemCard) {
+                            itemCard.dataset.invalid = 'true';
+                            itemCard.style.borderColor = 'var(--color-danger)';
                         }
                     });
                 },
 
                 scrollToFirstError(fieldName) {
                     const form = this.$el.closest('.max-w-2xl').querySelector('form');
-                    const input = form.querySelector(`input[name="${fieldName}"]`);
-                    if (input) {
-                        input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    const itemCard = form.querySelector(`[data-item="${fieldName}"]`);
+                    if (itemCard) {
+                        itemCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     }
                 },
 
@@ -376,7 +388,7 @@
                 validateAllSteps() {
                     for (let step = 1; step <= 5; step++) {
                         if (!this.validateStep(step)) {
-                            this.currentStep = step;
+                            // validateStep sudah set currentStep, tunggu render
                             return false;
                         }
                     }

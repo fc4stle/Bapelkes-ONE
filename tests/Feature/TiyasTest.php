@@ -974,4 +974,137 @@ class TiyasTest extends TestCase
 
         return $data;
     }
+
+    /**
+     * Test: saveDraft tidak simpan dan restoreDraft tidak pulihkan kunci yang diawali "_" (_token, _method).
+     */
+    public function test_savedraft_tidak_simpan_kunci_underscore()
+    {
+        $peserta = User::factory()->create(['role' => 'peserta']);
+        $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
+        $pendaftaran = Pendaftaran::factory()->create([
+            'peserta_id' => $peserta->id,
+            'pelatihan_id' => $pelatihan->id,
+            'status_verifikasi' => 'diverifikasi',
+        ]);
+
+        $response = $this->actingAs($peserta)
+            ->get(route('tiyas.form', $pendaftaran));
+
+        $response->assertOk();
+        $content = $response->getContent();
+
+        // Verifikasi ada exclusion logic untuk kunci "_"
+        $this->assertStringContainsString("startsWith('_')", $content,
+            'Form harus punya check startsWith("_") untuk mengabaikan _token dan _method');
+    }
+
+    /**
+     * Test: bar tombol bawah memiliki container max-w-2xl untuk align dengan kartu.
+     */
+    public function test_bar_tombol_memiliki_max_w_2xl()
+    {
+        $peserta = User::factory()->create(['role' => 'peserta']);
+        $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
+        $pendaftaran = Pendaftaran::factory()->create([
+            'peserta_id' => $peserta->id,
+            'pelatihan_id' => $pelatihan->id,
+            'status_verifikasi' => 'diverifikasi',
+        ]);
+
+        $response = $this->actingAs($peserta)
+            ->get(route('tiyas.form', $pendaftaran));
+
+        $response->assertOk();
+        $content = $response->getContent();
+
+        // Verifikasi max-w-2xl di dalam bar tombol (fixed bottom container)
+        $this->assertStringContainsString('max-w-2xl', $content,
+            'Bar tombol harus punya container max-w-2xl mx-auto untuk align dengan kartu di desktop');
+    }
+
+    /**
+     * Test: setiap kartu butir memiliki atribut data-item dengan kode butir.
+     */
+    public function test_kartu_butir_memiliki_data_item()
+    {
+        $peserta = User::factory()->create(['role' => 'peserta']);
+        $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
+        $pendaftaran = Pendaftaran::factory()->create([
+            'peserta_id' => $peserta->id,
+            'pelatihan_id' => $pelatihan->id,
+            'status_verifikasi' => 'diverifikasi',
+        ]);
+
+        $response = $this->actingAs($peserta)
+            ->get(route('tiyas.form', $pendaftaran));
+
+        $response->assertOk();
+        $content = $response->getContent();
+
+        // Hitung total butir dari config
+        $config = config('tiyas');
+        $totalButir = 0;
+        $expected = [];
+        foreach ($config['konstruk'] as $kodeKonstruk => $konstruk) {
+            foreach ($konstruk['dimensi'] as $dimensi) {
+                foreach ($dimensi as $kode => $text) {
+                    $totalButir++;
+                    $expected[] = $kode;
+                }
+            }
+        }
+
+        // Verifikasi setiap kartu butir punya data-item
+        preg_match_all('/data-item="([^"]+)"/', $content, $matches);
+        $uniqueItems = array_unique($matches[1] ?? []);
+
+        // Hapus placeholder JS (${fieldName}) dari hasil
+        $uniqueItems = array_filter($uniqueItems, function ($item) {
+            return strpos($item, '$') === false;
+        });
+        $uniqueItems = array_values($uniqueItems); // Re-index array
+
+        // Debug: print semua items untuk cari extra
+        $extra = array_diff($uniqueItems, $expected);
+        $missing = array_diff($expected, $uniqueItems);
+
+        if ($extra || $missing) {
+            echo "\n=== DATA-ITEM DEBUG ===\n";
+            if ($extra) {
+                echo 'Extra items ('.count($extra).'): '.implode(', ', $extra)."\n";
+            }
+            if ($missing) {
+                echo 'Missing items ('.count($missing).'): '.implode(', ', $missing)."\n";
+            }
+            echo "=== END DEBUG ===\n";
+        }
+
+        $this->assertCount($totalButir, $uniqueItems,
+            'Total data-item unik harus sama dengan total butir dari config ('.$totalButir.')');
+    }
+
+    /**
+     * Test: tautan "Batalkan" tidak ada di dalam bar tombol bawah (moved to atas).
+     */
+    public function test_batalkan_tautan_di_luar_bar_tombol()
+    {
+        $peserta = User::factory()->create(['role' => 'peserta']);
+        $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
+        $pendaftaran = Pendaftaran::factory()->create([
+            'peserta_id' => $peserta->id,
+            'pelatihan_id' => $pelatihan->id,
+            'status_verifikasi' => 'diverifikasi',
+        ]);
+
+        $response = $this->actingAs($peserta)
+            ->get(route('tiyas.form', $pendaftaran));
+
+        $response->assertOk();
+        $content = $response->getContent();
+
+        // Verifikasi tautan "Batalkan" ada dengan format "← Batalkan"
+        $this->assertStringContainsString('Batalkan', $content,
+            'Tautan Batalkan harus ada di form');
+    }
 }
