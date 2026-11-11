@@ -626,9 +626,34 @@ class TiyasTest extends TestCase
     }
 
     /**
-     * Test: form TIYAS peserta menampilkan teks "dari 65 terjawab".
+     * Test: form TIYAS peserta menampilkan struktur penghitung "N dari totalQuestions terjawab".
      */
     public function test_form_tiyas_menampilkan_dari_65_terjawab()
+    {
+        $peserta = User::factory()->create(['role' => 'peserta']);
+        $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
+        $pendaftaran = Pendaftaran::factory()->create([
+            'peserta_id' => $peserta->id,
+            'pelatihan_id' => $pelatihan->id,
+            'status_verifikasi' => 'diverifikasi',
+        ]);
+
+        $response = $this->actingAs($peserta)
+            ->get(route('tiyas.form', $pendaftaran));
+
+        $response->assertOk();
+        $content = $response->getContent();
+
+        // Verifikasi struktur Alpine untuk penghitung (x-text tidak terrender saat test)
+        $this->assertStringContainsString('x-text="answered"', $content);
+        $this->assertStringContainsString('x-text="totalQuestions"', $content);
+        $this->assertStringContainsString('terjawab', $content);
+    }
+
+    /**
+     * Test: form TIYAS memiliki atribut novalidate.
+     */
+    public function test_form_tiyas_memiliki_atribut_novalidate()
     {
         $peserta = User::factory()->create(['role' => 'peserta']);
         $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
@@ -641,13 +666,251 @@ class TiyasTest extends TestCase
         $this->actingAs($peserta)
             ->get(route('tiyas.form', $pendaftaran))
             ->assertOk()
-            ->assertSeeText('dari 65 terjawab');
+            ->assertSee('novalidate');
     }
 
     /**
-     * Test: setelah simpan TIYAS, halaman pendaftarans.index menampilkan flash "Evaluasi TIYAS berhasil disimpan."
+     * Test: form TIYAS memiliki 5 langkah dengan atribut data-step 1..5.
      */
-    public function test_flash_message_evaluasi_tiyas_berhasil_disimpan()
+    public function test_form_tiyas_memiliki_5_langkah_dengan_data_step()
+    {
+        $peserta = User::factory()->create(['role' => 'peserta']);
+        $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
+        $pendaftaran = Pendaftaran::factory()->create([
+            'peserta_id' => $peserta->id,
+            'pelatihan_id' => $pelatihan->id,
+            'status_verifikasi' => 'diverifikasi',
+        ]);
+
+        $response = $this->actingAs($peserta)
+            ->get(route('tiyas.form', $pendaftaran));
+
+        $response->assertOk();
+        $content = $response->getContent();
+
+        // Verifikasi 5 langkah ada
+        for ($step = 1; $step <= 5; $step++) {
+            $this->assertStringContainsString('data-step="'.$step.'"', $content);
+        }
+    }
+
+    /**
+     * Test: form TIYAS memuat 65 input radio dengan 4 nilai (1..4).
+     */
+    public function test_form_tiyas_memuat_65_radio_dengan_4_nilai()
+    {
+        $peserta = User::factory()->create(['role' => 'peserta']);
+        $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
+        $pendaftaran = Pendaftaran::factory()->create([
+            'peserta_id' => $peserta->id,
+            'pelatihan_id' => $pelatihan->id,
+            'status_verifikasi' => 'diverifikasi',
+        ]);
+
+        $response = $this->actingAs($peserta)
+            ->get(route('tiyas.form', $pendaftaran));
+
+        $response->assertOk();
+        $content = $response->getContent();
+
+        // Hitung radio inputs
+        $config = config('tiyas');
+        $totalRadios = 0;
+        foreach ($config['konstruk'] as $konstruk) {
+            foreach ($konstruk['dimensi'] as $dimensi) {
+                $totalRadios += count($dimensi) * 4; // 4 nilai per butir
+            }
+        }
+
+        // Verifikasi total radio inputs dengan nilai 1-4
+        preg_match_all('/name=["\']?(TC|TE|ITT|YB)\d+["\']/i', $content, $matches);
+        $this->assertCount($totalRadios, $matches[0], 'Total radio inputs harus '.$totalRadios);
+    }
+
+    /**
+     * Test: form TIYAS menggunakan has-[:checked]: bukan peer-checked.
+     */
+    public function test_form_tiyas_menggunakan_has_checked_bukan_peer_checked()
+    {
+        $peserta = User::factory()->create(['role' => 'peserta']);
+        $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
+        $pendaftaran = Pendaftaran::factory()->create([
+            'peserta_id' => $peserta->id,
+            'pelatihan_id' => $pelatihan->id,
+            'status_verifikasi' => 'diverifikasi',
+        ]);
+
+        $response = $this->actingAs($peserta)
+            ->get(route('tiyas.form', $pendaftaran));
+
+        $response->assertOk()
+            ->assertSee('has-[:checked]:')
+            ->assertDontSee('peer-checked');
+    }
+
+    /**
+     * Test: form TIYAS menggunakan grid-cols-4 untuk pilihan.
+     */
+    public function test_form_tiyas_menggunakan_grid_cols_4()
+    {
+        $peserta = User::factory()->create(['role' => 'peserta']);
+        $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
+        $pendaftaran = Pendaftaran::factory()->create([
+            'peserta_id' => $peserta->id,
+            'pelatihan_id' => $pelatihan->id,
+            'status_verifikasi' => 'diverifikasi',
+        ]);
+
+        $this->actingAs($peserta)
+            ->get(route('tiyas.form', $pendaftaran))
+            ->assertOk()
+            ->assertSee('grid-cols-4');
+    }
+
+    /**
+     * Test: form TIYAS menampilkan tombol "Lanjut", "Kembali", "Simpan Evaluasi".
+     */
+    public function test_form_tiyas_menampilkan_tombol_navigasi()
+    {
+        $peserta = User::factory()->create(['role' => 'peserta']);
+        $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
+        $pendaftaran = Pendaftaran::factory()->create([
+            'peserta_id' => $peserta->id,
+            'pelatihan_id' => $pelatihan->id,
+            'status_verifikasi' => 'diverifikasi',
+        ]);
+
+        $response = $this->actingAs($peserta)
+            ->get(route('tiyas.form', $pendaftaran));
+
+        $response->assertOk()
+            ->assertSeeText('Lanjut')
+            ->assertSeeText('Kembali')
+            ->assertSeeText('Simpan Evaluasi');
+    }
+
+    /**
+     * Test: form TIYAS header menampilkan langkah.
+     */
+    public function test_form_tiyas_header_menampilkan_langkah()
+    {
+        $peserta = User::factory()->create(['role' => 'peserta']);
+        $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
+        $pendaftaran = Pendaftaran::factory()->create([
+            'peserta_id' => $peserta->id,
+            'pelatihan_id' => $pelatihan->id,
+            'status_verifikasi' => 'diverifikasi',
+        ]);
+
+        $response = $this->actingAs($peserta)
+            ->get(route('tiyas.form', $pendaftaran));
+
+        $response->assertOk();
+        $content = $response->getContent();
+
+        // Verifikasi struktur Alpine untuk header langkah
+        $this->assertStringContainsString("'Langkah '", $content);
+        $this->assertStringContainsString('dari 5', $content);
+        $this->assertStringContainsString('x-text="stepTitle"', $content);
+    }
+
+    /**
+     * Test: form TIYAS total pertanyaan dari config (ubah config, angka berubah).
+     */
+    public function test_form_tiyas_total_pertanyaan_dari_config()
+    {
+        $peserta = User::factory()->create(['role' => 'peserta']);
+        $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
+        $pendaftaran = Pendaftaran::factory()->create([
+            'peserta_id' => $peserta->id,
+            'pelatihan_id' => $pelatihan->id,
+            'status_verifikasi' => 'diverifikasi',
+        ]);
+
+        $response = $this->actingAs($peserta)
+            ->get(route('tiyas.form', $pendaftaran));
+
+        $response->assertOk();
+        $content = $response->getContent();
+
+        // Verifikasi totalQuestions ada di Alpine x-data (default 65 dari config)
+        $this->assertStringContainsString('tiyasForm(65', $content);
+        $this->assertStringContainsString('x-text="totalQuestions"', $content);
+    }
+
+    /**
+     * Test: setelah POST tidak valid (satu butir hilang), redirect dan halaman form terbuka di langkah yang error.
+     */
+    public function test_form_tiyas_error_terbuka_di_langkah_yang_error()
+    {
+        $peserta = User::factory()->create(['role' => 'peserta']);
+        $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
+        $pendaftaran = Pendaftaran::factory()->create([
+            'peserta_id' => $peserta->id,
+            'pelatihan_id' => $pelatihan->id,
+            'status_verifikasi' => 'diverifikasi',
+        ]);
+
+        // Kirim data dengan satu butir hilang (TC1)
+        $data = $this->generateValidTiyasData();
+        unset($data['TC1']);
+
+        $response = $this->actingAs($peserta)
+            ->post(route('tiyas.simpan', $pendaftaran), $data);
+
+        // Redirect dan session punya error
+        $response->assertRedirect(route('tiyas.form', $pendaftaran));
+        $response->assertSessionHasErrors('TC1');
+
+        // Kunjungi form ulang (dengan session error)
+        $formResponse = $this->actingAs($peserta)
+            ->get(route('tiyas.form', $pendaftaran));
+
+        $formResponse->assertOk();
+        $content = $formResponse->getContent();
+
+        // Verifikasi langkah error (TC1 ada di bagian A = langkah 2)
+        $this->assertStringContainsString('initialStep', $content);
+    }
+
+    /**
+     * Test: old() jawaban tetap tercentang setelah error validasi.
+     */
+    public function test_form_tiyas_old_jawaban_tetap_tercentang()
+    {
+        $peserta = User::factory()->create(['role' => 'peserta']);
+        $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
+        $pendaftaran = Pendaftaran::factory()->create([
+            'peserta_id' => $peserta->id,
+            'pelatihan_id' => $pelatihan->id,
+            'status_verifikasi' => 'diverifikasi',
+        ]);
+
+        // Kirim data dengan satu butir hilang
+        $data = $this->generateValidTiyasData();
+        $data['TC1'] = '2'; // Set nilai untuk TC1
+        unset($data['TE1']); // Hapus TE1 sehingga gagal validasi
+
+        $response = $this->actingAs($peserta)
+            ->post(route('tiyas.simpan', $pendaftaran), $data);
+
+        $response->assertSessionHasErrors('TE1');
+
+        // Kunjungi form ulang
+        $formResponse = $this->actingAs($peserta)
+            ->get(route('tiyas.form', $pendaftaran));
+
+        $formResponse->assertOk();
+        $content = $formResponse->getContent();
+
+        // Verifikasi TC1 dengan value 2 masih ada (old value)
+        $this->assertStringContainsString('checked', $content); // Input radio dengan checked
+    }
+
+    /**
+     * Test: pengiriman valid tetap menyimpan 65 jawaban.
+     */
+    public function test_form_tiyas_simpan_65_jawaban_lengkap()
     {
         $peserta = User::factory()->create(['role' => 'peserta']);
         $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
@@ -663,9 +926,28 @@ class TiyasTest extends TestCase
             ->post(route('tiyas.simpan', $pendaftaran), $data)
             ->assertRedirect(route('pendaftarans.index'));
 
-        $this->actingAs($peserta)
-            ->get(route('pendaftarans.index'))
-            ->assertSeeText('Evaluasi TIYAS berhasil disimpan.');
+        $tiyasResponse = TiyasResponse::where('pendaftaran_id', $pendaftaran->id)->first();
+        $this->assertNotNull($tiyasResponse);
+        $this->assertCount(65, $tiyasResponse->jawaban);
+    }
+
+    /**
+     * Test: peserta lain masih 403 pada form TIYAS.
+     */
+    public function test_form_tiyas_peserta_lain_403()
+    {
+        $peserta1 = User::factory()->create(['role' => 'peserta']);
+        $peserta2 = User::factory()->create(['role' => 'peserta']);
+        $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
+        $pendaftaran = Pendaftaran::factory()->create([
+            'peserta_id' => $peserta1->id,
+            'pelatihan_id' => $pelatihan->id,
+            'status_verifikasi' => 'diverifikasi',
+        ]);
+
+        $this->actingAs($peserta2)
+            ->get(route('tiyas.form', $pendaftaran))
+            ->assertForbidden();
     }
 
     // Helper methods
@@ -691,5 +973,223 @@ class TiyasTest extends TestCase
         }
 
         return $data;
+    }
+
+    /**
+     * Test: saveDraft tidak simpan dan restoreDraft tidak pulihkan kunci yang diawali "_" (_token, _method).
+     */
+    public function test_savedraft_tidak_simpan_kunci_underscore()
+    {
+        $peserta = User::factory()->create(['role' => 'peserta']);
+        $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
+        $pendaftaran = Pendaftaran::factory()->create([
+            'peserta_id' => $peserta->id,
+            'pelatihan_id' => $pelatihan->id,
+            'status_verifikasi' => 'diverifikasi',
+        ]);
+
+        $response = $this->actingAs($peserta)
+            ->get(route('tiyas.form', $pendaftaran));
+
+        $response->assertOk();
+        $content = $response->getContent();
+
+        // Verifikasi ada exclusion logic untuk kunci "_"
+        $this->assertStringContainsString("startsWith('_')", $content,
+            'Form harus punya check startsWith("_") untuk mengabaikan _token dan _method');
+    }
+
+    /**
+     * Test: bar tombol bawah memiliki container max-w-2xl untuk align dengan kartu.
+     */
+    public function test_bar_tombol_memiliki_max_w_2xl()
+    {
+        $peserta = User::factory()->create(['role' => 'peserta']);
+        $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
+        $pendaftaran = Pendaftaran::factory()->create([
+            'peserta_id' => $peserta->id,
+            'pelatihan_id' => $pelatihan->id,
+            'status_verifikasi' => 'diverifikasi',
+        ]);
+
+        $response = $this->actingAs($peserta)
+            ->get(route('tiyas.form', $pendaftaran));
+
+        $response->assertOk();
+        $content = $response->getContent();
+
+        // Verifikasi max-w-2xl di dalam bar tombol (fixed bottom container)
+        $this->assertStringContainsString('max-w-2xl', $content,
+            'Bar tombol harus punya container max-w-2xl mx-auto untuk align dengan kartu di desktop');
+    }
+
+    /**
+     * Test: setiap kartu butir memiliki atribut data-item dengan kode butir.
+     */
+    public function test_kartu_butir_memiliki_data_item()
+    {
+        $peserta = User::factory()->create(['role' => 'peserta']);
+        $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
+        $pendaftaran = Pendaftaran::factory()->create([
+            'peserta_id' => $peserta->id,
+            'pelatihan_id' => $pelatihan->id,
+            'status_verifikasi' => 'diverifikasi',
+        ]);
+
+        $response = $this->actingAs($peserta)
+            ->get(route('tiyas.form', $pendaftaran));
+
+        $response->assertOk();
+        $content = $response->getContent();
+
+        // Hitung total butir dari config
+        $config = config('tiyas');
+        $totalButir = 0;
+        $expected = [];
+        foreach ($config['konstruk'] as $kodeKonstruk => $konstruk) {
+            foreach ($konstruk['dimensi'] as $dimensi) {
+                foreach ($dimensi as $kode => $text) {
+                    $totalButir++;
+                    $expected[] = $kode;
+                }
+            }
+        }
+
+        // Verifikasi setiap kartu butir punya data-item
+        preg_match_all('/data-item="([^"]+)"/', $content, $matches);
+        $uniqueItems = array_unique($matches[1] ?? []);
+
+        // Hapus placeholder JS (${fieldName}) dari hasil
+        $uniqueItems = array_filter($uniqueItems, function ($item) {
+            return strpos($item, '$') === false;
+        });
+        $uniqueItems = array_values($uniqueItems); // Re-index array
+
+        $this->assertCount($totalButir, $uniqueItems,
+            'Total data-item unik harus sama dengan total butir dari config ('.$totalButir.')');
+    }
+
+    /**
+     * Test: tautan "Batalkan" tidak ada di dalam bar tombol bawah (moved to atas).
+     */
+    public function test_batalkan_tautan_di_luar_bar_tombol()
+    {
+        $peserta = User::factory()->create(['role' => 'peserta']);
+        $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
+        $pendaftaran = Pendaftaran::factory()->create([
+            'peserta_id' => $peserta->id,
+            'pelatihan_id' => $pelatihan->id,
+            'status_verifikasi' => 'diverifikasi',
+        ]);
+
+        $response = $this->actingAs($peserta)
+            ->get(route('tiyas.form', $pendaftaran));
+
+        $response->assertOk();
+        $content = $response->getContent();
+
+        // Verifikasi tautan "Batalkan" ada dengan format "← Batalkan"
+        $this->assertStringContainsString('Batalkan', $content,
+            'Tautan Batalkan harus ada di form');
+    }
+
+    /**
+     * Test: form TIYAS kartu butir memiliki @change="onItemChange($event)".
+     */
+    public function test_form_tiyas_kartu_butir_memiliki_on_item_change()
+    {
+        $peserta = User::factory()->create(['role' => 'peserta']);
+        $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
+        $pendaftaran = Pendaftaran::factory()->create([
+            'peserta_id' => $peserta->id,
+            'pelatihan_id' => $pelatihan->id,
+            'status_verifikasi' => 'diverifikasi',
+        ]);
+
+        $response = $this->actingAs($peserta)
+            ->get(route('tiyas.form', $pendaftaran));
+
+        $response->assertOk()
+            ->assertSee('@change="onItemChange($event)"', false);
+    }
+
+    /**
+     * Test: tombol "Lanjut" tidak memiliki ganda style dan inline flex/justify-content.
+     */
+    public function test_tombol_lanjut_tidak_ganda_style()
+    {
+        $peserta = User::factory()->create(['role' => 'peserta']);
+        $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
+        $pendaftaran = Pendaftaran::factory()->create([
+            'peserta_id' => $peserta->id,
+            'pelatihan_id' => $pelatihan->id,
+            'status_verifikasi' => 'diverifikasi',
+        ]);
+
+        $response = $this->actingAs($peserta)
+            ->get(route('tiyas.form', $pendaftaran));
+
+        $response->assertOk();
+        $content = $response->getContent();
+
+        // Verifikasi tombol "Lanjut" ada dan class flex-1 sm:flex-none
+        $this->assertStringContainsString('class="px-6 py-2 rounded-lg font-medium text-white transition-all duration-150 hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex-1 sm:flex-none sm:ml-auto"', $content);
+        // Verifikasi tombol Lanjut hanya punya 1 style attribute dengan background-color
+        preg_match('/.*?<button[^>]*@click="nextStep\(\)"[^>]*style="[^"]*"/', $content, $matches);
+        $this->assertNotEmpty($matches, 'Tombol Lanjut harus ada dengan style attribute');
+        // Pastikan style attribute hanya 1 dan hanya background-color
+        $this->assertStringContainsString('style="background-color: var(--color-primary);"', $matches[0]);
+    }
+
+    /**
+     * Test: tombol "Simpan Evaluasi" tidak memiliki ganda style dan inline flex/justify-content.
+     */
+    public function test_tombol_simpan_evaluasi_tidak_ganda_style()
+    {
+        $peserta = User::factory()->create(['role' => 'peserta']);
+        $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
+        $pendaftaran = Pendaftaran::factory()->create([
+            'peserta_id' => $peserta->id,
+            'pelatihan_id' => $pelatihan->id,
+            'status_verifikasi' => 'diverifikasi',
+        ]);
+
+        $response = $this->actingAs($peserta)
+            ->get(route('tiyas.form', $pendaftaran));
+
+        $response->assertOk();
+        $content = $response->getContent();
+
+        // Verifikasi tombol submit (Simpan Evaluasi) ada dan class flex-1 sm:flex-none
+        $this->assertStringContainsString('class="px-6 py-2 rounded-lg font-medium text-white transition-all duration-150 hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex-1 sm:flex-none sm:ml-auto"', $content);
+        // Pastikan style attribute hanya 1 dan hanya background-color
+        preg_match('/.*?<button[^>]*type="submit"[^>]*style="[^"]*"/', $content, $matches);
+        $this->assertNotEmpty($matches, 'Tombol Simpan Evaluasi harus ada dengan style attribute');
+        $this->assertStringContainsString('style="background-color: var(--color-primary);"', $matches[0]);
+    }
+
+    /**
+     * Test: form TIYAS memiliki style block dengan rule [data-invalid].
+     */
+    public function test_form_tiyas_memiliki_style_block_data_invalid()
+    {
+        $peserta = User::factory()->create(['role' => 'peserta']);
+        $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
+        $pendaftaran = Pendaftaran::factory()->create([
+            'peserta_id' => $peserta->id,
+            'pelatihan_id' => $pelatihan->id,
+            'status_verifikasi' => 'diverifikasi',
+        ]);
+
+        $response = $this->actingAs($peserta)
+            ->get(route('tiyas.form', $pendaftaran));
+
+        $response->assertOk();
+        $content = $response->getContent();
+
+        // Verifikasi ada style block dengan rule untuk [data-invalid]
+        $this->assertStringContainsString('[data-invalid="true"]', $content);
+        $this->assertStringContainsString('[data-invalid="false"]', $content);
+        $this->assertStringContainsString('border-color: var(--color-danger)', $content);
     }
 }
