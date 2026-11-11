@@ -158,7 +158,7 @@
                     @endforeach
 
                     <!-- Tombol Navigasi (Fixed Bottom) -->
-                    <div class="fixed bottom-0 left-0 right-0" style="background-color: var(--color-surface); border-top: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent); padding-bottom: max(1rem, env(safe-area-inset-bottom));">
+                    <div class="fixed bottom-0 left-0 right-0" style="background-color: var(--color-bg); border-top: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent); box-shadow: 0 -2px 8px color-mix(in srgb, var(--color-text) 10%, transparent); padding-bottom: max(1rem, env(safe-area-inset-bottom));">
                         <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center gap-3 py-4">
                             <button type="button" x-show="currentStep > 1" @click="previousStep()" class="px-6 py-2 rounded-lg font-medium transition-colors duration-150" style="border: 1px solid color-mix(in srgb, var(--color-text) 20%, transparent); color: var(--color-text);">
                                 Kembali

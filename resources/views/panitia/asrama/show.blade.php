@@ -38,7 +38,7 @@
             @endif
 
             <!-- Tambah Kamar Section -->
-            <div class="bg-white shadow rounded-lg mb-6">
+            <div style="background-color: var(--color-surface); box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-radius: var(--radius-card); margin-bottom: 1.5rem;">
                 <div class="px-4 py-5 sm:p-6">
                     <h3 class="text-lg font-semibold mb-4" style="color: var(--color-text);">Tambah Kamar</h3>
 
@@ -103,7 +103,7 @@
             </div>
 
             <!-- Daftar Kamar -->
-            <div class="bg-white shadow rounded-lg">
+            <div style="background-color: var(--color-surface); box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-radius: var(--radius-card);">
                 <div class="px-4 py-5 sm:p-6">
                     <h3 class="text-lg font-semibold mb-4" style="color: var(--color-text);">Daftar Kamar</h3>
 
@@ -215,7 +215,7 @@
         class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
         style="display: none;"
     >
-        <div class="bg-white rounded-lg shadow-lg p-6 max-w-md w-full mx-4" @click.stop>
+        <div class="rounded-lg shadow-lg p-6 max-w-md w-full mx-4" style="background-color: var(--color-surface);" @click.stop>
             <h3 class="text-lg font-semibold mb-4" style="color: var(--color-text);">Ubah Kapasitas Kamar</h3>
             <p class="text-sm text-gray-600 mb-4">Kamar: <strong x-text="nomorKamar"></strong></p>
 
@@ -272,7 +272,7 @@
         class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
         style="display: none;"
     >
-        <div class="bg-white rounded-lg shadow-lg p-6 max-w-md w-full mx-4" @click.stop>
+        <div class="rounded-lg shadow-lg p-6 max-w-md w-full mx-4" style="background-color: var(--color-surface);" @click.stop>
             <h3 class="text-lg font-semibold mb-4" style="color: var(--color-text);">Pindah Kamar</h3>
             <p class="text-sm text-gray-600 mb-1">Peserta: <strong x-text="namaPeserta"></strong></p>
             <p class="text-sm text-gray-600 mb-4">Kamar Saat Ini: <strong x-text="kamarSkrg"></strong></p>

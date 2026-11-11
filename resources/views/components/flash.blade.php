@@ -12,7 +12,7 @@
          x-transition:leave-start="opacity-100 translate-y-0"
          x-transition:leave-end="opacity-0 translate-y-2">
         
-        <div class="bg-white rounded-[var(--radius-card)] p-[var(--sp-4)] md:p-[var(--sp-6)] shadow-lg border-l-4 border-[var(--color-success)] flex items-start gap-[var(--sp-4)]">
+        <div class="rounded-[var(--radius-card)] p-[var(--sp-4)] md:p-[var(--sp-6)] shadow-lg border-l-4 border-[var(--color-success)] flex items-start gap-[var(--sp-4)]" style="background-color: var(--color-surface);">
             <!-- Icon Success -->
             <div class="flex-shrink-0 mt-0.5">
                 <svg class="w-5 h-5 text-[var(--color-success)]" fill="currentColor" viewBox="0 0 20 20">
@@ -41,7 +41,7 @@
     <div class="fixed top-4 right-4 md:right-6 md:top-6 left-4 md:left-auto max-w-sm" 
          x-data="{ show: true }">
         
-        <div class="bg-white rounded-[var(--radius-card)] p-[var(--sp-4)] md:p-[var(--sp-6)] shadow-lg border-l-4 border-[var(--color-danger)] flex items-start gap-[var(--sp-4)]"
+        <div class="rounded-[var(--radius-card)] p-[var(--sp-4)] md:p-[var(--sp-6)] shadow-lg border-l-4 border-[var(--color-danger)] flex items-start gap-[var(--sp-4)]" style="background-color: var(--color-surface);"
              x-show="show"
              x-transition:enter="transition ease-out duration-300"
              x-transition:enter-start="opacity-0 translate-y-2"

@@ -5,7 +5,7 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm rounded-lg">
+            <div class="overflow-hidden shadow-sm rounded-lg" style="background-color: var(--color-surface);">
                 <div class="p-6" style="color: var(--color-text);">
                     <!-- Filter dan Search -->
                     <form method="GET" action="{{ route('admin.aktivitas.index') }}" class="mb-6">

@@ -2,6 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Background global untuk overscroll dan halaman pendek */
+html, body {
+  background-color: var(--color-bg);
+}
+
+body {
+  min-height: 100dvh;
+}
+
 :root {
   /* warna */
   --color-primary: #7A1F2B;   /* marun */
