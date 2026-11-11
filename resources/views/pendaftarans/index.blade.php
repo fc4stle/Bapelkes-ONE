@@ -75,15 +75,16 @@
                                 </form>
                             </div>
                         @elseif ($pendaftaran->status_verifikasi === 'diverifikasi' && $pendaftaran->pelatihan->sudahSelesai())
-                            @if ($pendaftaran->tiyasResponse()->exists())
-                                <div class="mt-[var(--sp-2)]">
+                            <div class="mt-[var(--sp-2)] flex flex-col gap-[var(--sp-2)]">
+                                @if ($pendaftaran->isDiverifikasi() && $pendaftaran->isHadir() && $pendaftaran->isPelatihanSelesai())
+                                    <a href="{{ route('pendaftarans.sertifikat', $pendaftaran) }}" class="text-sm text-[var(--color-primary)] hover:opacity-75">Unduh Sertifikat</a>
+                                @endif
+                                @if ($pendaftaran->tiyasResponse()->exists())
                                     <span class="inline-block px-2 py-1 text-xs font-semibold text-white rounded" style="background-color: var(--color-success);">Evaluasi sudah diisi</span>
-                                </div>
-                            @else
-                                <div class="mt-[var(--sp-2)]">
+                                @else
                                     <a href="{{ route('tiyas.form', $pendaftaran) }}" class="text-sm text-[var(--color-primary)] hover:opacity-75">Isi Evaluasi TIYAS</a>
-                                </div>
-                            @endif
+                                @endif
+                            </div>
                         @endif
                     </div>
                 @endforeach
@@ -131,11 +132,16 @@
                                             </form>
                                         </div>
                                     @elseif ($pendaftaran->status_verifikasi === 'diverifikasi' && $pendaftaran->pelatihan->sudahSelesai())
-                                        @if ($pendaftaran->tiyasResponse()->exists())
-                                            <span class="inline-block px-2 py-1 text-xs font-semibold text-white rounded" style="background-color: var(--color-success);">Evaluasi sudah diisi</span>
-                                        @else
-                                            <a href="{{ route('tiyas.form', $pendaftaran) }}" class="text-[var(--color-primary)] hover:opacity-75">Isi Evaluasi TIYAS</a>
-                                        @endif
+                                        <div class="inline-flex items-center gap-[var(--sp-3)]">
+                                            @if ($pendaftaran->isDiverifikasi() && $pendaftaran->isHadir() && $pendaftaran->isPelatihanSelesai())
+                                                <a href="{{ route('pendaftarans.sertifikat', $pendaftaran) }}" class="text-[var(--color-primary)] hover:opacity-75">Unduh Sertifikat</a>
+                                            @endif
+                                            @if ($pendaftaran->tiyasResponse()->exists())
+                                                <span class="inline-block px-2 py-1 text-xs font-semibold text-white rounded" style="background-color: var(--color-success);">Evaluasi sudah diisi</span>
+                                            @else
+                                                <a href="{{ route('tiyas.form', $pendaftaran) }}" class="text-[var(--color-primary)] hover:opacity-75">Isi Evaluasi TIYAS</a>
+                                            @endif
+                                        </div>
                                     @else
                                         <span class="text-gray-400">-</span>
                                     @endif
