@@ -332,24 +332,13 @@ class Pendaftaran extends Model
             ];
         }
 
-        // d2) diverifikasi, belum hadir, pelatihan SUDAH selesai — boleh isi TIYAS tanpa sertifikat
+        // d2) diverifikasi, belum hadir, pelatihan SUDAH selesai — tidak boleh akses TIYAS
         if ($this->isDiverifikasi() && ! $this->isHadir() && $this->pelatihan->sudahSelesai()) {
-            $aksi = [];
-
-            if (! $this->tiyasResponse()->exists()) {
-                $aksi[] = ['label' => 'Isi Evaluasi TIYAS', 'url' => route('tiyas.form', $this)];
-            }
-
-            // Gunakan deskripsi "Terima kasih" jika TIYAS sudah ada, "Isi TIYAS" jika belum
-            $deskripsi = empty($aksi)
-                ? 'Terima kasih telah mengikuti pelatihan.'
-                : 'Silakan isi evaluasi TIYAS untuk menyelesaikan pelatihan ini.';
-
             return [
                 'judul' => 'Pelatihan selesai',
-                'deskripsi' => $deskripsi,
-                'tone' => 'sukses',
-                'aksi' => $aksi,
+                'deskripsi' => 'Kamu belum tercatat hadir lewat QR, jadi evaluasi dan sertifikat belum tersedia. Hubungi panitia jika ini keliru.',
+                'tone' => 'perhatian',
+                'aksi' => [],
             ];
         }
 
