@@ -1192,4 +1192,31 @@ class TiyasTest extends TestCase
         $this->assertStringContainsString('[data-invalid="false"]', $content);
         $this->assertStringContainsString('border-color: var(--color-danger)', $content);
     }
+
+    /**
+     * Test struktural: form.blade.php tidak menggunakan .closest('.max-w-2xl')
+     * (bug fix: ganti dengan this.$root.querySelector('form')).
+     */
+    public function test_tiyas_form_blade_tidak_gunakan_closest_max_w_2xl()
+    {
+        $peserta = User::factory()->create(['role' => 'peserta']);
+        $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
+        $pendaftaran = Pendaftaran::factory()->hadir()->create([
+            'peserta_id' => $peserta->id,
+            'pelatihan_id' => $pelatihan->id,
+            'status_verifikasi' => 'diverifikasi',
+        ]);
+
+        $response = $this->actingAs($peserta)
+            ->get(route('tiyas.form', $pendaftaran));
+
+        $response->assertOk();
+        $content = $response->getContent();
+
+        // Verifikasi pattern .closest('.max-w-2xl') tidak ada lagi
+        $this->assertStringNotContainsString("closest('.max-w-2xl')", $content);
+        $this->assertStringNotContainsString('closest(".max-w-2xl")', $content);
+        // Verifikasi ini.$root.querySelector('form') ada
+        $this->assertStringContainsString('this.$root.querySelector(\'form\')', $content);
+    }
 }

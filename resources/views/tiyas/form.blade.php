@@ -205,13 +205,21 @@
                     5: 'Bagian D: Perilaku Pascapelatihan',
                 },
 
+                get form() {
+                    const formEl = this.$root.querySelector('form');
+                    if (!formEl) {
+                        console.error('tiyasForm: Form element not found. Ensure x-data is on the parent div wrapping the form.');
+                    }
+                    return formEl;
+                },
+
                 get stepTitle() {
                     return this.stepTitles[this.currentStep] || '';
                 },
 
                 updateProgress() {
-                    const form = this.$el.closest('.max-w-2xl').querySelector('form');
-                    const radios = form.querySelectorAll('input[type="radio"]');
+                    if (!this.form) return;
+                    const radios = this.form.querySelectorAll('input[type="radio"]');
                     const answeredSet = new Set();
                     
                     radios.forEach(radio => {
@@ -226,9 +234,9 @@
 
                 saveDraft() {
                     if (typeof localStorage === 'undefined') return;
+                    if (!this.form) return;
                     try {
-                        const form = this.$el.closest('.max-w-2xl').querySelector('form');
-                        const data = new FormData(form);
+                        const data = new FormData(this.form);
                         const draftData = {};
                         for (let [key, value] of data.entries()) {
                             // Jangan simpan kunci yang diawali "_" (_token, _method, dll)
@@ -244,18 +252,18 @@
 
                 restoreDraft() {
                     if (typeof localStorage === 'undefined') return;
+                    if (!this.form) return;
                     try {
                         const draft = localStorage.getItem('tiyas-draft-{{ $pendaftaran->id }}');
                         if (draft && !this.hasErrors()) {
                             const draftData = JSON.parse(draft);
-                            const form = this.$el.closest('.max-w-2xl').querySelector('form');
                             for (let [key, value] of Object.entries(draftData)) {
                                 // Jangan pulihkan kunci yang diawali "_"
                                 if (key.startsWith('_')) continue;
-                                const field = form.elements[key];
+                                const field = this.form.elements[key];
                                 if (field) {
                                     if (field.type === 'radio') {
-                                        const radio = form.querySelector(`input[name="${key}"][value="${value}"]`);
+                                        const radio = this.form.querySelector(`input[name="${key}"][value="${value}"]`);
                                         if (radio) radio.checked = true;
                                     } else {
                                         field.value = value;
@@ -294,18 +302,18 @@
                 },
 
                 validateStep(step) {
-                    const form = this.$el.closest('.max-w-2xl').querySelector('form');
+                    if (!this.form) return false;
                     const emptyFields = [];
 
                     if (step === 1) {
                         ['asal_instansi', 'asal_kabupaten', 'jenis_profesi', 'masa_kerja', 'waktu_sejak_selesai'].forEach(field => {
-                            const input = form.elements[field];
+                            const input = this.form.elements[field];
                             if (!input || !input.value) {
                                 emptyFields.push(field);
                             }
                         });
                     } else {
-                        const stepDiv = form.querySelector('[data-step="' + step + '"]');
+                        const stepDiv = this.form.querySelector('[data-step="' + step + '"]');
                         if (stepDiv) {
                             const radios = stepDiv.querySelectorAll('input[type="radio"]');
                             const groupedRadios = {};
@@ -341,45 +349,45 @@
                 },
 
                 showError(count) {
-                    const form = this.$el.closest('.max-w-2xl').querySelector('form');
-                    let errorDiv = form.querySelector('[data-error-message]');
+                    if (!this.form) return;
+                    let errorDiv = this.form.querySelector('[data-error-message]');
                     if (!errorDiv) {
                         errorDiv = document.createElement('div');
                         errorDiv.setAttribute('data-error-message', 'true');
                         errorDiv.setAttribute('role', 'alert');
                         errorDiv.style.cssText = `color: var(--color-danger); font-size: 0.875rem; margin-bottom: 1rem; padding: 0.75rem; background-color: color-mix(in srgb, var(--color-danger) 10%, transparent); border-radius: 0.5rem; border-left: 3px solid var(--color-danger);`;
-                        form.insertBefore(errorDiv, form.firstChild.nextSibling);
+                        this.form.insertBefore(errorDiv, this.form.firstChild.nextSibling);
                     }
                     errorDiv.textContent = `Masih ada ${count} pertanyaan yang belum dijawab`;
                 },
 
                 clearError() {
-                    const form = this.$el.closest('.max-w-2xl').querySelector('form');
-                    const errorDiv = form.querySelector('[data-error-message]');
+                    if (!this.form) return;
+                    const errorDiv = this.form.querySelector('[data-error-message]');
                     if (errorDiv) {
                         errorDiv.remove();
                     }
                 },
 
                 markErrors(fields) {
-                    const form = this.$el.closest('.max-w-2xl').querySelector('form');
+                    if (!this.form) return;
                     // Hapus penandaan lama dari semua kartu butir
-                    form.querySelectorAll('[data-item]').forEach(item => {
+                    this.form.querySelectorAll('[data-item]').forEach(item => {
                         item.dataset.invalid = 'false';
                     });
                     // Hapus penandaan lama dari semua select
-                    form.querySelectorAll('select').forEach(select => {
+                    this.form.querySelectorAll('select').forEach(select => {
                         select.dataset.invalid = 'false';
                     });
                     
                     // Tandai kartu butir dan select yang kosong
                     fields.forEach(fieldName => {
-                        const itemCard = form.querySelector(`[data-item="${fieldName}"]`);
+                        const itemCard = this.form.querySelector(`[data-item="${fieldName}"]`);
                         if (itemCard) {
                             itemCard.dataset.invalid = 'true';
                         }
                         
-                        const select = form.querySelector(`select[name="${fieldName}"]`);
+                        const select = this.form.querySelector(`select[name="${fieldName}"]`);
                         if (select) {
                             select.dataset.invalid = 'true';
                         }
@@ -401,17 +409,17 @@
                 },
 
                 scrollToFirstError(fieldName) {
-                    const form = this.$el.closest('.max-w-2xl').querySelector('form');
+                    if (!this.form) return;
                     
                     // Cek di kartu butir dulu
-                    const itemCard = form.querySelector(`[data-item="${fieldName}"]`);
+                    const itemCard = this.form.querySelector(`[data-item="${fieldName}"]`);
                     if (itemCard) {
                         itemCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
                         return;
                     }
                     
                     // Cek di select step 1
-                    const select = form.querySelector(`select[name="${fieldName}"]`);
+                    const select = this.form.querySelector(`select[name="${fieldName}"]`);
                     if (select) {
                         select.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     }
