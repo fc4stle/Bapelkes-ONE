@@ -83,13 +83,12 @@ class PendaftaranLangkahBerikutnyaTest extends TestCase
 
         $langkah = $pendaftaran->langkahBerikutnya();
 
-        // Sekarang aturan c tidak ada syarat hadir, jadi selesai + belum hadir masuk aturan c
+        // d2: belum hadir + pelatihan selesai => no TIYAS access
         $this->assertEquals('Pelatihan selesai', $langkah['judul']);
-        $this->assertEquals('sukses', $langkah['tone']);
-        // Sertifikat tidak muncul karena belum hadir (bisaDownloadSertifikat butuh hadir)
-        // TIYAS muncul karena belum ada tiyasResponse
-        $this->assertCount(1, $langkah['aksi']);
-        $this->assertEquals('Isi Evaluasi TIYAS', $langkah['aksi'][0]['label']);
+        $this->assertEquals('perhatian', $langkah['tone']);
+        // Tidak ada aksi karena belum hadir (policy block)
+        $this->assertCount(0, $langkah['aksi']);
+        $this->assertEmpty($langkah['aksi']);
     }
 
     public function test_c_selesai_hadir_dapat_sertifikat(): void
@@ -236,10 +235,10 @@ class PendaftaranLangkahBerikutnyaTest extends TestCase
 
         $langkah = $pendaftaran->langkahBerikutnya();
 
-        // Selesai + belum hadir + TIYAS sudah ada => tanpa aksi
+        // Selesai + belum hadir (no matter TIYAS status) => tone perhatian, no aksi
         $this->assertEquals('Pelatihan selesai', $langkah['judul']);
-        $this->assertEquals('sukses', $langkah['tone']);
-        $this->assertEquals('Terima kasih telah mengikuti pelatihan.', $langkah['deskripsi']);
+        $this->assertEquals('perhatian', $langkah['tone']);
+        $this->assertStringContainsString('belum tercatat hadir', $langkah['deskripsi']);
         $this->assertEmpty($langkah['aksi']);
     }
 

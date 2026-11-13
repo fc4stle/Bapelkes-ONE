@@ -291,8 +291,8 @@ class Pendaftaran extends Model
             ];
         }
 
-        // c) diverifikasi, pelatihan selesai (tanpa syarat hadir)
-        if ($this->isDiverifikasi() && $this->pelatihan->sudahSelesai()) {
+        // c) diverifikasi, hadir, pelatihan selesai
+        if ($this->isDiverifikasi() && $this->isHadir() && $this->pelatihan->sudahSelesai()) {
             $aksi = [];
 
             if ($this->bisaDownloadSertifikat()) {
@@ -329,6 +329,16 @@ class Pendaftaran extends Model
                 'aksi' => [
                     ['label' => 'Kartu peserta', 'url' => route('pendaftarans.kartu', $this)],
                 ],
+            ];
+        }
+
+        // d2) diverifikasi, belum hadir, pelatihan SUDAH selesai — tidak boleh akses TIYAS
+        if ($this->isDiverifikasi() && ! $this->isHadir() && $this->pelatihan->sudahSelesai()) {
+            return [
+                'judul' => 'Pelatihan selesai',
+                'deskripsi' => 'Kamu belum tercatat hadir lewat QR, jadi evaluasi dan sertifikat belum tersedia. Hubungi panitia jika ini keliru.',
+                'tone' => 'perhatian',
+                'aksi' => [],
             ];
         }
 

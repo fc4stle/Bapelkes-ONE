@@ -89,6 +89,10 @@ class PendaftaranPolicy
             return false; // Pelatihan harus sudah selesai
         }
 
+        if (! $pendaftaran->isHadir()) {
+            return false; // Peserta harus sudah hadir (QR)
+        }
+
         if ($pendaftaran->tiyasResponse()->exists()) {
             return false; // Sudah pernah isi
         }

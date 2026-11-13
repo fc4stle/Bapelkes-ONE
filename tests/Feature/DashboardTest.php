@@ -252,8 +252,8 @@ class DashboardTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertSee('Pelatihan selesai');
-        // Karena belum hadir, bisaDownloadSertifikat() false, jadi hanya TIYAS
-        $response->assertSee('Isi Evaluasi TIYAS');
+        // Karena belum hadir, tidak ada aksi TIYAS (policy block)
+        $response->assertDontSee('Isi Evaluasi TIYAS');
     }
 
     public function test_langkah_berikutnya_d_belum_hadir(): void

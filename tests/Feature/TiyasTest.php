@@ -24,7 +24,7 @@ class TiyasTest extends TestCase
             'status' => 'selesai',
             'tanggal_selesai' => now()->subDay(),
         ]);
-        $pendaftaran = Pendaftaran::factory()->create([
+        $pendaftaran = Pendaftaran::factory()->hadir()->create([
             'peserta_id' => $peserta->id,
             'pelatihan_id' => $pelatihan->id,
             'status_verifikasi' => 'diverifikasi',
@@ -47,7 +47,7 @@ class TiyasTest extends TestCase
             'status' => 'selesai',
             'tanggal_selesai' => now()->subDay(),
         ]);
-        $pendaftaran = Pendaftaran::factory()->create([
+        $pendaftaran = Pendaftaran::factory()->hadir()->create([
             'peserta_id' => $peserta->id,
             'pelatihan_id' => $pelatihan->id,
             'status_verifikasi' => 'diverifikasi',
@@ -75,7 +75,7 @@ class TiyasTest extends TestCase
             'status' => 'dibuka',
             'tanggal_selesai' => now()->addDays(7),
         ]);
-        $pendaftaran = Pendaftaran::factory()->create([
+        $pendaftaran = Pendaftaran::factory()->hadir()->create([
             'peserta_id' => $peserta->id,
             'pelatihan_id' => $pelatihan->id,
             'status_verifikasi' => 'diverifikasi',
@@ -97,7 +97,7 @@ class TiyasTest extends TestCase
             'status' => 'selesai',
             'tanggal_selesai' => now()->addDays(7), // Masa depan, tapi status selesai
         ]);
-        $pendaftaran = Pendaftaran::factory()->create([
+        $pendaftaran = Pendaftaran::factory()->hadir()->create([
             'peserta_id' => $peserta->id,
             'pelatihan_id' => $pelatihan->id,
             'status_verifikasi' => 'diverifikasi',
@@ -120,7 +120,7 @@ class TiyasTest extends TestCase
             'status' => 'dibuka',
             'tanggal_selesai' => now()->subDay(), // Masa lalu: sudah selesai menurut tanggal
         ]);
-        $pendaftaran = Pendaftaran::factory()->create([
+        $pendaftaran = Pendaftaran::factory()->hadir()->create([
             'peserta_id' => $peserta->id,
             'pelatihan_id' => $pelatihan->id,
             'status_verifikasi' => 'diverifikasi',
@@ -142,7 +142,7 @@ class TiyasTest extends TestCase
             'status' => 'dibuka',
             'tanggal_selesai' => now()->addDays(7),
         ]);
-        $pendaftaran = Pendaftaran::factory()->create([
+        $pendaftaran = Pendaftaran::factory()->hadir()->create([
             'peserta_id' => $peserta->id,
             'pelatihan_id' => $pelatihan->id,
             'status_verifikasi' => 'diverifikasi',
@@ -160,7 +160,7 @@ class TiyasTest extends TestCase
     {
         $peserta = User::factory()->create(['role' => 'peserta']);
         $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
-        $pendaftaran = Pendaftaran::factory()->create([
+        $pendaftaran = Pendaftaran::factory()->hadir()->create([
             'peserta_id' => $peserta->id,
             'pelatihan_id' => $pelatihan->id,
             'status_verifikasi' => 'pending',
@@ -178,7 +178,7 @@ class TiyasTest extends TestCase
     {
         $peserta = User::factory()->create(['role' => 'peserta']);
         $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
-        $pendaftaran = Pendaftaran::factory()->create([
+        $pendaftaran = Pendaftaran::factory()->hadir()->create([
             'peserta_id' => $peserta->id,
             'pelatihan_id' => $pelatihan->id,
             'status_verifikasi' => 'diverifikasi',
@@ -198,7 +198,7 @@ class TiyasTest extends TestCase
         $peserta1 = User::factory()->create(['role' => 'peserta']);
         $peserta2 = User::factory()->create(['role' => 'peserta']);
         $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
-        $pendaftaran = Pendaftaran::factory()->create([
+        $pendaftaran = Pendaftaran::factory()->hadir()->create([
             'peserta_id' => $peserta1->id,
             'pelatihan_id' => $pelatihan->id,
             'status_verifikasi' => 'diverifikasi',
@@ -217,7 +217,7 @@ class TiyasTest extends TestCase
         $panitia = User::factory()->create(['role' => 'panitia']);
         $peserta = User::factory()->create(['role' => 'peserta']);
         $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
-        $pendaftaran = Pendaftaran::factory()->create([
+        $pendaftaran = Pendaftaran::factory()->hadir()->create([
             'peserta_id' => $peserta->id,
             'pelatihan_id' => $pelatihan->id,
             'status_verifikasi' => 'diverifikasi',
@@ -235,7 +235,7 @@ class TiyasTest extends TestCase
     {
         $peserta = User::factory()->create(['role' => 'peserta']);
         $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
-        $pendaftaran = Pendaftaran::factory()->create([
+        $pendaftaran = Pendaftaran::factory()->hadir()->create([
             'peserta_id' => $peserta->id,
             'pelatihan_id' => $pelatihan->id,
             'status_verifikasi' => 'diverifikasi',
@@ -255,7 +255,7 @@ class TiyasTest extends TestCase
     {
         $peserta = User::factory()->create(['role' => 'peserta']);
         $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
-        $pendaftaran = Pendaftaran::factory()->create([
+        $pendaftaran = Pendaftaran::factory()->hadir()->create([
             'peserta_id' => $peserta->id,
             'pelatihan_id' => $pelatihan->id,
             'status_verifikasi' => 'diverifikasi',
@@ -276,7 +276,7 @@ class TiyasTest extends TestCase
     {
         $peserta = User::factory()->create(['role' => 'peserta']);
         $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
-        $pendaftaran = Pendaftaran::factory()->create([
+        $pendaftaran = Pendaftaran::factory()->hadir()->create([
             'peserta_id' => $peserta->id,
             'pelatihan_id' => $pelatihan->id,
             'status_verifikasi' => 'diverifikasi',
@@ -297,7 +297,7 @@ class TiyasTest extends TestCase
     {
         $peserta = User::factory()->create(['role' => 'peserta']);
         $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
-        $pendaftaran = Pendaftaran::factory()->create([
+        $pendaftaran = Pendaftaran::factory()->hadir()->create([
             'peserta_id' => $peserta->id,
             'pelatihan_id' => $pelatihan->id,
             'status_verifikasi' => 'diverifikasi',
@@ -379,7 +379,7 @@ class TiyasTest extends TestCase
         $panitia = User::factory()->create(['role' => 'panitia']);
         $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
         $peserta = User::factory()->create(['role' => 'peserta']);
-        $pendaftaran = Pendaftaran::factory()->create([
+        $pendaftaran = Pendaftaran::factory()->hadir()->create([
             'peserta_id' => $peserta->id,
             'pelatihan_id' => $pelatihan->id,
         ]);
@@ -400,7 +400,7 @@ class TiyasTest extends TestCase
         $panitia = User::factory()->create(['role' => 'panitia']);
         $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
         $peserta = User::factory()->create(['role' => 'peserta']);
-        $pendaftaran = Pendaftaran::factory()->create([
+        $pendaftaran = Pendaftaran::factory()->hadir()->create([
             'peserta_id' => $peserta->id,
             'pelatihan_id' => $pelatihan->id,
         ]);
@@ -437,7 +437,7 @@ class TiyasTest extends TestCase
         $panitia = User::factory()->create(['role' => 'panitia']);
         $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
         $peserta = User::factory()->create(['role' => 'peserta']);
-        $pendaftaran = Pendaftaran::factory()->create([
+        $pendaftaran = Pendaftaran::factory()->hadir()->create([
             'peserta_id' => $peserta->id,
             'pelatihan_id' => $pelatihan->id,
         ]);
@@ -457,7 +457,7 @@ class TiyasTest extends TestCase
         $panitia = User::factory()->create(['role' => 'panitia']);
         $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
         $peserta = User::factory()->create(['role' => 'peserta']);
-        $pendaftaran = Pendaftaran::factory()->create([
+        $pendaftaran = Pendaftaran::factory()->hadir()->create([
             'peserta_id' => $peserta->id,
             'pelatihan_id' => $pelatihan->id,
         ]);
@@ -484,7 +484,7 @@ class TiyasTest extends TestCase
         // Buat 3 peserta dengan response
         for ($i = 0; $i < 3; $i++) {
             $peserta = User::factory()->create(['role' => 'peserta']);
-            $pendaftaran = Pendaftaran::factory()->create([
+            $pendaftaran = Pendaftaran::factory()->hadir()->create([
                 'peserta_id' => $peserta->id,
                 'pelatihan_id' => $pelatihan->id,
             ]);
@@ -521,7 +521,7 @@ class TiyasTest extends TestCase
         $panitia = User::factory()->create(['role' => 'panitia']);
         $peserta = User::factory()->create(['role' => 'peserta']);
         $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
-        $pendaftaran = Pendaftaran::factory()->create([
+        $pendaftaran = Pendaftaran::factory()->hadir()->create([
             'peserta_id' => $peserta->id,
             'pelatihan_id' => $pelatihan->id,
         ]);
@@ -541,7 +541,7 @@ class TiyasTest extends TestCase
         $panitia = User::factory()->create(['role' => 'panitia']);
         $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
         $peserta = User::factory()->create(['role' => 'peserta']);
-        $pendaftaran = Pendaftaran::factory()->create([
+        $pendaftaran = Pendaftaran::factory()->hadir()->create([
             'peserta_id' => $peserta->id,
             'pelatihan_id' => $pelatihan->id,
         ]);
@@ -561,7 +561,7 @@ class TiyasTest extends TestCase
         $panitia = User::factory()->create(['role' => 'panitia']);
         $peserta = User::factory()->create(['role' => 'peserta']);
         $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
-        $pendaftaran = Pendaftaran::factory()->create([
+        $pendaftaran = Pendaftaran::factory()->hadir()->create([
             'peserta_id' => $peserta->id,
             'pelatihan_id' => $pelatihan->id,
         ]);
@@ -581,7 +581,7 @@ class TiyasTest extends TestCase
         $panitia = User::factory()->create(['role' => 'panitia']);
         $peserta = User::factory()->create(['role' => 'peserta']);
         $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
-        $pendaftaran = Pendaftaran::factory()->create([
+        $pendaftaran = Pendaftaran::factory()->hadir()->create([
             'peserta_id' => $peserta->id,
             'pelatihan_id' => $pelatihan->id,
         ]);
@@ -609,7 +609,7 @@ class TiyasTest extends TestCase
         $panitia = User::factory()->create(['role' => 'panitia']);
         $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
         $peserta = User::factory()->create(['role' => 'peserta']);
-        $pendaftaran = Pendaftaran::factory()->create([
+        $pendaftaran = Pendaftaran::factory()->hadir()->create([
             'peserta_id' => $peserta->id,
             'pelatihan_id' => $pelatihan->id,
         ]);
@@ -632,7 +632,7 @@ class TiyasTest extends TestCase
     {
         $peserta = User::factory()->create(['role' => 'peserta']);
         $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
-        $pendaftaran = Pendaftaran::factory()->create([
+        $pendaftaran = Pendaftaran::factory()->hadir()->create([
             'peserta_id' => $peserta->id,
             'pelatihan_id' => $pelatihan->id,
             'status_verifikasi' => 'diverifikasi',
@@ -657,7 +657,7 @@ class TiyasTest extends TestCase
     {
         $peserta = User::factory()->create(['role' => 'peserta']);
         $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
-        $pendaftaran = Pendaftaran::factory()->create([
+        $pendaftaran = Pendaftaran::factory()->hadir()->create([
             'peserta_id' => $peserta->id,
             'pelatihan_id' => $pelatihan->id,
             'status_verifikasi' => 'diverifikasi',
@@ -676,7 +676,7 @@ class TiyasTest extends TestCase
     {
         $peserta = User::factory()->create(['role' => 'peserta']);
         $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
-        $pendaftaran = Pendaftaran::factory()->create([
+        $pendaftaran = Pendaftaran::factory()->hadir()->create([
             'peserta_id' => $peserta->id,
             'pelatihan_id' => $pelatihan->id,
             'status_verifikasi' => 'diverifikasi',
@@ -701,7 +701,7 @@ class TiyasTest extends TestCase
     {
         $peserta = User::factory()->create(['role' => 'peserta']);
         $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
-        $pendaftaran = Pendaftaran::factory()->create([
+        $pendaftaran = Pendaftaran::factory()->hadir()->create([
             'peserta_id' => $peserta->id,
             'pelatihan_id' => $pelatihan->id,
             'status_verifikasi' => 'diverifikasi',
@@ -734,7 +734,7 @@ class TiyasTest extends TestCase
     {
         $peserta = User::factory()->create(['role' => 'peserta']);
         $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
-        $pendaftaran = Pendaftaran::factory()->create([
+        $pendaftaran = Pendaftaran::factory()->hadir()->create([
             'peserta_id' => $peserta->id,
             'pelatihan_id' => $pelatihan->id,
             'status_verifikasi' => 'diverifikasi',
@@ -755,7 +755,7 @@ class TiyasTest extends TestCase
     {
         $peserta = User::factory()->create(['role' => 'peserta']);
         $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
-        $pendaftaran = Pendaftaran::factory()->create([
+        $pendaftaran = Pendaftaran::factory()->hadir()->create([
             'peserta_id' => $peserta->id,
             'pelatihan_id' => $pelatihan->id,
             'status_verifikasi' => 'diverifikasi',
@@ -774,7 +774,7 @@ class TiyasTest extends TestCase
     {
         $peserta = User::factory()->create(['role' => 'peserta']);
         $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
-        $pendaftaran = Pendaftaran::factory()->create([
+        $pendaftaran = Pendaftaran::factory()->hadir()->create([
             'peserta_id' => $peserta->id,
             'pelatihan_id' => $pelatihan->id,
             'status_verifikasi' => 'diverifikasi',
@@ -796,7 +796,7 @@ class TiyasTest extends TestCase
     {
         $peserta = User::factory()->create(['role' => 'peserta']);
         $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
-        $pendaftaran = Pendaftaran::factory()->create([
+        $pendaftaran = Pendaftaran::factory()->hadir()->create([
             'peserta_id' => $peserta->id,
             'pelatihan_id' => $pelatihan->id,
             'status_verifikasi' => 'diverifikasi',
@@ -821,7 +821,7 @@ class TiyasTest extends TestCase
     {
         $peserta = User::factory()->create(['role' => 'peserta']);
         $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
-        $pendaftaran = Pendaftaran::factory()->create([
+        $pendaftaran = Pendaftaran::factory()->hadir()->create([
             'peserta_id' => $peserta->id,
             'pelatihan_id' => $pelatihan->id,
             'status_verifikasi' => 'diverifikasi',
@@ -845,7 +845,7 @@ class TiyasTest extends TestCase
     {
         $peserta = User::factory()->create(['role' => 'peserta']);
         $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
-        $pendaftaran = Pendaftaran::factory()->create([
+        $pendaftaran = Pendaftaran::factory()->hadir()->create([
             'peserta_id' => $peserta->id,
             'pelatihan_id' => $pelatihan->id,
             'status_verifikasi' => 'diverifikasi',
@@ -880,7 +880,7 @@ class TiyasTest extends TestCase
     {
         $peserta = User::factory()->create(['role' => 'peserta']);
         $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
-        $pendaftaran = Pendaftaran::factory()->create([
+        $pendaftaran = Pendaftaran::factory()->hadir()->create([
             'peserta_id' => $peserta->id,
             'pelatihan_id' => $pelatihan->id,
             'status_verifikasi' => 'diverifikasi',
@@ -914,7 +914,7 @@ class TiyasTest extends TestCase
     {
         $peserta = User::factory()->create(['role' => 'peserta']);
         $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
-        $pendaftaran = Pendaftaran::factory()->create([
+        $pendaftaran = Pendaftaran::factory()->hadir()->create([
             'peserta_id' => $peserta->id,
             'pelatihan_id' => $pelatihan->id,
             'status_verifikasi' => 'diverifikasi',
@@ -939,7 +939,7 @@ class TiyasTest extends TestCase
         $peserta1 = User::factory()->create(['role' => 'peserta']);
         $peserta2 = User::factory()->create(['role' => 'peserta']);
         $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
-        $pendaftaran = Pendaftaran::factory()->create([
+        $pendaftaran = Pendaftaran::factory()->hadir()->create([
             'peserta_id' => $peserta1->id,
             'pelatihan_id' => $pelatihan->id,
             'status_verifikasi' => 'diverifikasi',
@@ -982,7 +982,7 @@ class TiyasTest extends TestCase
     {
         $peserta = User::factory()->create(['role' => 'peserta']);
         $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
-        $pendaftaran = Pendaftaran::factory()->create([
+        $pendaftaran = Pendaftaran::factory()->hadir()->create([
             'peserta_id' => $peserta->id,
             'pelatihan_id' => $pelatihan->id,
             'status_verifikasi' => 'diverifikasi',
@@ -1006,7 +1006,7 @@ class TiyasTest extends TestCase
     {
         $peserta = User::factory()->create(['role' => 'peserta']);
         $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
-        $pendaftaran = Pendaftaran::factory()->create([
+        $pendaftaran = Pendaftaran::factory()->hadir()->create([
             'peserta_id' => $peserta->id,
             'pelatihan_id' => $pelatihan->id,
             'status_verifikasi' => 'diverifikasi',
@@ -1030,7 +1030,7 @@ class TiyasTest extends TestCase
     {
         $peserta = User::factory()->create(['role' => 'peserta']);
         $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
-        $pendaftaran = Pendaftaran::factory()->create([
+        $pendaftaran = Pendaftaran::factory()->hadir()->create([
             'peserta_id' => $peserta->id,
             'pelatihan_id' => $pelatihan->id,
             'status_verifikasi' => 'diverifikasi',
@@ -1076,7 +1076,7 @@ class TiyasTest extends TestCase
     {
         $peserta = User::factory()->create(['role' => 'peserta']);
         $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
-        $pendaftaran = Pendaftaran::factory()->create([
+        $pendaftaran = Pendaftaran::factory()->hadir()->create([
             'peserta_id' => $peserta->id,
             'pelatihan_id' => $pelatihan->id,
             'status_verifikasi' => 'diverifikasi',
@@ -1100,7 +1100,7 @@ class TiyasTest extends TestCase
     {
         $peserta = User::factory()->create(['role' => 'peserta']);
         $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
-        $pendaftaran = Pendaftaran::factory()->create([
+        $pendaftaran = Pendaftaran::factory()->hadir()->create([
             'peserta_id' => $peserta->id,
             'pelatihan_id' => $pelatihan->id,
             'status_verifikasi' => 'diverifikasi',
@@ -1120,7 +1120,7 @@ class TiyasTest extends TestCase
     {
         $peserta = User::factory()->create(['role' => 'peserta']);
         $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
-        $pendaftaran = Pendaftaran::factory()->create([
+        $pendaftaran = Pendaftaran::factory()->hadir()->create([
             'peserta_id' => $peserta->id,
             'pelatihan_id' => $pelatihan->id,
             'status_verifikasi' => 'diverifikasi',
@@ -1148,7 +1148,7 @@ class TiyasTest extends TestCase
     {
         $peserta = User::factory()->create(['role' => 'peserta']);
         $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
-        $pendaftaran = Pendaftaran::factory()->create([
+        $pendaftaran = Pendaftaran::factory()->hadir()->create([
             'peserta_id' => $peserta->id,
             'pelatihan_id' => $pelatihan->id,
             'status_verifikasi' => 'diverifikasi',
@@ -1175,7 +1175,7 @@ class TiyasTest extends TestCase
     {
         $peserta = User::factory()->create(['role' => 'peserta']);
         $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
-        $pendaftaran = Pendaftaran::factory()->create([
+        $pendaftaran = Pendaftaran::factory()->hadir()->create([
             'peserta_id' => $peserta->id,
             'pelatihan_id' => $pelatihan->id,
             'status_verifikasi' => 'diverifikasi',
