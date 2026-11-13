@@ -27,7 +27,7 @@ class TiyasFormDropdownValidationTest extends TestCase
             'tanggal_selesai' => now()->subDays(1),
         ]);
 
-        $pendaftaran = Pendaftaran::factory()->create([
+        $pendaftaran = Pendaftaran::factory()->hadir()->create([
             'peserta_id' => $peserta->id,
             'pelatihan_id' => $pelatihan->id,
             'status_verifikasi' => 'diverifikasi',

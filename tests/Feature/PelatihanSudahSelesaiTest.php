@@ -121,7 +121,7 @@ class PelatihanSudahSelesaiTest extends TestCase
             'tanggal_selesai' => Carbon::parse('2026-11-15'), // Hari ini
         ]);
 
-        $pendaftaran = Pendaftaran::factory()->create([
+        $pendaftaran = Pendaftaran::factory()->hadir()->create([
             'peserta_id' => $peserta->id,
             'pelatihan_id' => $pelatihan->id,
             'status_verifikasi' => 'diverifikasi',
@@ -144,7 +144,7 @@ class PelatihanSudahSelesaiTest extends TestCase
             'tanggal_selesai' => Carbon::parse('2026-11-14'), // Kemarin
         ]);
 
-        $pendaftaran = Pendaftaran::factory()->create([
+        $pendaftaran = Pendaftaran::factory()->hadir()->create([
             'peserta_id' => $peserta->id,
             'pelatihan_id' => $pelatihan->id,
             'status_verifikasi' => 'diverifikasi',
@@ -169,7 +169,7 @@ class PelatihanSudahSelesaiTest extends TestCase
             'tanggal_selesai' => Carbon::parse('2026-11-14'), // Kemarin
         ]);
 
-        $pendaftaran = Pendaftaran::factory()->create([
+        $pendaftaran = Pendaftaran::factory()->hadir()->create([
             'peserta_id' => $peserta->id,
             'pelatihan_id' => $pelatihan->id,
             'status_verifikasi' => 'diverifikasi',
@@ -192,7 +192,7 @@ class PelatihanSudahSelesaiTest extends TestCase
             'tanggal_selesai' => Carbon::parse('2026-11-15'), // Hari ini
         ]);
 
-        $pendaftaran = Pendaftaran::factory()->create([
+        $pendaftaran = Pendaftaran::factory()->hadir()->create([
             'peserta_id' => $peserta->id,
             'pelatihan_id' => $pelatihan->id,
             'status_verifikasi' => 'diverifikasi',
@@ -215,7 +215,7 @@ class PelatihanSudahSelesaiTest extends TestCase
             'tanggal_selesai' => Carbon::parse('2026-12-25'), // Tanggal masa depan
         ]);
 
-        $pendaftaran = Pendaftaran::factory()->create([
+        $pendaftaran = Pendaftaran::factory()->hadir()->create([
             'peserta_id' => $peserta->id,
             'pelatihan_id' => $pelatihan->id,
             'status_verifikasi' => 'diverifikasi',
@@ -241,7 +241,7 @@ class PelatihanSudahSelesaiTest extends TestCase
             'tanggal_selesai' => Carbon::parse('2026-11-14'),
         ]);
 
-        $pendaftaran_a = Pendaftaran::factory()->create([
+        $pendaftaran_a = Pendaftaran::factory()->hadir()->create([
             'peserta_id' => $peserta->id,
             'pelatihan_id' => $pelatihan_a->id,
             'status_verifikasi' => 'diverifikasi',
@@ -256,7 +256,7 @@ class PelatihanSudahSelesaiTest extends TestCase
             'tanggal_selesai' => Carbon::parse('2026-12-25'),
         ]);
 
-        $pendaftaran_b = Pendaftaran::factory()->create([
+        $pendaftaran_b = Pendaftaran::factory()->hadir()->create([
             'peserta_id' => $peserta->id,
             'pelatihan_id' => $pelatihan_b->id,
             'status_verifikasi' => 'diverifikasi',
@@ -282,7 +282,7 @@ class PelatihanSudahSelesaiTest extends TestCase
             'status' => 'dibuka',
             'tanggal_selesai' => Carbon::parse('2026-11-14'),
         ]);
-        $pendaftaran_1 = Pendaftaran::factory()->create(['pelatihan_id' => $pelatihan_1->id]);
+        $pendaftaran_1 = Pendaftaran::factory()->hadir()->create(['pelatihan_id' => $pelatihan_1->id]);
         $pendaftaran_1->tiyasResponse()->createMany([
             ['identitas' => ['test' => 'data'], 'jawaban' => ['test' => 1], 'submitted_at' => now()],
         ]);
@@ -292,7 +292,7 @@ class PelatihanSudahSelesaiTest extends TestCase
             'status' => 'selesai',
             'tanggal_selesai' => Carbon::parse('2026-12-25'),
         ]);
-        $pendaftaran_2 = Pendaftaran::factory()->create(['pelatihan_id' => $pelatihan_2->id]);
+        $pendaftaran_2 = Pendaftaran::factory()->hadir()->create(['pelatihan_id' => $pelatihan_2->id]);
         $pendaftaran_2->tiyasResponse()->createMany([
             ['identitas' => ['test' => 'data'], 'jawaban' => ['test' => 1], 'submitted_at' => now()],
         ]);

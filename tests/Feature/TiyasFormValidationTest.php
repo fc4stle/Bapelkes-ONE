@@ -22,7 +22,7 @@ class TiyasFormValidationTest extends TestCase
 
         $peserta = User::factory()->create(['role' => 'peserta']);
 
-        $pendaftaran = Pendaftaran::factory()->create([
+        $pendaftaran = Pendaftaran::factory()->hadir()->create([
             'pelatihan_id' => $pelatihan->id,
             'peserta_id' => $peserta->id,
             'status_verifikasi' => 'diverifikasi',
@@ -44,7 +44,7 @@ class TiyasFormValidationTest extends TestCase
             'tanggal_selesai' => now()->subDays(1),
         ]);
 
-        $pendaftaran = Pendaftaran::factory()->create([
+        $pendaftaran = Pendaftaran::factory()->hadir()->create([
             'pelatihan_id' => $pelatihan->id,
             'peserta_id' => $peserta->id,
             'status_verifikasi' => 'diverifikasi',
@@ -81,7 +81,7 @@ class TiyasFormValidationTest extends TestCase
             'tanggal_selesai' => now()->subDays(1),
         ]);
 
-        $pendaftaran = Pendaftaran::factory()->create([
+        $pendaftaran = Pendaftaran::factory()->hadir()->create([
             'pelatihan_id' => $pelatihan->id,
             'peserta_id' => $peserta->id,
             'status_verifikasi' => 'diverifikasi',
