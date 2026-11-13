@@ -231,6 +231,7 @@ class TiyasController extends Controller
             'totalResponses' => count($responses),
             'totalDiverifikasi' => $pelatihan->pendaftarans()
                 ->where('status_verifikasi', 'diverifikasi')
+                ->whereNotNull('hadir_at')
                 ->count(),
             'skorRataRata' => $skorRataRataKategori,
             'dataPerPeserta' => $dataPerPeserta,

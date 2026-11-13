@@ -81,8 +81,10 @@
                                 @endif
                                 @if ($pendaftaran->tiyasResponse()->exists())
                                     <span class="inline-block px-2 py-1 text-xs font-semibold text-white rounded" style="background-color: var(--color-success);">Evaluasi sudah diisi</span>
-                                @else
+                                @elseif ($pendaftaran->isHadir())
                                     <a href="{{ route('tiyas.form', $pendaftaran) }}" class="text-sm text-[var(--color-primary)] hover:opacity-75">Isi Evaluasi TIYAS</a>
+                                @else
+                                    <p class="text-xs" style="color: var(--color-text); opacity: 0.6;">Evaluasi dibuka setelah kamu absen QR hadir.</p>
                                 @endif
                             </div>
                         @endif
@@ -138,8 +140,10 @@
                                             @endif
                                             @if ($pendaftaran->tiyasResponse()->exists())
                                                 <span class="inline-block px-2 py-1 text-xs font-semibold text-white rounded" style="background-color: var(--color-success);">Evaluasi sudah diisi</span>
-                                            @else
+                                            @elseif ($pendaftaran->isHadir())
                                                 <a href="{{ route('tiyas.form', $pendaftaran) }}" class="text-[var(--color-primary)] hover:opacity-75">Isi Evaluasi TIYAS</a>
+                                            @else
+                                                <p class="text-xs" style="color: var(--color-text); opacity: 0.6;">Evaluasi dibuka setelah kamu absen QR hadir.</p>
                                             @endif
                                         </div>
                                     @else

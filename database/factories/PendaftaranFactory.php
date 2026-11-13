@@ -27,6 +27,7 @@ class PendaftaranFactory extends Factory
             'dokumen' => null,
             'butuh_asrama' => false,
             'catatan' => null,
+            'hadir_at' => now(),  // Default: peserta sudah hadir QR
         ];
     }
 }

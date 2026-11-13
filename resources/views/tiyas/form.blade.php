@@ -158,7 +158,7 @@
                     @endforeach
 
                     <!-- Tombol Navigasi (Fixed Bottom) -->
-                    <div class="fixed bottom-0 left-0 right-0" style="background-color: var(--color-bg); border-top: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent); box-shadow: 0 -2px 8px color-mix(in srgb, var(--color-text) 10%, transparent); padding-bottom: max(1rem, env(safe-area-inset-bottom));">
+                    <div class="fixed bottom-0 left-0 right-0 z-40" style="background-color: var(--color-bg); border-top: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent); box-shadow: 0 -2px 8px color-mix(in srgb, var(--color-text) 10%, transparent); padding-bottom: max(1rem, env(safe-area-inset-bottom));">
                         <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center gap-3 py-4">
                             <button type="button" x-show="currentStep > 1" @click="previousStep()" class="px-6 py-2 rounded-lg font-medium transition-colors duration-150" style="border: 1px solid color-mix(in srgb, var(--color-text) 20%, transparent); color: var(--color-text);">
                                 Kembali
@@ -346,6 +346,7 @@
                     if (!errorDiv) {
                         errorDiv = document.createElement('div');
                         errorDiv.setAttribute('data-error-message', 'true');
+                        errorDiv.setAttribute('role', 'alert');
                         errorDiv.style.cssText = `color: var(--color-danger); font-size: 0.875rem; margin-bottom: 1rem; padding: 0.75rem; background-color: color-mix(in srgb, var(--color-danger) 10%, transparent); border-radius: 0.5rem; border-left: 3px solid var(--color-danger);`;
                         form.insertBefore(errorDiv, form.firstChild.nextSibling);
                     }
@@ -366,27 +367,53 @@
                     form.querySelectorAll('[data-item]').forEach(item => {
                         item.dataset.invalid = 'false';
                     });
-                    // Tandai hanya kartu butir yang kosong
+                    // Hapus penandaan lama dari semua select
+                    form.querySelectorAll('select').forEach(select => {
+                        select.dataset.invalid = 'false';
+                    });
+                    
+                    // Tandai kartu butir dan select yang kosong
                     fields.forEach(fieldName => {
                         const itemCard = form.querySelector(`[data-item="${fieldName}"]`);
                         if (itemCard) {
                             itemCard.dataset.invalid = 'true';
+                        }
+                        
+                        const select = form.querySelector(`select[name="${fieldName}"]`);
+                        if (select) {
+                            select.dataset.invalid = 'true';
                         }
                     });
                 },
 
                 onItemChange(event) {
                     const item = event.target.closest('[data-item]');
-                    if (!item) return;
-                    item.dataset.invalid = 'false';
+                    if (item) {
+                        item.dataset.invalid = 'false';
+                    }
+                    
+                    // Untuk select di step 1
+                    if (event.target.tagName === 'SELECT') {
+                        event.target.dataset.invalid = 'false';
+                    }
+                    
                     this.clearError();
                 },
 
                 scrollToFirstError(fieldName) {
                     const form = this.$el.closest('.max-w-2xl').querySelector('form');
+                    
+                    // Cek di kartu butir dulu
                     const itemCard = form.querySelector(`[data-item="${fieldName}"]`);
                     if (itemCard) {
                         itemCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        return;
+                    }
+                    
+                    // Cek di select step 1
+                    const select = form.querySelector(`select[name="${fieldName}"]`);
+                    if (select) {
+                        select.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     }
                 },
 

@@ -291,8 +291,8 @@ class Pendaftaran extends Model
             ];
         }
 
-        // c) diverifikasi, pelatihan selesai (tanpa syarat hadir)
-        if ($this->isDiverifikasi() && $this->pelatihan->sudahSelesai()) {
+        // c) diverifikasi, hadir, pelatihan selesai
+        if ($this->isDiverifikasi() && $this->isHadir() && $this->pelatihan->sudahSelesai()) {
             $aksi = [];
 
             if ($this->bisaDownloadSertifikat()) {
