@@ -117,4 +117,31 @@ class TiyasFormDropdownValidationTest extends TestCase
         // Cek bottom bar punya z-40
         $response->assertSee('z-40', false);
     }
+
+    public function test_dropdown_identitas_punya_change_handler(): void
+    {
+        ['pendaftaran' => $pendaftaran, 'peserta' => $peserta] = $this->createTestData();
+
+        $response = $this->actingAs($peserta)->get(route('tiyas.form', $pendaftaran));
+
+        // Verifikasi semua 5 dropdown di langkah 1 punya @change="onItemChange($event)"
+        $response->assertSee('name="asal_instansi"', false);
+        $response->assertSee('@change="onItemChange($event)"', false);
+        $response->assertSee('name="asal_kabupaten"', false);
+        $response->assertSee('name="jenis_profesi"', false);
+        $response->assertSee('name="masa_kerja"', false);
+        $response->assertSee('name="waktu_sejak_selesai"', false);
+    }
+
+    public function test_dropdown_error_styling_hilang_saat_dipilih(): void
+    {
+        ['pendaftaran' => $pendaftaran, 'peserta' => $peserta] = $this->createTestData();
+
+        $response = $this->actingAs($peserta)->get(route('tiyas.form', $pendaftaran));
+
+        // Cek script Alpine yang menghapus error saat onItemChange dipanggil
+        $response->assertSee('onItemChange', false);
+        $response->assertSee('data-invalid', false);
+        $response->assertSee('--color-danger', false);
+    }
 }

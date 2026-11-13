@@ -55,7 +55,7 @@
                             <div class="space-y-4">
                                 <div>
                                     <label for="asal_instansi" class="block text-sm font-medium mb-2" style="color: var(--color-text);">Asal Instansi *</label>
-                                    <select name="asal_instansi" id="asal_instansi" class="block w-full rounded-lg shadow-sm focus:ring-2" style="border: 1px solid color-mix(in srgb, var(--color-text) 20%, transparent); background-color: var(--color-surface); color: var(--color-text);" required>
+                                    <select name="asal_instansi" id="asal_instansi" class="block w-full rounded-lg shadow-sm focus:ring-2" style="border: 1px solid color-mix(in srgb, var(--color-text) 20%, transparent); background-color: var(--color-surface); color: var(--color-text);" required @change="onItemChange($event)">
                                         <option value="">-- Pilih --</option>
                                         @foreach ($config['identitas']['asal_instansi'] as $option)
                                             <option value="{{ $option }}" @if (old('asal_instansi') === $option) selected @endif>{{ $option }}</option>
@@ -66,7 +66,7 @@
 
                                 <div>
                                     <label for="asal_kabupaten" class="block text-sm font-medium mb-2" style="color: var(--color-text);">Asal Kabupaten/Kota *</label>
-                                    <select name="asal_kabupaten" id="asal_kabupaten" class="block w-full rounded-lg shadow-sm focus:ring-2" style="border: 1px solid color-mix(in srgb, var(--color-text) 20%, transparent); background-color: var(--color-surface); color: var(--color-text);" required>
+                                    <select name="asal_kabupaten" id="asal_kabupaten" class="block w-full rounded-lg shadow-sm focus:ring-2" style="border: 1px solid color-mix(in srgb, var(--color-text) 20%, transparent); background-color: var(--color-surface); color: var(--color-text);" required @change="onItemChange($event)">
                                         <option value="">-- Pilih --</option>
                                         @foreach ($config['identitas']['asal_kabupaten'] as $option)
                                             <option value="{{ $option }}" @if (old('asal_kabupaten') === $option) selected @endif>{{ $option }}</option>
@@ -77,7 +77,7 @@
 
                                 <div>
                                     <label for="jenis_profesi" class="block text-sm font-medium mb-2" style="color: var(--color-text);">Jenis Profesi *</label>
-                                    <select name="jenis_profesi" id="jenis_profesi" class="block w-full rounded-lg shadow-sm focus:ring-2" style="border: 1px solid color-mix(in srgb, var(--color-text) 20%, transparent); background-color: var(--color-surface); color: var(--color-text);" required>
+                                    <select name="jenis_profesi" id="jenis_profesi" class="block w-full rounded-lg shadow-sm focus:ring-2" style="border: 1px solid color-mix(in srgb, var(--color-text) 20%, transparent); background-color: var(--color-surface); color: var(--color-text);" required @change="onItemChange($event)">
                                         <option value="">-- Pilih --</option>
                                         @foreach ($config['identitas']['jenis_profesi'] as $option)
                                             <option value="{{ $option }}" @if (old('jenis_profesi') === $option) selected @endif>{{ $option }}</option>
@@ -88,7 +88,7 @@
 
                                 <div>
                                     <label for="masa_kerja" class="block text-sm font-medium mb-2" style="color: var(--color-text);">Masa Kerja *</label>
-                                    <select name="masa_kerja" id="masa_kerja" class="block w-full rounded-lg shadow-sm focus:ring-2" style="border: 1px solid color-mix(in srgb, var(--color-text) 20%, transparent); background-color: var(--color-surface); color: var(--color-text);" required>
+                                    <select name="masa_kerja" id="masa_kerja" class="block w-full rounded-lg shadow-sm focus:ring-2" style="border: 1px solid color-mix(in srgb, var(--color-text) 20%, transparent); background-color: var(--color-surface); color: var(--color-text);" required @change="onItemChange($event)">
                                         <option value="">-- Pilih --</option>
                                         @foreach ($config['identitas']['masa_kerja'] as $option)
                                             <option value="{{ $option }}" @if (old('masa_kerja') === $option) selected @endif>{{ $option }}</option>
@@ -99,7 +99,7 @@
 
                                 <div>
                                     <label for="waktu_sejak_selesai" class="block text-sm font-medium mb-2" style="color: var(--color-text);">Waktu Sejak Pelatihan Selesai *</label>
-                                    <select name="waktu_sejak_selesai" id="waktu_sejak_selesai" class="block w-full rounded-lg shadow-sm focus:ring-2" style="border: 1px solid color-mix(in srgb, var(--color-text) 20%, transparent); background-color: var(--color-surface); color: var(--color-text);" required>
+                                    <select name="waktu_sejak_selesai" id="waktu_sejak_selesai" class="block w-full rounded-lg shadow-sm focus:ring-2" style="border: 1px solid color-mix(in srgb, var(--color-text) 20%, transparent); background-color: var(--color-surface); color: var(--color-text);" required @change="onItemChange($event)">
                                         <option value="">-- Pilih --</option>
                                         @foreach ($config['identitas']['waktu_sejak_selesai'] as $option)
                                             <option value="{{ $option }}" @if (old('waktu_sejak_selesai') === $option) selected @endif>{{ $option }}</option>
