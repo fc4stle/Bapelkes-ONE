@@ -167,30 +167,11 @@ class TiyasController extends Controller
         $klasterResult = $klasterService->analisis($responses);
 
         // Hitung statistik deskriptif (tampil untuk semua, termasuk kurang_data)
-        $deskriptif = $klasterService->deskriptif($responses);
+        $deskriptif = $klasterResult['deskriptif'] ?? [];
 
-        // Hitung PCA dan penjelasan klaster jika status sukses
-        $pcaData = null;
-        $clusterExplanations = [];
-        if ($klasterResult['status'] === 'sukses') {
-            // Kumpulkan data raw untuk PCA
-            $data4d = [];
-            foreach ($responses as $respons) {
-                $skor = $scorer->hitungSkor($respons->jawaban ?? []);
-                $data4d[] = [
-                    $skor['TC']['skor'] ?? 0,
-                    $skor['TE']['skor'] ?? 0,
-                    $skor['ITT']['skor'] ?? 0,
-                    $skor['YB']['skor'] ?? 0,
-                ];
-            }
-
-            $pcaData = $klasterService->pcaProjection($data4d, $klasterResult['centroids_raw']);
-
-            // Generate penjelasan per klaster
-            $totalPeserta = count($responses);
-            $clusterExplanations = $klasterService->generateClusterExplanations($klasterResult['tabel_klaster'], $klasterResult['tabel_peserta'], $totalPeserta);
-        }
+        // Ambil PCA dan penjelasan klaster dari hasil analisis
+        $pcaData = $klasterResult['pcaData'] ?? null;
+        $clusterExplanations = $klasterResult['clusterExplanations'] ?? [];
 
         // Hitung rata-rata skor per konstruk
         $skorTotal = ['TC' => [], 'TE' => [], 'ITT' => [], 'YB' => []];

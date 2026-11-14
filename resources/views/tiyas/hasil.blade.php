@@ -286,10 +286,42 @@
                                     <strong>PE:</strong> {{ number_format($klasterResult['normalized_classification_entropy'], 4) }}
                                 </p>
                             </div>
-                            <!-- 2. Grafik Sebaran Peserta (PCA) -->
+                            <!-- 2. Tabel Ringkas Klaster -->
+                            <div class="mb-6">
+                                <h3 class="font-semibold mb-3 text-sm" style="color: var(--color-text);">2. Ringkas Klaster</h3>
+                                <div class="overflow-x-auto">
+                                    <table class="min-w-full text-xs" style="border-collapse: collapse;">
+                                        <thead>
+                                            <tr style="border-bottom: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent);">
+                                                <th class="text-left px-2 py-2" style="color: var(--color-text);">Klaster</th>
+                                                <th class="text-left px-2 py-2" style="color: var(--color-text);">Profil</th>
+                                                <th class="text-center px-2 py-2" style="color: var(--color-text);">N Peserta</th>
+                                                <th class="text-left px-2 py-2" style="color: var(--color-text);">TC</th>
+                                                <th class="text-left px-2 py-2" style="color: var(--color-text);">TE</th>
+                                                <th class="text-left px-2 py-2" style="color: var(--color-text);">ITT</th>
+                                                <th class="text-left px-2 py-2" style="color: var(--color-text);">YB</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach ($klasterResult['tabel_klaster'] as $klaster)
+                                                <tr style="border-bottom: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);">
+                                                    <td class="px-2 py-2 font-medium" style="color: var(--color-text);">{{ $klaster['klaster'] }}</td>
+                                                    <td class="px-2 py-2" style="color: var(--color-text);">{{ $klaster['profil'] }}</td>
+                                                    <td class="text-center px-2 py-2" style="color: var(--color-primary);">{{ $klaster['jumlah_peserta'] }}</td>
+                                                    <td class="px-2 py-2" style="color: var(--color-primary);">{{ $klaster['centroid']['TC'] }}</td>
+                                                    <td class="px-2 py-2" style="color: var(--color-primary);">{{ $klaster['centroid']['TE'] }}</td>
+                                                    <td class="px-2 py-2" style="color: var(--color-primary);">{{ $klaster['centroid']['ITT'] }}</td>
+                                                    <td class="px-2 py-2" style="color: var(--color-primary);">{{ $klaster['centroid']['YB'] }}</td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <!-- 3. Grafik Sebaran Peserta (PCA) -->
                             @if ($pcaData)
                                 <div class="mb-6">
-                                    <h3 class="font-semibold mb-3 text-sm" style="color: var(--color-text);">2. Grafik Sebaran Peserta (PCA)</h3>
+                                    <h3 class="font-semibold mb-3 text-sm" style="color: var(--color-text);">3. Grafik Sebaran Peserta (PCA)</h3>
                                     <div class="bg-gray-50 dark:bg-gray-900 rounded p-4" style="background-color: color-mix(in srgb, var(--color-bg) 50%, var(--color-text) 5%); border: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent);">
                                         @php
                                             $points = $pcaData['points'];
@@ -425,9 +457,9 @@
                                 </div>
                             @endif
 
-                            <!-- 3. Ringkasan Validitas Klaster -->
+                            <!-- 4. Indeks Validitas Klaster -->
                             <div class="mb-6">
-                                <h3 class="font-semibold mb-3 text-sm" style="color: var(--color-text);">3. Indeks Validitas Klaster</h3>
+                                <h3 class="font-semibold mb-3 text-sm" style="color: var(--color-text);">4. Indeks Validitas Klaster</h3>
                                 <div class="overflow-x-auto">
                                     <table class="min-w-full text-xs" style="border-collapse: collapse;">
                                         <thead>
@@ -461,13 +493,13 @@
 
                             <!-- 4. Penjelasan Otomatis per Klaster -->
                             <div class="mb-6">
-                                <h3 class="font-semibold mb-3 text-sm" style="color: var(--color-text);">4. Profil Klaster</h3>
+                                <h3 class="font-semibold mb-3 text-sm" style="color: var(--color-text);">5. Profil Klaster</h3>
                                 <div class="space-y-4">
-                                    @foreach ($klasterResult['tabel_klaster'] as $idx => $klaster)
+                                    @foreach ($klasterResult['tabel_klaster'] as $klaster)
                                         <div style="border: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent); border-radius: var(--radius-card); padding: 1rem;">
                                             <!-- Penjelasan otomatis -->
                                             <p style="color: var(--color-text);" class="text-sm mb-3">
-                                                {{ $clusterExplanations[$idx] ?? '—' }}
+                                                {{ $clusterExplanations[$klaster['klaster']] ?? '—' }}
                                             </p>
                                             
                                             <!-- Karakteristik dan Rekomendasi -->

@@ -35,6 +35,9 @@ class TiyasProfilKlaster
                 'iteration' => 0,
                 'fuzzy_partition_coefficient' => 0,
                 'normalized_classification_entropy' => 0,
+                'deskriptif' => $this->deskriptif($tiyasResponses),
+                'pcaData' => null,
+                'clusterExplanations' => [],
             ];
         }
 
@@ -54,56 +57,31 @@ class TiyasProfilKlaster
             ];
         }
 
-        // FCM clustering
-        $cMax = min(5, (int) ceil($n / 2));
-        $validityTable = [];
-        $bestC = 2;
-        $bestXB = PHP_FLOAT_MAX;
-        $bestResult = null;
+        // Pilih jumlah klaster optimal menggunakan FuzzyCMeans::pilihJumlahKlaster()
+        $cMin = 2;
+        $cMax = min(4, (int) ceil($n / 2));
+        $bestC = $this->fcm->pilihJumlahKlaster($data, $cMin, $cMax);
 
-        for ($c = 2; $c <= $cMax; $c++) {
-            $result = $this->fcm->fit($data, $c, $m = 2, $epsilon = 1e-5, $maxIter = 100);
-            $U = $result['U'];
-            $V = $result['centroid'];
-            $iter = $result['iterations'];
-
-            // Hitung validity indices
-            $pc = $this->computePC($U);
-            $pe = $this->computePE($U);
-            $xb = $this->computeXB($data, $U, $V);
-            $silhouette = $this->computeSilhouette($data, $U);
-
-            if ($xb < $bestXB) {
-                $bestXB = $xb;
-                $bestC = $c;
-                $bestResult = $result;
-            }
-
-            $validityTable[] = [
-                'c' => $c,
-                'pc' => $pc,
-                'pe' => $pe,
-                'xb' => $xb,
-                'silhouette' => $silhouette,
-                'iteration' => $iter,
-            ];
-        }
-
-        // Mark optimal in validity table
-        foreach ($validityTable as &$row) {
-            $row['is_optimal'] = ($row['c'] === $bestC);
-        }
-
-        // Ensure bestResult is set (should always be set if loop ran)
-        if ($bestResult === null) {
-            // Fallback: run clustering with c=2
-            $bestResult = $this->fcm->fit($data, 2, $m = 2, $epsilon = 1e-5, $maxIter = 100);
-            $bestC = 2;
-        }
-
+        // Fit FCM dengan c optimal
+        $bestResult = $this->fcm->fit($data, $bestC, $m = 2, $epsilon = 1e-5, $maxIter = 100);
         $U = $bestResult['U'];
         $V = $bestResult['centroid'];
         $iter = $bestResult['iterations'];
+
+        // Bangun validity table dari semua c (cMin hingga cMax)
+        $validityTable = [];
+        for ($c = $cMin; $c <= $cMax; $c++) {
+            $indices = $this->fcm->getValidityIndices($data, $c);
+            $validityTable[] = [
+                'c' => $c,
+                'pc' => $indices['pc'],
+                'pe' => $indices['pe'],
+                'xb' => $indices['xb'],
+                'silhouette' => $indices['silhouette'],
+                'iteration' => ($c === $bestC) ? $iter : 0,
+                'is_optimal' => ($c === $bestC),
+            ];
+        }
 
         // Bangun tabel klaster dengan raw centroid untuk PCA
         $tabelKlaster = [];
@@ -156,9 +134,8 @@ class TiyasProfilKlaster
             ];
         }
 
-        // Hitung PC dan PE untuk summary
-        $pc = $this->computePC($U);
-        $pe = $this->computePE($U);
+        // Hitung PC dan PE untuk summary (dari best result)
+        $result_best = $this->fcm->getValidityIndices($data, $bestC);
 
         return [
             'status' => 'sukses',
@@ -167,161 +144,17 @@ class TiyasProfilKlaster
             'tabel_peserta' => $tabelPeserta,
             'validity_table' => $validityTable,
             'iteration' => $iter,
-            'fuzzy_partition_coefficient' => $pc,
-            'normalized_classification_entropy' => $pe,
+            'fuzzy_partition_coefficient' => $result_best['pc'],
+            'normalized_classification_entropy' => $result_best['pe'],
             'centroids_raw' => $centroids_raw,
+            'deskriptif' => $this->deskriptif($tiyasResponses),
+            'pcaData' => $this->pcaProjection($data, $centroids_raw),
+            'clusterExplanations' => $this->generateClusterExplanations($tabelKlaster, $tabelPeserta, $n),
         ];
     }
 
     /**
-     * Compute Partition Coefficient.
-     */
-    private function computePC($U)
-    {
-        $n = count($U);
-        $c = count($U[0]);
-        $sum = 0;
-        for ($i = 0; $i < $n; $i++) {
-            for ($k = 0; $k < $c; $k++) {
-                $sum += $U[$i][$k] ** 2;
-            }
-        }
-
-        return $sum / $n;
-    }
-
-    /**
-     * Compute Partition Entropy.
-     */
-    private function computePE($U)
-    {
-        $n = count($U);
-        $c = count($U[0]);
-        $sum = 0;
-        for ($i = 0; $i < $n; $i++) {
-            for ($k = 0; $k < $c; $k++) {
-                $uik = $U[$i][$k];
-                if ($uik > 0.0001) {
-                    $sum += $uik * log($uik);
-                }
-            }
-        }
-
-        return -$sum / $n / log($c);
-    }
-
-    /**
-     * Compute Xie-Beni index.
-     */
-    private function computeXB($data, $U, $V)
-    {
-        $n = count($data);
-        $c = count($V);
-        $m = 2;
-
-        // Numerator: sum of weighted distances
-        $num = 0;
-        for ($i = 0; $i < $n; $i++) {
-            for ($k = 0; $k < $c; $k++) {
-                $dist = $this->euclideanDistance($data[$i], $V[$k]);
-                $num += ($U[$i][$k] ** $m) * ($dist ** 2);
-            }
-        }
-
-        // Denominator: minimum distance between centroids
-        $minDist = PHP_FLOAT_MAX;
-        for ($k1 = 0; $k1 < $c; $k1++) {
-            for ($k2 = $k1 + 1; $k2 < $c; $k2++) {
-                $dist = $this->euclideanDistance($V[$k1], $V[$k2]);
-                if ($dist < $minDist) {
-                    $minDist = $dist;
-                }
-            }
-        }
-
-        if ($minDist < 0.0001) {
-            return PHP_FLOAT_MAX;
-        }
-
-        return $num / ($n * ($minDist ** 2));
-    }
-
-    /**
-     * Compute Silhouette coefficient.
-     */
-    private function computeSilhouette($data, $U)
-    {
-        $n = count($data);
-        $c = count($U[0]);
-        $silhouettes = [];
-
-        for ($i = 0; $i < $n; $i++) {
-            // Cluster assignment
-            $maxU = max($U[$i]);
-            $ci = array_search($maxU, $U[$i]);
-
-            // Average distance to cluster members
-            $a = 0;
-            $count_ci = 0;
-            for ($j = 0; $j < $n; $j++) {
-                if ($U[$j][$ci] > 0.5) {
-                    $a += $this->euclideanDistance($data[$i], $data[$j]);
-                    $count_ci++;
-                }
-            }
-            if ($count_ci > 1) {
-                $a /= ($count_ci - 1);
-            } else {
-                $a = 0;
-            }
-
-            // Minimum average distance to other clusters
-            $b = PHP_FLOAT_MAX;
-            for ($k = 0; $k < $c; $k++) {
-                if ($k === $ci) {
-                    continue;
-                }
-                $dist = 0;
-                $count_k = 0;
-                for ($j = 0; $j < $n; $j++) {
-                    if ($U[$j][$k] > 0.5) {
-                        $dist += $this->euclideanDistance($data[$i], $data[$j]);
-                        $count_k++;
-                    }
-                }
-                if ($count_k > 0) {
-                    $dist /= $count_k;
-                    if ($dist < $b) {
-                        $b = $dist;
-                    }
-                }
-            }
-
-            $sil = 0;
-            if (max($a, $b) > 0) {
-                $sil = ($b - $a) / max($a, $b);
-            }
-            $silhouettes[] = $sil;
-        }
-
-        return count($silhouettes) > 0 ? array_sum($silhouettes) / count($silhouettes) : 0;
-    }
-
-    /**
-     * Euclidean distance between two vectors.
-     */
-    private function euclideanDistance($v1, $v2)
-    {
-        $sum = 0;
-        for ($i = 0; $i < count($v1); $i++) {
-            $sum += ($v1[$i] - $v2[$i]) ** 2;
-        }
-
-        return sqrt($sum);
-    }
-
-    /**
-     * Determine profil (A/B/C/D/"Belum cocok") from centroid.
+     * Determine profil (A/B/C/D/Belum cocok) from centroid using TiyasScorer::kategori().
      */
     private function determineProfil($centroid)
     {
@@ -330,17 +163,35 @@ class TiyasProfilKlaster
         $itt = $centroid[2];
         $yb = $centroid[3];
 
+        // Kategorisasi setiap skor menggunakan TiyasScorer
+        $kategoriTC = $this->scorer->kategori($tc);
+        $kategoriTE = $this->scorer->kategori($te);
+        $kategoriITT = $this->scorer->kategori($itt);
+        $kategoriYB = $this->scorer->kategori($yb);
+
         $config = config('tiyas');
         $profilConfig = $config['profil_klaster'] ?? [];
 
-        // Match profile based on centroid pattern
-        if ($tc >= 3.5 && $te >= 3.5 && $itt >= 3.5 && $yb >= 3.5) {
+        // Tentukan profil berdasarkan aturan kombinasi kategori
+        // A: TC,TE,ITT,YB semuanya Tinggi
+        if ($kategoriTC === 'Tinggi' && $kategoriTE === 'Tinggi' && $kategoriITT === 'Tinggi' && $kategoriYB === 'Tinggi') {
             $code = 'A';
-        } elseif ($tc >= 3.0 && $te >= 3.0 && $itt >= 3.0 && $yb >= 2.5) {
+        }
+        // B: TC,TE,ITT Tinggi dan YB bukan Tinggi
+        elseif ($kategoriTC === 'Tinggi' && $kategoriTE === 'Tinggi' && $kategoriITT === 'Tinggi' && $kategoriYB !== 'Tinggi') {
             $code = 'B';
-        } elseif ($itt >= 3.5 && $tc < 3.0 && $te < 3.0) {
+        }
+        // C: TC dan TE Rendah/Sedang, ITT Tinggi, YB Rendah/Sedang
+        elseif (
+            in_array($kategoriTC, ['Rendah', 'Sedang']) &&
+            in_array($kategoriTE, ['Rendah', 'Sedang']) &&
+            $kategoriITT === 'Tinggi' &&
+            in_array($kategoriYB, ['Rendah', 'Sedang'])
+        ) {
             $code = 'C';
-        } elseif ($tc <= 2.0 && $te <= 2.0 && $itt <= 2.0) {
+        }
+        // D: semuanya Rendah
+        elseif ($kategoriTC === 'Rendah' && $kategoriTE === 'Rendah' && $kategoriITT === 'Rendah' && $kategoriYB === 'Rendah') {
             $code = 'D';
         } else {
             $code = null;
@@ -351,7 +202,7 @@ class TiyasProfilKlaster
             $karakteristik = $profilConfig[$code]['deskripsi'] ?? '';
             $rekomendasi = $profilConfig[$code]['rekomendasi'] ?? '';
         } else {
-            $label = 'Belum cocok dengan profil';
+            $label = 'Belum cocok dengan 4 profil konseptual';
             $karakteristik = 'Pola data tidak sesuai dengan profil A-D yang didefinisikan.';
             $rekomendasi = 'Tinjau ulang kriteria profil atau data responsnya.';
         }
@@ -442,12 +293,12 @@ class TiyasProfilKlaster
      *
      * @param  array  $data  nx4 matrix of scores
      * @param  array  $centroids  cx4 matrix of centroid
-     * @return array ['loadings', 'variance', 'scores', 'centroid_scores']
+     * @return array ['loadings', 'variance', 'points', 'centroid_scores']
      */
     public function pcaProjection($data, $centroids)
     {
         if (empty($data)) {
-            return ['loadings' => [], 'variance' => [0, 0], 'scores' => [], 'centroid_scores' => []];
+            return ['loadings' => [], 'variance' => [0, 0], 'points' => [], 'centroid_scores' => []];
         }
 
         // Normalisasi dan center data
