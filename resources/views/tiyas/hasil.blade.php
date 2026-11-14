@@ -1132,20 +1132,19 @@
                                         @endif
                                     </text>
                                     
-                                    <!-- 4 bars per pelatihan (TC, TE, ITT, YB) -->
+                                    <!-- 4 bars per pelatihan (TC, TE, ITT, YB) - always render -->
                                     @foreach (['TC', 'TE', 'ITT', 'YB'] as $kod)
                                         @php
                                             $value = $pel_data['mean'][$kod] ?? 0;
-                                            $bar_height = ($value - $scale_bottom) / ($scale_top - $scale_bottom) * $plot_height;
+                                            $bar_height = max(0, ($value - $scale_bottom) / ($scale_top - $scale_bottom) * $plot_height);
                                             $bar_y = $chart_height - $chart_padding - $bar_height;
                                             $color = $colors[$kod];
                                         @endphp
-                                        @if ($bar_height > 0)
-                                            <rect x="{{ $bar_x }}" y="{{ $bar_y }}" width="{{ $bar_width - 4 }}" height="{{ $bar_height }}" 
-                                                  style="fill: {{ $color }};" />
-                                            <text x="{{ $bar_x + ($bar_width - 4) / 2 }}" y="{{ $bar_y - 3 }}" 
-                                                  style="font-size: 9px; text-anchor: middle; fill: var(--color-text); font-weight: 500;">{{ number_format($value, 2) }}</text>
-                                        @endif
+                                        <!-- Always render rect and label; use max(0, bar_height) to prevent negative heights -->
+                                        <rect x="{{ $bar_x }}" y="{{ $bar_y }}" width="{{ $bar_width - 4 }}" height="{{ $bar_height }}" 
+                                              style="fill: {{ $color }};" />
+                                        <text x="{{ $bar_x + ($bar_width - 4) / 2 }}" y="{{ $bar_y - 3 }}" 
+                                              style="font-size: 9px; text-anchor: middle; fill: var(--color-text); font-weight: 500;">{{ number_format($value, 2) }}</text>
                                         @php $bar_x += $bar_width; @endphp
                                     @endforeach
                                     
