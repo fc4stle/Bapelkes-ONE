@@ -617,7 +617,11 @@
                                     
                                     <svg viewBox="0 0 {{$svgW}} {{$svgH}}" class="w-full rounded" style="border: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent); background-color: var(--color-surface);" data-chart="fcm-scatter">
                                         <!-- Title -->
-                                        <text x="{{$svgW / 2}}" y="25" text-anchor="middle" style="font-size: 16px; font-weight: 600; fill: var(--color-text);">Sebaran Peserta: {{ $kodeToLabel[$xAxis] }} vs {{ $kodeToLabel[$yAxis] }}</text>
+                                        <text x="{{$svgW / 2}}" y="25" text-anchor="middle" style="font-size: 16px; font-weight: 600; fill: var(--color-text);">Sebaran Peserta: {{ $kodeToLabel[$xAxis] }} vs {{ $kodeToLabel[$yAxis] }}
+                                            @if ($cakupan === 'semua')
+                                                <tspan x="{{$svgW / 2}}" dy="1.2em" style="font-size: 12px; opacity: 0.7;">Semua Pelatihan</tspan>
+                                            @endif
+                                        </text>
                                         
                                         <!-- Grid lines di 1, 2, 3, 4 untuk kedua sumbu -->
                                         @for ($i = 1; $i <= 4; $i++)
@@ -934,7 +938,12 @@
                             <div class="md:hidden space-y-3 mb-6">
                                 @foreach ($klasterResult['tabel_peserta'] as $peserta)
                                     <div style="border: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent); border-radius: var(--radius-card); padding: 1rem;">
-                                        <p class="font-medium text-sm mb-2" style="color: var(--color-text);">{{ $peserta['nama'] }}</p>
+                                        <p class="font-medium text-sm mb-2" style="color: var(--color-text);">
+                                            {{ $peserta['nama'] }}
+                                            @if ($cakupan === 'semua')
+                                                <span style="opacity: 0.6; font-size: 0.875rem;"> · {{ $peserta['nama_pelatihan'] ?? 'N/A' }}</span>
+                                            @endif
+                                        </p>
                                         <p class="text-xs mb-2 font-semibold" style="color: var(--color-success);">Profil dominan: Klaster {{ $peserta['klaster_dominan'] }} · {{ $peserta['kode_profil_dominan'] }}: {{ $peserta['label_profil_dominan'] }}</p>
                                         <div class="space-y-1">
                                             @foreach ($peserta['memberships'] as $k => $m)
@@ -963,7 +972,12 @@
                                     <tbody class="divide-y" style="border-color: color-mix(in srgb, var(--color-text) 15%, transparent);">
                                         @foreach ($klasterResult['tabel_peserta'] as $peserta)
                                             <tr style="background-color: transparent;" class="hover:opacity-75">
-                                                <td class="px-4 py-3 font-medium" style="color: var(--color-text);">{{ $peserta['nama'] }}</td>
+                                                <td class="px-4 py-3 font-medium" style="color: var(--color-text);">
+                                                    {{ $peserta['nama'] }}
+                                                    @if ($cakupan === 'semua')
+                                                        <span style="opacity: 0.6; font-size: 0.875rem;"> · {{ $peserta['nama_pelatihan'] ?? 'N/A' }}</span>
+                                                    @endif
+                                                </td>
                                                 @foreach ($peserta['memberships'] as $m)
                                                     <td class="px-4 py-3 text-center" style="color: var(--color-primary);">{{ $m }}%</td>
                                                 @endforeach
@@ -997,7 +1011,7 @@
                                     @foreach ($comparisonData as $pel_id => $pel_data)
                                         <tr style="border-bottom: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent); {{ $pelatihan->id === $pel_id ? 'background-color: color-mix(in srgb, var(--color-primary) 10%, transparent);' : '' }}">
                                             <td style="padding: 0.75rem; color: var(--color-text); {{ $pelatihan->id === $pel_id ? 'font-weight: 600;' : '' }}">
-                                                {{ $pel_data['name'] }}
+                                                {{ $pel_data['nama'] }}
                                                 @if ($pelatihan->id === $pel_id)
                                                     <span style="color: var(--color-primary); font-size: 0.75rem; margin-left: 0.5rem;">(Pelatihan ini)</span>
                                                 @endif
@@ -1005,7 +1019,7 @@
                                             <td style="padding: 0.75rem; text-align: center; color: var(--color-text);">{{ $pel_data['count'] }}</td>
                                             @foreach (['TC', 'TE', 'ITT', 'YB'] as $kod)
                                                 @php
-                                                    $mean = $pel_data['means'][$kod];
+                                                    $mean = $pel_data['mean'][$kod];
                                                     $cat = $pel_data['categories'][$kod];
                                                     $warna = match($cat) {
                                                         'Tinggi' => 'var(--color-success)',
@@ -1209,7 +1223,11 @@
                 @elseif (count($pelatihansForComparison) === 1)
                     <x-card class="mb-6">
                         <p style="color: var(--color-text); opacity: 0.7;" class="text-center py-6">
-                            Perbandingan butuh minimal 2 pelatihan yang sudah punya data TIYAS.
+                            @if ($cakupan === 'semua')
+                                Hanya 1 pelatihan yang memiliki data TIYAS terverifikasi. Perbandingan butuh minimal 2 pelatihan.
+                            @else
+                                Analisis perbandingan hanya tersedia saat cakupan "Semua Pelatihan".
+                            @endif
                         </p>
                     </x-card>
                 @endif

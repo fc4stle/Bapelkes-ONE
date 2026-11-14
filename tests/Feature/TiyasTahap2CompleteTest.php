@@ -28,22 +28,20 @@ class TiyasTahap2CompleteTest extends TestCase
         $this->pelB = Pelatihan::factory()->create(['nama' => 'Pelatihan B', 'status' => 'selesai']);
 
         // Setup peserta terverifikasi
-        $pesertaA1 = User::factory()->create(['role' => 'peserta']);
-        $pesertaA2 = User::factory()->create(['role' => 'peserta']);
+        $pesertaA = [];
+        for ($i = 1; $i <= 10; $i++) {
+            $pesertaA[] = User::factory()->create(['role' => 'peserta']);
+        }
         $pesertaB1 = User::factory()->create(['role' => 'peserta']);
 
         // Pendaftaran terverifikasi diverifikasi
-        Pendaftaran::factory()->hadir()->create([
-            'pelatihan_id' => $this->pelA->id,
-            'peserta_id' => $pesertaA1->id,
-            'status_verifikasi' => 'diverifikasi',
-        ]);
-
-        Pendaftaran::factory()->hadir()->create([
-            'pelatihan_id' => $this->pelA->id,
-            'peserta_id' => $pesertaA2->id,
-            'status_verifikasi' => 'diverifikasi',
-        ]);
+        foreach ($pesertaA as $peserta) {
+            Pendaftaran::factory()->hadir()->create([
+                'pelatihan_id' => $this->pelA->id,
+                'peserta_id' => $peserta->id,
+                'status_verifikasi' => 'diverifikasi',
+            ]);
+        }
 
         Pendaftaran::factory()->hadir()->create([
             'pelatihan_id' => $this->pelB->id,

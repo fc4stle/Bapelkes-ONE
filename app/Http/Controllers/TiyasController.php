@@ -285,57 +285,59 @@ class TiyasController extends Controller
         }
 
         // Persiapan data untuk perbandingan antar pelatihan (B. section)
-        // Kumpulkan response count per pelatihan (hanya verified & hadir)
-        $allPelatihans = Pelatihan::with('pendaftarans')->get();
-        $pelatihansWithResponses = [];
-
-        foreach ($allPelatihans as $pel) {
-            $verifiedHadirCount = $pel->pendaftarans()
-                ->where('status_verifikasi', 'diverifikasi')
-                ->whereNotNull('hadir_at')
-                ->count();
-
-            if ($verifiedHadirCount > 0) {
-                $pelatihansWithResponses[] = $pel;
-            }
-        }
-
-        // Hitung mean per konstruk per pelatihan
+        // Hanya jika cakupan=semua, kumpulkan response count per pelatihan
         $comparisonData = []; // ['pelatihan_id' => ['name' => ..., 'count' => ..., 'means' => ['TC' => ..., ...], 'categories' => [...]]]
         $pelatihansForComparison = [];
 
-        foreach ($pelatihansWithResponses as $pel) {
-            $respPel = TiyasResponse::whereHas('pendaftaran', function ($q) use ($pel) {
-                $q->where('pelatihan_id', $pel->id)
+        if ($cakupan === 'semua') {
+            $allPelatihans = Pelatihan::with('pendaftarans')->get();
+            $pelatihansWithResponses = [];
+
+            foreach ($allPelatihans as $pel) {
+                $verifiedHadirCount = $pel->pendaftarans()
                     ->where('status_verifikasi', 'diverifikasi')
-                    ->whereNotNull('hadir_at');
-            })->get();
+                    ->whereNotNull('hadir_at')
+                    ->count();
 
-            if (count($respPel) > 0) {
-                $skorPel = ['TC' => [], 'TE' => [], 'ITT' => [], 'YB' => []];
-                foreach ($respPel as $resp) {
-                    $skor = $scorer->hitungSkor($resp->jawaban);
-                    foreach ($skor as $konst => $data) {
-                        $skorPel[$konst][] = $data['skor'];
+                if ($verifiedHadirCount > 0) {
+                    $pelatihansWithResponses[] = $pel;
+                }
+            }
+
+            // Hitung mean per konstruk per pelatihan
+            foreach ($pelatihansWithResponses as $pel) {
+                $respPel = TiyasResponse::whereHas('pendaftaran', function ($q) use ($pel) {
+                    $q->where('pelatihan_id', $pel->id)
+                        ->where('status_verifikasi', 'diverifikasi')
+                        ->whereNotNull('hadir_at');
+                })->get();
+
+                if (count($respPel) > 0) {
+                    $skorPel = ['TC' => [], 'TE' => [], 'ITT' => [], 'YB' => []];
+                    foreach ($respPel as $resp) {
+                        $skor = $scorer->hitungSkor($resp->jawaban);
+                        foreach ($skor as $konst => $data) {
+                            $skorPel[$konst][] = $data['skor'];
+                        }
                     }
-                }
 
-                $meanPel = [];
-                $catPel = [];
-                foreach ($skorPel as $konst => $vals) {
-                    $mean = count($vals) > 0 ? round(array_sum($vals) / count($vals), 2) : 0;
-                    $meanPel[$konst] = $mean;
-                    $catPel[$konst] = $scorer->kategori($mean);
-                }
+                    $meanPel = [];
+                    $catPel = [];
+                    foreach ($skorPel as $konst => $vals) {
+                        $mean = count($vals) > 0 ? round(array_sum($vals) / count($vals), 2) : 0;
+                        $meanPel[$konst] = $mean;
+                        $catPel[$konst] = $scorer->kategori($mean);
+                    }
 
-                $comparisonData[$pel->id] = [
-                    'id' => $pel->id,
-                    'name' => $pel->nama,
-                    'count' => count($respPel),
-                    'means' => $meanPel,
-                    'categories' => $catPel,
-                ];
-                $pelatihansForComparison[] = $pel->id;
+                    $comparisonData[$pel->id] = [
+                        'id' => $pel->id,
+                        'nama' => $pel->nama,
+                        'count' => count($respPel),
+                        'mean' => $meanPel,
+                        'categories' => $catPel,
+                    ];
+                    $pelatihansForComparison[] = $pel->id;
+                }
             }
         }
 
