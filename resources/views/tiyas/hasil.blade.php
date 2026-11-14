@@ -689,10 +689,12 @@
                                                 $maxMembership = $dominantMembership / 100.0;
                                                 $pointOpacity = 0.35 + (0.65 * max(0, min(1, $maxMembership)));
                                                 
-                                                // Buat membership title (e.g., "K1: 70%")
-                                                // Hanya klaster dominan yang ditampilkan sebagai deskripsi poin
-                                                $dominantPercent = (int)round($peserta['memberships'][$dominantKlaster]);
-                                                $pointTitle = "K" . $dominantKlaster . ": " . $dominantPercent . "%";
+                                                // Buat tooltip: nama + semua keanggotaan klaster (1-based keys: K1, K2, K3, ...)
+                                                $tooltipParts = [$peserta['nama']];
+                                                foreach ($peserta['memberships'] as $k => $m) {
+                                                    $tooltipParts[] = "K" . $k . ": " . number_format($m, 1) . "%";
+                                                }
+                                                $pointTitle = implode(" | ", $tooltipParts);
                                             @endphp
                                             
                                             <circle cx="{{$plotX}}" cy="{{$plotY}}" r="4" fill="{{$pointColor}}" opacity="{{$pointOpacity}}" stroke="{{$pointColor}}" stroke-width="0.5">
@@ -834,15 +836,6 @@
                                         <text x="500" y="25" text-anchor="middle" style="font-size: 16px; font-weight: 600; fill: var(--color-text);">Derajat Keanggotaan (%)</text>
                                         
                                         <!-- Peserta rows -->
-                                        @php
-                                            $klasterColors = [
-                                                1 => 'var(--color-danger)',
-                                                2 => 'var(--color-primary)',
-                                                3 => 'var(--color-success)',
-                                                4 => 'var(--color-accent)'
-                                            ];
-                                        @endphp
-                                        
                                         @foreach ($klasterResult['tabel_peserta'] as $pIdx => $peserta)
                                             @php
                                                 $rowY = 60 + ($pIdx * 40);
@@ -856,18 +849,26 @@
                                                 $xPos = 200;
                                                 $barHeight = 30;
                                                 $barWidth = 700;
+                                                $klasterColors = config('tiyas.warna_klaster', [
+                                                    'K1' => 'var(--color-danger)',
+                                                    'K2' => 'var(--color-primary)',
+                                                    'K3' => 'var(--color-success)',
+                                                    'K4' => 'var(--color-accent)',
+                                                ]);
                                             @endphp
                                             
                                             @foreach ($peserta['memberships'] as $kIdx => $membership)
                                                 @php
                                                     $segWidth = ($membership / 100) * $barWidth;
-                                                    // PERBAIKAN: $kIdx sudah 1-based (key dari memberships), jangan +1
+                                                    // $kIdx sudah 1-based (key dari memberships)
                                                     $klasterNum = $kIdx;
                                                     $klasterColor = $klasterColors['K' . $klasterNum] ?? 'var(--color-text)';
                                                 @endphp
                                                 
                                                 <rect x="{{$xPos}}" y="{{$rowY - $barHeight/2}}" width="{{$segWidth}}" height="{{$barHeight}}" 
-                                                    fill="{{ $klasterColor }}" stroke="white" stroke-width="1"/>
+                                                    fill="{{ $klasterColor }}" stroke="white" stroke-width="1">
+                                                    <title>{{ $peserta['nama'] }} | Klaster {{ $klasterNum }}: {{ $membership }}%</title>
+                                                </rect>
                                                 
                                                 @if ($membership >= 15)
                                                     <text x="{{$xPos + $segWidth/2}}" y="{{$rowY + 5}}" text-anchor="middle" 
@@ -889,7 +890,13 @@
                                         
                                         @foreach (range(1, $klasterResult['c_optimal']) as $k)
                                             @php
-                                                $legColor = $klasterColors[$k] ?? 'var(--color-text)';
+                                                $klasterColorLegend = config('tiyas.warna_klaster', [
+                                                    'K1' => 'var(--color-danger)',
+                                                    'K2' => 'var(--color-primary)',
+                                                    'K3' => 'var(--color-success)',
+                                                    'K4' => 'var(--color-accent)',
+                                                ]);
+                                                $legColor = $klasterColorLegend['K' . $k] ?? 'var(--color-text)';
                                                 $legX = 200 + (($k - 1) * 150);
                                             @endphp
                                             

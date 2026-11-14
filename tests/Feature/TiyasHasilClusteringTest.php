@@ -800,21 +800,48 @@ class TiyasHasilClusteringTest extends TestCase
             $titleText = $titleElements->item(0)->textContent;
             $this->assertNotEmpty($titleText, "Circle #$circleCount title must not be empty");
 
-            // 3. Verify title format: "K{1-4}: {0-100}%" (e.g., "K1: 95%")
-            $this->assertMatchesRegularExpression('/^K[1-4]:\s*\d{1,3}%$/', $titleText,
-                "Circle #$circleCount title must match 'K{1-4}: {persen}%' format. Got: '$titleText'");
+            // 3. Verify title format: "{nama} | K1: {persen}% | K2: {persen}% | ..."
+            $this->assertMatchesRegularExpression('/^.+\s*\|\s*K1:\s*\d+(\.\d+)?%/', $titleText,
+                "Circle #$circleCount title must start with name and K1 membership. Got: '$titleText'");
 
-            // Extract cluster number from title
-            preg_match('/^K(\d)/', $titleText, $titleMatch);
-            $clusterFromTitle = (int) $titleMatch[1];
+            // Extract name and all K{n}: {percent}% pairs
+            if (! preg_match('/^(.+?)\s*\|\s*(.+)$/', $titleText, $mainMatch)) {
+                $this->fail("Circle #$circleCount title format invalid: '$titleText'");
+            }
+            $pesertaNama = trim($mainMatch[1]);
+            $membershipString = $mainMatch[2];
 
-            // 4. Verify fill color is a valid cluster color token, not fallback
+            // Extract all K{n}: {percent}% from membership string
+            $memberships = [];
+            if (preg_match_all('/K(\d):\s*(\d+(?:\.\d+)?)%/', $membershipString, $matches, PREG_SET_ORDER)) {
+                foreach ($matches as $match) {
+                    $k = (int) $match[1];
+                    $pct = (float) $match[2];
+                    $memberships[$k] = $pct;
+                }
+            }
+
+            $this->assertNotEmpty($memberships, "Circle #$circleCount title must contain at least one K{n}: {persen}% pair. Got: '$titleText'");
+            $this->assertNotEmpty($pesertaNama, "Circle #$circleCount title must contain peserta name. Got: '$titleText'");
+
+            // Find dominant cluster (highest membership percentage)
+            $dominantK = array_key_first($memberships);
+            $maxMembership = $memberships[$dominantK];
+            foreach ($memberships as $k => $pct) {
+                if ($pct > $maxMembership) {
+                    $dominantK = $k;
+                    $maxMembership = $pct;
+                }
+            }
+
+            // 4. Verify fill color matches dominant cluster color from config
+            $expectedColor = $colorConfig['K'.$dominantK] ?? null;
+            $this->assertNotNull($expectedColor, "No color configured for K$dominantK");
+            $this->assertEquals($fill, $expectedColor,
+                "Circle #$circleCount (title='$titleText') fill color must match K$dominantK color from config. Got: '$fill', expected: '$expectedColor'");
+
+            // 5. Verify fill is not a fallback color
             $validColors = array_values($colorConfig);
-            $this->assertContains($fill, $validColors,
-                "Circle #$circleCount fill color must be a valid cluster color token from config. Got: '$fill'");
-
-            // 5. Verify no fallback color (var(--color-primary) is actually K2 color, so it's OK)
-            // We only fail if the fill doesn't match any cluster
             if (! in_array($fill, $validColors)) {
                 $debugInfo[] = "Circle #$circleCount (title='$titleText'): fill='$fill' NOT IN config cluster colors";
             }
@@ -842,5 +869,118 @@ class TiyasHasilClusteringTest extends TestCase
         }
 
         return $jawaban;
+    }
+
+    /**
+     * Test 13: Membership-horizontal-stacked diagram segments use correct colors
+     * - Each segment fill must match config('tiyas.warna_klaster')['K' . n]
+     * - Segment tooltips must contain "{nama} | Klaster N: xx.x%"
+     * - No segment uses fallback color
+     */
+    public function test_13_membership_horizontal_stacked_segment_colors(): void
+    {
+        TiyasResponse::truncate();
+
+        $panitia = User::factory()->create(['role' => 'panitia']);
+        $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
+
+        // Create test data with extreme profiles to ensure distinct clusters
+        $profiles = [
+            // K1: all max
+            ['TC' => 4.0, 'TE' => 4.0, 'ITT' => 4.0, 'YB' => 4.0],
+            ['TC' => 4.0, 'TE' => 4.0, 'ITT' => 4.0, 'YB' => 4.0],
+            ['TC' => 4.0, 'TE' => 4.0, 'ITT' => 4.0, 'YB' => 4.0],
+            // K2: high TC/TE/ITT, low YB
+            ['TC' => 4.0, 'TE' => 4.0, 'ITT' => 4.0, 'YB' => 1.0],
+            ['TC' => 4.0, 'TE' => 4.0, 'ITT' => 4.0, 'YB' => 1.0],
+            ['TC' => 4.0, 'TE' => 4.0, 'ITT' => 4.0, 'YB' => 1.0],
+            // K3: mid-low
+            ['TC' => 2.0, 'TE' => 2.0, 'ITT' => 2.0, 'YB' => 2.0],
+            ['TC' => 2.0, 'TE' => 2.0, 'ITT' => 2.0, 'YB' => 2.0],
+            // K4: all low
+            ['TC' => 1.0, 'TE' => 1.0, 'ITT' => 1.0, 'YB' => 1.0],
+        ];
+
+        foreach ($profiles as $idx => $profile) {
+            $peserta = User::factory()->create(['role' => 'peserta']);
+            $pendaftaran = Pendaftaran::factory()->hadir()->create([
+                'status_verifikasi' => 'diverifikasi',
+                'peserta_id' => $peserta->id,
+                'pelatihan_id' => $pelatihan->id,
+            ]);
+
+            $jawaban = $this->generateTiyasJawaban($profile);
+            TiyasResponse::factory()->create([
+                'pendaftaran_id' => $pendaftaran->id,
+                'jawaban' => $jawaban,
+                'identitas' => ['nama' => 'Test Peserta '.($idx + 1)],
+                'submitted_at' => now(),
+            ]);
+        }
+
+        $response = $this->actingAs($panitia)->get(route('tiyas.hasil', $pelatihan));
+        $response->assertStatus(200);
+
+        $dom = new \DOMDocument;
+        @$dom->loadHTML($response->getContent());
+        $xpath = new \DOMXPath($dom);
+
+        // Find membership-horizontal-stacked diagram
+        $chartElements = $xpath->query('//*[@data-chart="membership-horizontal-stacked"]');
+        $this->assertGreaterThan(0, $chartElements->length, 'Membership diagram must exist');
+
+        $chart = $chartElements->item(0);
+
+        // Get all rect segments (excluding legend rects)
+        $rects = $xpath->query('.//rect', $chart);
+        $this->assertGreaterThan(0, $rects->length, 'Diagram must have at least one segment');
+
+        $colorConfig = config('tiyas.warna_klaster', [
+            'K1' => 'var(--color-danger)',
+            'K2' => 'var(--color-primary)',
+            'K3' => 'var(--color-success)',
+            'K4' => 'var(--color-accent)',
+        ]);
+        $validColors = array_values($colorConfig);
+        $debugInfo = [];
+
+        foreach ($rects as $rect) {
+            $fill = $rect->getAttribute('fill');
+            $this->assertNotEmpty($fill, 'Segment must have fill attribute');
+
+            // Check if this is a legend rect (small, 12x12) or a segment (much larger)
+            $width = $rect->getAttribute('width');
+            if ((float) $width <= 20) {
+                continue; // Skip legend
+            }
+
+            // This is a membership segment
+            // Check title
+            $titleElements = $xpath->query('./title', $rect);
+            $this->assertGreaterThan(0, $titleElements->length, 'Segment must have <title>');
+
+            $titleText = $titleElements->item(0)->textContent;
+            $this->assertNotEmpty($titleText, 'Segment title must not be empty');
+
+            // Verify format: "{nama} | Klaster N: xx.x%"
+            $this->assertMatchesRegularExpression('/^.+\\s*\\|\\s*Klaster\\s*\\d+:\\s*\\d+(\\.\\d+)?%/', $titleText,
+                "Segment title must match format. Got: '$titleText'");
+
+            // Extract cluster number
+            if (preg_match('/Klaster\\s*(\\d+):\\s*(\\d+(?:\\.\\d+)?)%/', $titleText, $matches)) {
+                $k = (int) $matches[1];
+                $expectedColor = $colorConfig['K'.$k] ?? null;
+                $this->assertNotNull($expectedColor, "No color configured for K$k");
+                $this->assertEquals($fill, $expectedColor,
+                    "Segment (title='$titleText') fill must match K$k. Got: '$fill', expected: '$expectedColor'");
+            }
+
+            // Verify not fallback
+            if (! in_array($fill, $validColors)) {
+                $debugInfo[] = "Segment (title='$titleText'): fill='$fill' NOT IN config colors";
+            }
+        }
+
+        $this->assertEmpty($debugInfo, 'No segment should use fallback color: '.implode('; ', $debugInfo));
     }
 }
