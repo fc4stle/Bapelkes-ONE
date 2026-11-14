@@ -346,39 +346,23 @@ class TiyasProfilKlaster
         $comparisonData = [];
         $pelatihansForComparison = [];
 
-        // Step 1: Get all trainings with verified attendees
-        $allPelatihans = Pelatihan::with('pendaftarans')->get();
-        $pelatihansWithResponses = [];
-
-        foreach ($allPelatihans as $pel) {
-            $verifiedHadirCount = $pel->pendaftarans()
-                ->where('status_verifikasi', 'diverifikasi')
-                ->whereNotNull('hadir_at')
-                ->count();
-
-            if ($verifiedHadirCount > 0) {
-                $pelatihansWithResponses[] = $pel;
-            }
-        }
-
-        // Step 2: Fetch ALL responses for all trainings in ONE query (with eager loading)
-        $pelatihansIds = array_map(fn ($p) => $p->id, $pelatihansWithResponses);
-        $allResponseIds = Pendaftaran::whereIn('pelatihan_id', $pelatihansIds)
-            ->where('status_verifikasi', 'diverifikasi')
-            ->whereNotNull('hadir_at')
-            ->pluck('id');
-
-        $allResponses = TiyasResponse::whereIn('pendaftaran_id', $allResponseIds)
-            ->with('pendaftaran') // Eager load to avoid N+1
+        // SINGLE QUERY: Fetch all verified TiyasResponses with eager-loaded pendaftaran.pelatihan
+        $allResponses = TiyasResponse::whereHas('pendaftaran', function ($q) {
+            $q->where('status_verifikasi', 'diverifikasi')
+                ->whereNotNull('hadir_at');
+        })
+            ->with('pendaftaran.pelatihan')
             ->get()
             ->groupBy(fn ($r) => $r->pendaftaran->pelatihan_id);
 
-        // Step 3: Group and calculate per pelatihan
-        foreach ($pelatihansWithResponses as $pel) {
-            $respPel = $allResponses->get($pel->id) ?? collect([]);
-
+        // Group and calculate per pelatihan (no additional DB queries)
+        foreach ($allResponses as $pelatihan_id => $respPel) {
             if ($respPel->count() > 0) {
+                // Get pelatihan nama dari relasi yang sudah eager-loaded
+                $pel_nama = $respPel->first()?->pendaftaran?->pelatihan?->nama ?? 'Unknown';
+
                 $skorPel = ['TC' => [], 'TE' => [], 'ITT' => [], 'YB' => []];
+
                 foreach ($respPel as $resp) {
                     $skor = $this->scorer->hitungSkor($resp->jawaban);
                     foreach ($skor as $konst => $data) {
@@ -394,14 +378,14 @@ class TiyasProfilKlaster
                     $catPel[$konst] = $this->scorer->kategori($mean);
                 }
 
-                $comparisonData[$pel->id] = [
-                    'id' => $pel->id,
-                    'nama' => $pel->nama,
+                $comparisonData[$pelatihan_id] = [
+                    'id' => $pelatihan_id,
+                    'nama' => $pel_nama,
                     'count' => $respPel->count(),
                     'mean' => $meanPel,
                     'categories' => $catPel,
                 ];
-                $pelatihansForComparison[] = $pel->id;
+                $pelatihansForComparison[] = $pelatihan_id;
             }
         }
 

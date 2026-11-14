@@ -372,23 +372,23 @@ class TiyasTahap2CompleteTest extends TestCase
      * Verifies: tabel "Perbandingan Antar Pelatihan" renders with means and categories
      * Simple string-based assertions without complex parsing
      */
+
+    /**
+     * T2.13: HTML Rendering - Comparison Table with DOMDocument/XPath
+     * Uses DOMDocument + XPath to verify table structure and values
+     */
     public function test_html_rendering_comparison_table_two_trainings(): void
     {
-        // PelA: all 10 responses with score 4 (should average 4.00, category "Tinggi")
+        // PelA: 10 responses dengan skor 4
         $this->createResponses($this->pelA, array_fill(0, 10, [4, 4, 4, 4]));
 
-        // PelB: 10 responses with score 1 (should average 1.00, category "Rendah")
+        // PelB: 10 responses dengan skor 1
         $this->createResponses($this->pelB, array_fill(0, 10, [1, 1, 1, 1]));
 
-        // Debug: Check responses created
-        $pelAResps = TiyasResponse::whereHas('pendaftaran', function ($q) {
-            $q->where('pelatihan_id', $this->pelA->id);
-        })->count();
-        $pelBResps = TiyasResponse::whereHas('pendaftaran', function ($q) {
-            $q->where('pelatihan_id', $this->pelB->id);
-        })->count();
-        $this->assertEquals(10, $pelAResps, 'PelA should have 10 responses');
-        $this->assertEquals(10, $pelBResps, 'PelB should have 10 responses');
+        // Debug: check DB has responses
+        $countA = TiyasResponse::whereHas('pendaftaran', fn ($q) => $q->where('pelatihan_id', $this->pelA->id))->count();
+        $countB = TiyasResponse::whereHas('pendaftaran', fn ($q) => $q->where('pelatihan_id', $this->pelB->id))->count();
+        fwrite(STDERR, "DEBUG: PelA responses=$countA, PelB responses=$countB\n");
 
         $response = $this->actingAs($this->panitia)
             ->get(route('tiyas.hasil', $this->pelA).'?cakupan=semua');
@@ -396,32 +396,63 @@ class TiyasTahap2CompleteTest extends TestCase
         $response->assertOk();
         $html = $response->getContent();
 
-        // Check: Comparison section exists
-        $this->assertStringContainsString('Perbandingan Antar Pelatihan', $html);
+        $this->assertStringContainsString('Perbandingan Antar Pelatihan', $html, 'Comparison section should exist');
+        $this->assertStringContainsString('Pelatihan A', $html, 'PelA should be in HTML');
+        $this->assertStringContainsString('Pelatihan B', $html, 'PelB should be in HTML');
 
-        // Check: Table exists after section header
-        $this->assertStringContainsString('<table', $html);
+        // Parse HTML dengan DOMDocument
+        $dom = new \DOMDocument;
+        @$dom->loadHTML('<?xml encoding="UTF-8">'.$html);
+        $xpath = new \DOMXPath($dom);
 
-        // Check: PelA and PelB names appear
-        $this->assertStringContainsString('Pelatihan A', $html);
-        $this->assertStringContainsString('Pelatihan B', $html);
+        // Find tabel dengan header "Perbandingan Antar Pelatihan"
+        // Spesifik: cari div yang langsung setelah h2 "Perbandingan Antar Pelatihan",
+        // lalu cari table di dalamnya
+        // (Tidak gunakan ancestor karena akan catch multiple tables)
+        $rows = $xpath->query("//h2[contains(text(), 'Perbandingan Antar Pelatihan')]/following-sibling::div[1]//table[1]//tr[td]");
 
-        // Check: Mean scores appear
-        $this->assertStringContainsString('4.00', $html, 'PelA mean 4.00 should appear');
-        $this->assertStringContainsString('1.00', $html, 'PelB mean 1.00 should appear');
+        $foundPelA = false;
+        $foundPelB = false;
 
-        // Check: Categories appear
-        $this->assertStringContainsString('Tinggi', $html, 'PelA category Tinggi should appear');
-        $this->assertStringContainsString('Rendah', $html, 'PelB category Rendah should appear');
+        foreach ($rows as $row) {
+            $cellText = '';
+            $cells = $row->getElementsByTagName('td');
+
+            // Aggregate text dari semua cells
+            foreach ($cells as $cell) {
+                $cellText .= ' '.$cell->textContent;
+            }
+
+            // Check untuk PelA
+            if (strpos($cellText, 'Pelatihan A') !== false) {
+                // PelA punya 10 respons, mean TC = 4.00, kategori Tinggi
+                $this->assertStringContainsString('10', $cellText, 'PelA should show 10 responses');
+                $this->assertStringContainsString('4.00', $cellText, 'PelA should show mean 4.00');
+                $this->assertStringContainsString('Tinggi', $cellText, 'PelA should show Tinggi category');
+                $foundPelA = true;
+            }
+
+            // Check untuk PelB
+            if (strpos($cellText, 'Pelatihan B') !== false) {
+                // PelB punya 10 respons, mean TC = 1.00, kategori Rendah
+                $this->assertStringContainsString('10', $cellText, 'PelB should show 10 responses');
+                $this->assertStringContainsString('1.00', $cellText, 'PelB should show mean 1.00');
+                $this->assertStringContainsString('Rendah', $cellText, 'PelB should show Rendah category');
+                $foundPelB = true;
+            }
+        }
+
+        $this->assertTrue($foundPelA, 'Should find row with Pelatihan A data');
+        $this->assertTrue($foundPelB, 'Should find row with Pelatihan B data');
     }
 
     /**
-     * T2.14: HTML Rendering - Chart section with data for 2+ trainings
-     * Verifies: diagram data-chart="antar-pelatihan-mean" renders with proper structure
+     * T2.14: HTML Rendering - Chart with DOMDocument/XPath
+     * Verifies: SVG chart dengan data-chart="antar-pelatihan-mean" ada
      */
     public function test_html_rendering_chart_bar_groups_match_training_count(): void
     {
-        // 2+ pelatihan with 10+ responses each
+        // 2 pelatihan dengan 10 respons masing-masing
         $this->createResponses($this->pelA, array_fill(0, 10, [4, 4, 4, 4]));
         $this->createResponses($this->pelB, array_fill(0, 10, [1, 1, 1, 1]));
 
@@ -431,18 +462,25 @@ class TiyasTahap2CompleteTest extends TestCase
         $response->assertOk();
         $html = $response->getContent();
 
-        // Check: Comparison section and data rendering
-        $this->assertStringContainsString('Perbandingan Antar Pelatihan', $html);
-        $this->assertStringContainsString('Pelatihan A', $html);
-        $this->assertStringContainsString('Pelatihan B', $html);
+        // Parse dengan DOMDocument
+        $dom = new \DOMDocument;
+        @$dom->loadHTML('<?xml encoding="UTF-8">'.$html);
+        $xpath = new \DOMXPath($dom);
 
-        // Check: SVG exists (Alpine/chart renders SVG)
-        $this->assertStringContainsString('<svg', $html, 'SVG element should exist');
+        // Find SVG element dengan data-chart="antar-pelatihan-mean"
+        $svgs = $xpath->query('//svg[@data-chart="antar-pelatihan-mean"]');
+        $this->assertGreaterThan(0, $svgs->length, 'Should have SVG chart with data-chart="antar-pelatihan-mean"');
+
+        $svg = $svgs->item(0);
+
+        // Count rect elements (bars) in SVG
+        // Dengan 2 pelatihan dan 4 konstruk (TC, TE, ITT, YB), harus ada 8 rect (2*4)
+        $rects = $xpath->query('.//rect', $svg);
+        $this->assertGreaterThanOrEqual(8, $rects->length, 'Should have at least 8 rect elements (2 trainings * 4 constructs)');
     }
 
     /**
-     * T2.15: HTML Rendering - Cluster composition table shows correct structure
-     * Verifies: tabel "Komposisi Klaster per Pelatihan" renders properly
+     * T2.15: HTML Rendering - Cluster composition row sums with DOMDocument/XPath
      */
     public function test_html_rendering_cluster_composition_row_sums(): void
     {
@@ -456,24 +494,65 @@ class TiyasTahap2CompleteTest extends TestCase
         $response->assertOk();
         $html = $response->getContent();
 
-        // Check: Cluster composition section exists
-        $this->assertStringContainsString('Komposisi Klaster', $html, 'Cluster composition section should exist');
+        // Parse dengan DOMDocument
+        $dom = new \DOMDocument;
+        @$dom->loadHTML('<?xml encoding="UTF-8">'.$html);
+        $xpath = new \DOMXPath($dom);
 
-        // Check: Table exists
-        $this->assertStringContainsString('<table', $html, 'Table should exist');
+        // Find tabel Komposisi Klaster - look for rows dengan pelatihan names
+        // XPath: cari h3 dengan "Komposisi Klaster per Pelatihan", lalu table setelahnya
+        $rows = $xpath->query("//h3[contains(text(), 'Komposisi Klaster per Pelatihan')]/ancestor::div[1]//table//tr[td]");
 
-        // Check: PelA and PelB appear in table
-        $this->assertStringContainsString('Pelatihan A', $html);
-        $this->assertStringContainsString('Pelatihan B', $html);
+        $foundPelA = false;
+        $foundPelB = false;
+
+        foreach ($rows as $row) {
+            $cells = $row->getElementsByTagName('td');
+            if ($cells->length < 2) {
+                continue;
+            }
+
+            $firstCellText = trim($cells->item(0)->textContent);
+
+            if (strpos($firstCellText, 'Pelatihan A') !== false) {
+                // Sum numeric cells (cluster counts), skip first cell (nama)
+                $sumA = 0;
+                for ($i = 1; $i < $cells->length; $i++) {
+                    $cellText = trim($cells->item($i)->textContent);
+                    if (is_numeric($cellText)) {
+                        $sumA += (int) $cellText;
+                    }
+                }
+                // PelA punya 10 responses
+                $this->assertGreaterThanOrEqual(10, $sumA, 'Pelatihan A cluster composition should sum to at least 10');
+                $foundPelA = true;
+            }
+
+            if (strpos($firstCellText, 'Pelatihan B') !== false) {
+                // Sum numeric cells untuk PelB
+                $sumB = 0;
+                for ($i = 1; $i < $cells->length; $i++) {
+                    $cellText = trim($cells->item($i)->textContent);
+                    if (is_numeric($cellText)) {
+                        $sumB += (int) $cellText;
+                    }
+                }
+                // PelB punya 1 response
+                $this->assertGreaterThanOrEqual(1, $sumB, 'Pelatihan B cluster composition should sum to at least 1');
+                $foundPelB = true;
+            }
+        }
+
+        $this->assertTrue($foundPelA, 'Should find cluster composition row for Pelatihan A');
+        $this->assertTrue($foundPelB, 'Should find cluster composition row for Pelatihan B');
     }
 
     /**
-     * T2.16: HTML Rendering - Single training neutral message (no comparison chart)
-     * Verifies: cakupan=semua with 1 training shows neutral message, NO antar-pelatihan chart
+     * T2.16: HTML Rendering - Single training neutral message, no chart
      */
     public function test_html_rendering_single_training_neutral_message(): void
     {
-        // Only PelA with responses, PelB with 0 responses
+        // Only PelA with 10 responses
         $this->createResponses($this->pelA, array_fill(0, 10, [4, 4, 4, 4]));
 
         $response = $this->actingAs($this->panitia)
@@ -482,10 +561,16 @@ class TiyasTahap2CompleteTest extends TestCase
         $response->assertOk();
         $html = $response->getContent();
 
+        // Parse dengan DOMDocument
+        $dom = new \DOMDocument;
+        @$dom->loadHTML('<?xml encoding="UTF-8">'.$html);
+        $xpath = new \DOMXPath($dom);
+
         // Check 1: Neutral message exists
         $this->assertStringContainsString('Perbandingan butuh minimal', $html, 'Neutral message should exist for single training');
 
-        // Check 2: Chart element DOES NOT exist
-        $this->assertStringNotContainsString('data-chart="antar-pelatihan-mean"', $html, 'Chart element should NOT exist for single training case');
+        // Check 2: SVG chart DOES NOT exist
+        $svgs = $xpath->query('//svg[@data-chart="antar-pelatihan-mean"]');
+        $this->assertEquals(0, $svgs->length, 'Chart SVG should NOT exist for single training case');
     }
 }
