@@ -460,7 +460,7 @@
                                                     $tooltipText = "{$peserta['nama']} | Klaster {$peserta['klaster_dominan']}: {$dominantMembership}%";
                                                 @endphp
                                                 
-                                                <g>
+                                                <g data-klaster="{{ $peserta['klaster_dominan'] }}">
                                                     <title>{{ $tooltipText }}</title>
                                                     @if ($shape === 'circle')
                                                         <circle cx="{{ $x }}" cy="{{ $y }}" r="4" fill="{{ $color }}" opacity="{{ $opacity }}" stroke="var(--color-text)" stroke-width="1" />

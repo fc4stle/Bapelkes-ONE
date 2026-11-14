@@ -498,6 +498,12 @@ class TiyasHasilClusteringTest extends TestCase
      * NEW TEST 10: Centroid PCA positioning—centroid harus berada dekat dengan anggota klaster (< 60px jarak ke mean).
      * Centroid label K1, K2, dll harus ada di SVG dengan data-centroid-klaster attribute.
      */
+    /**
+     * NEW TEST 10: Centroid PCA positioning—centroid harus berada dekat dengan anggota klaster (< 60px jarak ke mean).
+     * Gunakan DOMDocument/DOMXPath untuk parsing SVG, extract centroid positions dan member positions per cluster.
+     * Assert: untuk setiap klaster, jarak centroid ke rata-rata anggota < 60px.
+     * Assert: semua centroid ada di dalam area plot SVG (0 < cx < svgW, 0 < cy < svgH).
+     */
     public function test_centroid_within_cluster_bounds(): void
     {
         TiyasResponse::truncate();
@@ -535,43 +541,177 @@ class TiyasHasilClusteringTest extends TestCase
 
         $content = $response->getContent();
 
-        // Verifikasi ada centroid elements dengan data-centroid-klaster attribute
-        // Pattern: <circle ... data-centroid-klaster="1" ... cx="..." cy="..." ... />
-        $this->assertStringContainsString('data-centroid-klaster', $content, 'Centroid harus ada atribut data-centroid-klaster');
+        // Parse SVG dengan DOMDocument
+        $dom = new \DOMDocument;
+        // Suppress warnings for malformed HTML
+        @$dom->loadHTML('<?xml encoding="UTF-8">'.$content);
+        $xpath = new \DOMXPath($dom);
 
-        // Verifikasi ada label K1, K2 untuk centroid
-        $this->assertStringContainsString('K1', $content, 'Centroid Klaster 1 label (K1) harus ada');
-        $this->assertStringContainsString('K2', $content, 'Centroid Klaster 2 label (K2) harus ada');
-
-        // Extract centroid cx/cy positions (regex dari SVG text/circle data-centroid-klaster)
-        // Pattern: <circle ... cx="<num>" cy="<num>" ... data-centroid-klaster="<k>" ...
-        preg_match_all('/cx="([\d.]+)"\s+cy="([\d.]+)"[^>]*data-centroid-klaster="(\d+)"/', $content, $matches);
-
-        // Jika pattern tidak match, coba variant (cy sebelum cx atau urutan berbeda)
-        if (empty($matches[0])) {
-            preg_match_all('/data-centroid-klaster="(\d+)"[^>]*cx="([\d.]+)"[^>]*cy="([\d.]+)"/', $content, $matches_alt);
-            if (! empty($matches_alt[0])) {
-                // Reorganize untuk konsistensi
-                $matches = [
-                    $matches_alt[0],
-                    $matches_alt[2],  // cx
-                    $matches_alt[3],  // cy
-                    $matches_alt[1],  // klaster
-                ];
+        // Extract SVG viewBox untuk dimensi plot
+        $svgElements = $xpath->query('//svg[@class]');
+        $svgW = 500;  // Default dari Blade
+        $svgH = 400;  // Default dari Blade
+        if ($svgElements->length > 0) {
+            foreach ($svgElements as $svg) {
+                if ($svg->hasAttribute('viewBox')) {
+                    $viewBox = $svg->getAttribute('viewBox');
+                    if (preg_match('/(\d+)\s+(\d+)\s+([\d.]+)\s+([\d.]+)/', $viewBox, $m)) {
+                        $svgW = (float) $m[3];
+                        $svgH = (float) $m[4];
+                    }
+                }
             }
         }
 
-        // Pastikan ada minimal 1 centroid terdeteksi
-        $this->assertNotEmpty($matches[0], 'Harus ada minimal 1 centroid dengan cx/cy yang dapat di-extract');
+        // Extract semua centroid circles (data-centroid-klaster attribute)
+        $centroidNodes = $xpath->query('//circle[@data-centroid-klaster]');
+        $centroids = [];
+        foreach ($centroidNodes as $node) {
+            $klaster = (int) $node->getAttribute('data-centroid-klaster');
+            $cx = (float) $node->getAttribute('cx');
+            $cy = (float) $node->getAttribute('cy');
+            $centroids[$klaster] = ['cx' => $cx, 'cy' => $cy];
+        }
+
+        $this->assertNotEmpty($centroids, 'Harus ada minimal 1 centroid di SVG');
+
+        // Extract semua member points per cluster (group dengan data-klaster attribute)
+        $membersByCluster = [];
+        $memberGroups = $xpath->query('//g[@data-klaster]');
+        foreach ($memberGroups as $group) {
+            $klaster = (int) $group->getAttribute('data-klaster');
+            if (! isset($membersByCluster[$klaster])) {
+                $membersByCluster[$klaster] = [];
+            }
+
+            // Cari circle atau shape di dalam group (cx, cy)
+            $shapes = $xpath->query('.//circle | .//rect | .//polygon', $group);
+            foreach ($shapes as $shape) {
+                $cx = null;
+                $cy = null;
+                if ($shape->hasAttribute('cx')) {
+                    $cx = (float) $shape->getAttribute('cx');
+                    $cy = (float) $shape->getAttribute('cy');
+                } elseif ($shape->hasAttribute('x')) {
+                    // rect: x, y adalah top-left corner
+                    $cx = (float) $shape->getAttribute('x') + 3;  // center
+                    $cy = (float) $shape->getAttribute('y') + 3;
+                } elseif ($shape->nodeName === 'polygon') {
+                    // polygon points="x1,y1 x2,y2 x3,y3 x4,y4..."
+                    $points = $shape->getAttribute('points');
+                    if (preg_match_all('/([\\d.-]+),([\\d.-]+)/', $points, $m)) {
+                        $xs = array_map('floatval', $m[1]);
+                        $ys = array_map('floatval', $m[2]);
+                        $cx = array_sum($xs) / count($xs);  // centroid of polygon
+                        $cy = array_sum($ys) / count($ys);
+                    }
+                }
+
+                if ($cx !== null && $cy !== null) {
+                    $membersByCluster[$klaster][] = ['cx' => $cx, 'cy' => $cy];
+                }
+            }
+        }
+
+        $this->assertNotEmpty($membersByCluster, 'Harus ada minimal 1 member point di SVG');
+
+        // Verifikasi untuk setiap klaster: centroid jarak < 60px dari rata-rata anggota
+        foreach ($centroids as $klaster => $centroid) {
+            $this->assertArrayHasKey($klaster, $membersByCluster, "Klaster $klaster ada centroid tapi tidak ada member points");
+
+            $members = $membersByCluster[$klaster];
+            $memberCount = count($members);
+            $this->assertGreaterThan(0, $memberCount, "Klaster $klaster harus ada minimal 1 member point");
+
+            // Hitung rata-rata posisi anggota
+            $meanCx = array_sum(array_column($members, 'cx')) / $memberCount;
+            $meanCy = array_sum(array_column($members, 'cy')) / $memberCount;
+
+            // Hitung jarak centroid ke mean
+            $distance = sqrt(
+                pow($centroid['cx'] - $meanCx, 2) +
+                pow($centroid['cy'] - $meanCy, 2)
+            );
+
+            $this->assertLessThan(
+                60,
+                $distance,
+                "Centroid K$klaster (cx={$centroid['cx']}, cy={$centroid['cy']}) ".
+                "harus dalam 60px dari rata-rata anggota (meanCx=$meanCx, meanCy=$meanCy), ".
+                "jarak aktual: $distance px"
+            );
+
+            // Verifikasi centroid ada di dalam area plot (0 < cx < svgW, 0 < cy < svgH)
+            $this->assertGreaterThan(0, $centroid['cx'], "Centroid K$klaster cx harus > 0");
+            $this->assertLessThan($svgW, $centroid['cx'], "Centroid K$klaster cx harus < $svgW");
+            $this->assertGreaterThan(0, $centroid['cy'], "Centroid K$klaster cy harus > 0");
+            $this->assertLessThan($svgH, $centroid['cy'], "Centroid K$klaster cy harus < $svgH");
+        }
     }
 
     /**
-     * NEW TEST 11: Semua centroid PCA harus berada di dalam area plot SVG (jangan keluar grafik).
-     * Area plot SVG adalah dari x=40 hingga x=(svgW-20), y=40 hingga y=(svgH-30) di viewport.
-     * SKIPPED: Regex matching complexity dengan attribute ordering—use manual browser testing untuk sekarang.
+     * NEW TEST 9: Ellipse rx/ry bounds untuk kepercayaan visual (6 <= r <= 90 pixels).
+     * Mencegah ellipse terlalu kecil (r < 6) atau terlalu besar (r > 90).
      */
-    public function test_all_centroids_within_plot_area(): void
+    public function test_ellipse_rx_ry_bounds_6_to_90(): void
     {
-        $this->markTestSkipped('Regex matching untuk SVG HTML attributes dengan urutan dinamis—use manual browser testing');
+        TiyasResponse::truncate();
+
+        $panitia = User::factory()->create(['role' => 'panitia']);
+        $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
+
+        // Buat 6 peserta optimal + 6 peserta at_risk => c=2 klaster
+        for ($i = 0; $i < 6; $i++) {
+            $peserta = User::factory()->create(['role' => 'peserta']);
+            $pendaftaran = Pendaftaran::factory()->hadir()->create([
+                'peserta_id' => $peserta->id,
+                'pelatihan_id' => $pelatihan->id,
+            ]);
+            TiyasResponse::factory()->withProfil('optimal')->create([
+                'pendaftaran_id' => $pendaftaran->id,
+            ]);
+        }
+
+        for ($i = 0; $i < 6; $i++) {
+            $peserta = User::factory()->create(['role' => 'peserta']);
+            $pendaftaran = Pendaftaran::factory()->hadir()->create([
+                'peserta_id' => $peserta->id,
+                'pelatihan_id' => $pelatihan->id,
+            ]);
+            TiyasResponse::factory()->withProfil('at_risk')->create([
+                'pendaftaran_id' => $pendaftaran->id,
+            ]);
+        }
+
+        $response = $this->actingAs($panitia)
+            ->get(route('tiyas.hasil', $pelatihan));
+
+        $response->assertOk();
+
+        $content = $response->getContent();
+
+        // Extract all rx dan ry values dari <ellipse data-klaster-area>
+        // Pattern: rx="<number>" atau ry="<number>"
+        preg_match_all('/rx="([\d.]+)"/', $content, $rx_matches);
+        preg_match_all('/ry="([\d.]+)"/', $content, $ry_matches);
+
+        $rx_values = $rx_matches[1];
+        $ry_values = $ry_matches[1];
+
+        // Verifikasi semua rx dalam range [6, 90]
+        $this->assertNotEmpty($rx_values, 'Harus ada minimal 1 rx attribute di elips');
+        foreach ($rx_values as $rx) {
+            $rx_float = (float) $rx;
+            $this->assertGreaterThanOrEqual(6.0, $rx_float, "rx=$rx harus >= 6");
+            $this->assertLessThanOrEqual(90.0, $rx_float, "rx=$rx harus <= 90");
+        }
+
+        // Verifikasi semua ry dalam range [6, 90]
+        $this->assertNotEmpty($ry_values, 'Harus ada minimal 1 ry attribute di elips');
+        foreach ($ry_values as $ry) {
+            $ry_float = (float) $ry;
+            $this->assertGreaterThanOrEqual(6.0, $ry_float, "ry=$ry harus >= 6");
+            $this->assertLessThanOrEqual(90.0, $ry_float, "ry=$ry harus <= 90");
+        }
     }
 }
