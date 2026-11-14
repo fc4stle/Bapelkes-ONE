@@ -1102,13 +1102,33 @@
                                 @php $group_x = $chart_padding; @endphp
                                 @foreach ($comparisonData as $pel_idx => $pel_data)
                                     @php
-                                        $pel_name_short = substr($pel_data['nama'], 0, 15);
                                         $bar_x = $group_x;
                                     @endphp
                                     
-                                    <!-- Label pelatihan -->
+                                    <!-- Label pelatihan: split nama jadi max 2 baris, ~18 chars per baris -->
+                                    @php
+                                        $nama = $pel_data['nama'];
+                                        $words = explode(' ', $nama);
+                                        $line1 = '';
+                                        $line2 = '';
+                                        foreach ($words as $word) {
+                                            if (strlen($line1) + strlen($word) + 1 <= 18 && empty($line2)) {
+                                                $line1 .= ($line1 ? ' ' : '') . $word;
+                                            } else {
+                                                $line2 .= ($line2 ? ' ' : '') . $word;
+                                            }
+                                        }
+                                    @endphp
                                     <text x="{{ $group_x + $group_width / 2 }}" y="{{ $chart_height - $chart_padding / 2 + 10 }}" 
-                                          style="font-size: 11px; text-anchor: middle; fill: var(--color-text);">{{ $pel_name_short }}</text>
+                                          style="font-size: 11px; text-anchor: middle; fill: var(--color-text);">
+                                        <title>{{ $nama }}</title>
+                                        @if ($line2)
+                                            <tspan x="{{ $group_x + $group_width / 2 }}" dy="0">{{ $line1 }}</tspan>
+                                            <tspan x="{{ $group_x + $group_width / 2 }}" dy="1.1em">{{ $line2 }}</tspan>
+                                        @else
+                                            {{ $line1 }}
+                                        @endif
+                                    </text>
                                     
                                     <!-- 4 bars per pelatihan (TC, TE, ITT, YB) -->
                                     @foreach (['TC', 'TE', 'ITT', 'YB'] as $kod)

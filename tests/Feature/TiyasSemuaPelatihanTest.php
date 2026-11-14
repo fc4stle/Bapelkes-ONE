@@ -174,50 +174,55 @@ class TiyasSemuaPelatihanTest extends TestCase
         $chartSvg = $xpath->query('//svg[@data-chart="antar-pelatihan-mean"]')->item(0);
         $this->assertNotNull($chartSvg);
 
-        // Try different selectors for axis labels
-        $xLabelTexts = $xpath->query('.//text[@text-anchor="middle"]', $chartSvg);
-        if ($xLabelTexts->length === 0) {
-            $xLabelTexts = $xpath->query('.//text', $chartSvg);
+        // Get SVG viewBox untuk menghitung posisi "dibawah plot"
+        $viewBox = $chartSvg->getAttribute('viewBox');
+        if (!$viewBox) {
+            $viewBox = '0 0 800 400'; // Default fallback
         }
+        $viewBoxParts = array_filter(explode(' ', $viewBox), fn ($v) => trim($v) !== '');
+        $viewBoxParts = array_values($viewBoxParts); // Re-index
+        $svgHeight = isset($viewBoxParts[3]) ? (float) $viewBoxParts[3] : 400;
 
-        $labels = [];
-        foreach ($xLabelTexts as $textEl) {
-            $tspans = $xpath->query('.//tspan', $textEl);
-            if ($tspans->length > 0) {
-                // Label punya <tspan> (multi-line)
+        // Chart padding sesuai view (40)
+        $chartPadding = 40;
+        $axisY = $svgHeight - $chartPadding;
+        $labelThreshold = $axisY - 30;
+
+        // Extract text elements HANYA dari area dibawah sumbu X (y > labelThreshold)
+        $allTextElements = $xpath->query('.//text', $chartSvg);
+        $axisLabels = [];
+
+        foreach ($allTextElements as $textEl) {
+            $y = (float) ($textEl->getAttribute('y') ?? 0);
+            if ($y > $labelThreshold) {
+                // Gabungkan tspans jika ada, atau ambil text langsung
+                $tspans = $xpath->query('.//tspan', $textEl);
                 $label = '';
-                foreach ($tspans as $ts) {
-                    $label .= trim($ts->textContent).' ';
+                if ($tspans->length > 0) {
+                    foreach ($tspans as $ts) {
+                        $label .= trim($ts->textContent) . ' ';
+                    }
+                } else {
+                    $label = trim($textEl->textContent);
                 }
-                $labelTrimmed = trim($label);
-                if (strlen($labelTrimmed) > 2) {
-                    $labels[] = $labelTrimmed;
-                }
-            } else {
-                // Single line label
-                $text = trim($textEl->textContent);
-                if (strlen($text) > 2 && strlen($text) < 100) {
-                    $labels[] = $text;
+                $label = trim($label);
+                if (strlen($label) > 2) {
+                    $axisLabels[] = $label;
                 }
             }
         }
 
-        // B.1: Labels untuk 2 pelatihan harus berbeda
-        // Filter untuk pelatihan names only
-        $pelLabels = array_filter($labels, fn ($l) => strpos($l, 'Pelatihan') !== false || strpos($l, '[TEST]') !== false);
-        if (count($pelLabels) === 0) {
-            $pelLabels = $labels; // Fallback jika tidak ada "Pelatihan" text
-        }
+        // B.1: Harus ada minimal 2 label (dari 2 pelatihan)
+        $this->assertGreaterThanOrEqual(2, count($axisLabels),
+            'B FAILED: Harus ada minimal 2 label sumbu X. Ditemukan: ' . count($axisLabels) . '. Labels: ' . json_encode($axisLabels));
 
-        $uniqueLabels = array_unique($pelLabels);
-        $this->assertGreaterThanOrEqual(2, count($uniqueLabels),
-            "B FAILED: 2 pelatihan dengan awalan nama sama harus punya label berbeda.\n"
-            .'All labels: '.json_encode($labels)."\n"
-            .'Pel labels: '.json_encode(array_values($pelLabels)));
-
-        // B.2: Verify <title> ada (optional, but good practice)
-        $titles = $xpath->query('.//text[@text-anchor="middle"]/parent::*/title', $chartSvg);
-        // Tidak strict assert, hanya info
+        // B.2: Label untuk 2 pelatihan harus BERBEDA
+        $label1 = $axisLabels[0] ?? '';
+        $label2 = $axisLabels[1] ?? '';
+        $this->assertNotEmpty($label1, 'B: Label pertama kosong');
+        $this->assertNotEmpty($label2, 'B: Label kedua kosong');
+        $this->assertNotEquals($label1, $label2,
+            "B FAILED: 2 label harus berbeda.\nLabel 1: '$label1'\nLabel 2: '$label2'");
     }
 
     /**
