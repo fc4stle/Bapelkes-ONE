@@ -1312,6 +1312,85 @@
                             </div>
                         @endif
                     </x-card>
+
+                    <!-- B.2 Kedekatan Pelatihan ke Klaster (hanya jika >= 2 pelatihan dan status = sukses) -->
+                    @if (!empty($posisiPelatihan) && count($klasterResult['klaster_labels'] ?? []) >= 2)
+                        <x-card class="mb-6">
+                            <h3 class="font-semibold text-sm mb-6" style="color: var(--color-text);">Kedekatan Pelatihan ke Klaster</h3>
+                            
+                            <!-- Deskripsi per pelatihan -->
+                            <div class="space-y-2 mb-6 text-xs" style="color: var(--color-text);">
+                                @foreach ($posisiPelatihan as $pel_pos)
+                                    @php
+                                        $klasterLabel = $klasterResult['klaster_labels'][$pel_pos['klaster_terdekat'] - 1] ?? 'Klaster ' . $pel_pos['klaster_terdekat'];
+                                        $klasterKode = $klasterResult['tabel_klaster'][$pel_pos['klaster_terdekat'] - 1]['kode_profil'] ?? '';
+                                        $klasterProfil = $klasterResult['tabel_klaster'][$pel_pos['klaster_terdekat'] - 1]['profil'] ?? '';
+                                        $nearestMembership = $pel_pos['rata_keanggotaan'][$pel_pos['klaster_terdekat']] ?? 0;
+                                    @endphp
+                                    <p>
+                                        <strong>{{ $pel_pos['nama'] }}</strong> paling dekat ke 
+                                        <strong>{{ $klasterLabel }}</strong>
+                                        @if ($klasterKode)
+                                            ({{ $klasterKode }}{{ $klasterProfil ? ': ' . $klasterProfil : '' }})
+                                        @endif
+                                        dengan rata-rata keanggotaan <strong>{{ number_format($nearestMembership, 1) }}%</strong>.
+                                    </p>
+                                @endforeach
+                            </div>
+                            
+                            <!-- Tabel Rata-rata Keanggotaan -->
+                            <div style="overflow-x: auto;">
+                                <table style="width: 100%; border-collapse: collapse; border-spacing: 0;">
+                                    <thead>
+                                        <tr style="background-color: color-mix(in srgb, var(--color-primary) 10%, transparent); border-bottom: 2px solid var(--color-primary);">
+                                            <th style="padding: 0.75rem; text-align: left; color: var(--color-text); font-weight: 600;">Pelatihan</th>
+                                            @foreach ($klasterResult['klaster_labels'] ?? [] as $klaster_idx => $label)
+                                                <th style="padding: 0.75rem; text-align: center; color: var(--color-text); font-weight: 600; white-space: nowrap;">
+                                                    {{ $label }}
+                                                </th>
+                                            @endforeach
+                                            <th style="padding: 0.75rem; text-align: center; color: var(--color-text); font-weight: 600; background-color: color-mix(in srgb, var(--color-accent) 15%, transparent); white-space: nowrap;">
+                                                Klaster Terdekat
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($posisiPelatihan as $pel_pos)
+                                            <tr style="border-bottom: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);">
+                                                <td style="padding: 0.75rem; color: var(--color-text); font-weight: 500;">{{ $pel_pos['nama'] }}</td>
+                                                
+                                                @foreach ($klasterResult['klaster_labels'] ?? [] as $klaster_idx => $label)
+                                                    @php
+                                                        $klaster_num = $klaster_idx + 1;
+                                                        $membership = $pel_pos['rata_keanggotaan'][$klaster_num] ?? 0;
+                                                        $isNearest = ($klaster_num === $pel_pos['klaster_terdekat']);
+                                                    @endphp
+                                                    <td style="padding: 0.75rem; text-align: center; color: var(--color-text);
+                                                        @if ($isNearest)
+                                                            background-color: color-mix(in srgb, var(--color-accent) 25%, transparent); font-weight: 600;
+                                                        @endif
+                                                        ">
+                                                        {{ number_format($membership, 1) }}%
+                                                    </td>
+                                                @endforeach
+                                                
+                                                <td style="padding: 0.75rem; text-align: center; color: var(--color-text); font-weight: 600; background-color: color-mix(in srgb, var(--color-accent) 15%, transparent);">
+                                                    {{ $klasterResult['klaster_labels'][$pel_pos['klaster_terdekat'] - 1] ?? 'K' . $pel_pos['klaster_terdekat'] }}
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <!-- Catatan -->
+                            <p class="text-xs mt-4" style="color: var(--color-text); opacity: 0.6;">
+                                <strong>Catatan:</strong> Tabel menunjukkan rata-rata persentase keanggotaan setiap pelatihan di tiap klaster (1-based). 
+                                Kolom "Klaster Terdekat" menandai klaster dengan persentase tertinggi pada setiap baris.
+                            </p>
+                        </x-card>
+                    @endif
+
                 @elseif (count($pelatihansForComparison) === 1)
                     <x-card class="mb-6">
                         <p style="color: var(--color-text); opacity: 0.7;" class="text-center py-6">
