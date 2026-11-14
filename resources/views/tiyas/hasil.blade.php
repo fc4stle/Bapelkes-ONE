@@ -5,8 +5,29 @@
             <div class="mb-6">
                 <div class="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-4">
                     <div>
-                        <h1 class="text-3xl font-bold" style="color: var(--color-text);">Hasil Evaluasi TIYAS</h1>
+                        <h1 class="text-3xl font-bold" style="color: var(--color-text);">
+                        Hasil Evaluasi TIYAS
+                        @if ($cakupan === 'semua')
+                            (Semua Pelatihan)
+                        @else
+                            (Pelatihan Ini)
+                        @endif
+                    </h1>
                         <p style="color: var(--color-text); opacity: 0.7;" class="mt-1">{{ $pelatihan->nama }}</p>
+
+            <!-- Tabs cakupan analisis -->
+            <div class="mb-6 flex gap-2">
+                <a href="{{ route('tiyas.hasil', ['pelatihan' => $pelatihan, 'cakupan' => 'pelatihan']) }}" 
+                   class="px-4 py-2 rounded-lg font-medium transition-all" 
+                   style="{{ $cakupan === 'pelatihan' ? 'background-color: var(--color-primary); color: white;' : 'background-color: color-mix(in srgb, var(--color-text) 10%, transparent); color: var(--color-text);' }}">
+                    Pelatihan Ini
+                </a>
+                <a href="{{ route('tiyas.hasil', ['pelatihan' => $pelatihan, 'cakupan' => 'semua']) }}" 
+                   class="px-4 py-2 rounded-lg font-medium transition-all" 
+                   style="{{ $cakupan === 'semua' ? 'background-color: var(--color-primary); color: white;' : 'background-color: color-mix(in srgb, var(--color-text) 10%, transparent); color: var(--color-text);' }}">
+                    Semua Pelatihan
+                </a>
+            </div>
                     </div>
                     <a href="{{ route('tiyas.export', $pelatihan) }}" class="px-4 py-2 rounded-lg font-medium hover:opacity-90 w-full sm:w-auto text-center" style="background-color: var(--color-success); color: white;">
                         Unduh CSV
@@ -528,6 +549,9 @@
                                     @endphp
                                     
                                     <form method="GET" class="mb-3 flex gap-2 flex-wrap items-center text-sm">
+                                        <!-- Hidden input untuk mempertahankan cakupan -->
+                                        <input type="hidden" name="cakupan" value="{{ $cakupan }}">
+                                        
                                         <label style="color: var(--color-text); opacity: 0.8;">Sumbu:</label>
                                         <select name="x" style="padding: 0.25rem 0.5rem; border: 1px solid color-mix(in srgb, var(--color-text) 20%, transparent); border-radius: 0.25rem; background-color: var(--color-surface); color: var(--color-text); font-size: 0.875rem;">
                                             @foreach (['TC', 'TE', 'ITT', 'YB'] as $kod)
@@ -949,6 +973,246 @@
                                     </tbody>
                                 </table>
                             </div>
+
+
+                <!-- Perbandingan Antar Pelatihan (B. section) -->
+                @if (count($pelatihansForComparison) >= 2)
+                    <x-card class="mb-6">
+                        <h2 class="text-xl font-semibold mb-4" style="color: var(--color-text);">Perbandingan Antar Pelatihan</h2>
+                        
+                        <!-- B.1: Tabel perbandingan mean per konstruk -->
+                        <div class="overflow-x-auto mb-6">
+                            <table class="w-full text-sm" style="border-collapse: collapse;">
+                                <thead>
+                                    <tr style="border-bottom: 2px solid color-mix(in srgb, var(--color-text) 20%, transparent);">
+                                        <th style="padding: 0.75rem; text-align: left; color: var(--color-text); font-weight: 600;">Pelatihan</th>
+                                        <th style="padding: 0.75rem; text-align: center; color: var(--color-text); font-weight: 600;">N Respons</th>
+                                        <th style="padding: 0.75rem; text-align: center; color: var(--color-text); font-weight: 600;">TC</th>
+                                        <th style="padding: 0.75rem; text-align: center; color: var(--color-text); font-weight: 600;">TE</th>
+                                        <th style="padding: 0.75rem; text-align: center; color: var(--color-text); font-weight: 600;">ITT</th>
+                                        <th style="padding: 0.75rem; text-align: center; color: var(--color-text); font-weight: 600;">YB</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($comparisonData as $pel_id => $pel_data)
+                                        <tr style="border-bottom: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent); {{ $pelatihan->id === $pel_id ? 'background-color: color-mix(in srgb, var(--color-primary) 10%, transparent);' : '' }}">
+                                            <td style="padding: 0.75rem; color: var(--color-text); {{ $pelatihan->id === $pel_id ? 'font-weight: 600;' : '' }}">
+                                                {{ $pel_data['name'] }}
+                                                @if ($pelatihan->id === $pel_id)
+                                                    <span style="color: var(--color-primary); font-size: 0.75rem; margin-left: 0.5rem;">(Pelatihan ini)</span>
+                                                @endif
+                                            </td>
+                                            <td style="padding: 0.75rem; text-align: center; color: var(--color-text);">{{ $pel_data['count'] }}</td>
+                                            @foreach (['TC', 'TE', 'ITT', 'YB'] as $kod)
+                                                @php
+                                                    $mean = $pel_data['means'][$kod];
+                                                    $cat = $pel_data['categories'][$kod];
+                                                    $warna = match($cat) {
+                                                        'Tinggi' => 'var(--color-success)',
+                                                        'Sedang' => 'var(--color-accent)',
+                                                        'Rendah' => 'var(--color-danger)',
+                                                        default => 'var(--color-text)',
+                                                    };
+                                                @endphp
+                                                <td style="padding: 0.75rem; text-align: center; color: var(--color-text);">
+                                                    <strong style="color: {{ $warna }};">{{ number_format($mean, 2) }}</strong><br>
+                                                    <span style="font-size: 0.75rem; opacity: 0.7;">{{ $cat }}</span>
+                                                </td>
+                                            @endforeach
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- B.2: Diagram batang berkelompok SVG -->
+                        <div class="mb-6">
+                            <h3 class="font-semibold text-sm mb-3" style="color: var(--color-text);">Rata-rata Skor per Konstruk</h3>
+                            
+                            <!-- Diagram batang SVG -->
+                            @php
+                                $chart_width = 800;
+                                $chart_height = 400;
+                                $chart_padding = 60;
+                                $bar_width = 60;
+                                $group_gap = 20;
+                                
+                                $num_pelatihans = count($comparisonData);
+                                $group_width = $bar_width * 4 + $group_gap; // 4 bars per group
+                                $total_width_needed = $group_width * $num_pelatihans + 40;
+                                $svg_width = max(800, $total_width_needed + 120);
+                                
+                                $colors = [
+                                    'TC' => 'var(--color-primary)',
+                                    'TE' => 'var(--color-success)',
+                                    'ITT' => 'var(--color-accent)',
+                                    'YB' => 'var(--color-danger)',
+                                ];
+                                
+                                // Konversi CSS var ke hex (fallback)
+                                $colorFallback = [
+                                    'TC' => '#0ea5e9',
+                                    'TE' => '#10b981',
+                                    'ITT' => '#f59e0b',
+                                    'YB' => '#ef4444',
+                                ];
+                            @endphp
+                            
+                            <svg style="width: 100%; max-width: 100%; height: auto; min-height: 300px; border: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent); border-radius: 0.5rem; background-color: var(--color-surface);" viewBox="0 0 {{ $svg_width }} {{ $chart_height }}" data-chart="antar-pelatihan-mean">
+                                <!-- Garis bantu untuk 2.00 dan 3.00 -->
+                                @php
+                                    $scale_top = 4;
+                                    $scale_bottom = 1;
+                                    $plot_height = $chart_height - $chart_padding * 2;
+                                @endphp
+                                
+                                <line x1="{{ $chart_padding }}" y1="{{ $chart_height - $chart_padding - (2.0 - $scale_bottom) / ($scale_top - $scale_bottom) * $plot_height }}" 
+                                      x2="{{ $svg_width - 40 }}" y2="{{ $chart_height - $chart_padding - (2.0 - $scale_bottom) / ($scale_top - $scale_bottom) * $plot_height }}" 
+                                      style="stroke: color-mix(in srgb, var(--color-text) 20%, transparent); stroke-width: 1; stroke-dasharray: 4,4;" />
+                                <line x1="{{ $chart_padding }}" y1="{{ $chart_height - $chart_padding - (3.0 - $scale_bottom) / ($scale_top - $scale_bottom) * $plot_height }}" 
+                                      x2="{{ $svg_width - 40 }}" y2="{{ $chart_height - $chart_padding - (3.0 - $scale_bottom) / ($scale_top - $scale_bottom) * $plot_height }}" 
+                                      style="stroke: color-mix(in srgb, var(--color-text) 20%, transparent); stroke-width: 1; stroke-dasharray: 4,4;" />
+                                      
+                                <!-- Label garis bantu -->
+                                <text x="{{ $chart_padding - 10 }}" y="{{ $chart_height - $chart_padding - (2.0 - $scale_bottom) / ($scale_top - $scale_bottom) * $plot_height + 4 }}" 
+                                      style="font-size: 10px; text-anchor: end; fill: color-mix(in srgb, var(--color-text) 50%, transparent);">2.00</text>
+                                <text x="{{ $chart_padding - 10 }}" y="{{ $chart_height - $chart_padding - (3.0 - $scale_bottom) / ($scale_top - $scale_bottom) * $plot_height + 4 }}" 
+                                      style="font-size: 10px; text-anchor: end; fill: color-mix(in srgb, var(--color-text) 50%, transparent);">3.00</text>
+                                
+                                <!-- Axis labels dan bars -->
+                                @php $group_x = $chart_padding; @endphp
+                                @foreach ($comparisonData as $pel_idx => $pel_data)
+                                    @php
+                                        $pel_name_short = substr($pel_data['name'], 0, 15);
+                                        $bar_x = $group_x;
+                                    @endphp
+                                    
+                                    <!-- Label pelatihan -->
+                                    <text x="{{ $group_x + $group_width / 2 }}" y="{{ $chart_height - $chart_padding / 2 + 10 }}" 
+                                          style="font-size: 11px; text-anchor: middle; fill: var(--color-text);">{{ $pel_name_short }}</text>
+                                    
+                                    <!-- 4 bars per pelatihan (TC, TE, ITT, YB) -->
+                                    @foreach (['TC', 'TE', 'ITT', 'YB'] as $kod)
+                                        @php
+                                            $value = $pel_data['means'][$kod] ?? 0;
+                                            $bar_height = ($value - $scale_bottom) / ($scale_top - $scale_bottom) * $plot_height;
+                                            $bar_y = $chart_height - $chart_padding - $bar_height;
+                                            $color = $colorFallback[$kod];
+                                        @endphp
+                                        <rect x="{{ $bar_x }}" y="{{ $bar_y }}" width="{{ $bar_width - 4 }}" height="{{ $bar_height }}" 
+                                              style="fill: {{ $color }}; opacity: 0.8;" />
+                                        <text x="{{ $bar_x + ($bar_width - 4) / 2 }}" y="{{ $bar_y - 3 }}" 
+                                              style="font-size: 9px; text-anchor: middle; fill: var(--color-text); font-weight: 500;">{{ number_format($value, 2) }}</text>
+                                        @php $bar_x += $bar_width; @endphp
+                                    @endforeach
+                                    
+                                    @php $group_x += $group_width + 30; @endphp
+                                @endforeach
+                                
+                                <!-- Axis -->
+                                <line x1="{{ $chart_padding }}" y1="{{ $chart_height - $chart_padding }}" 
+                                      x2="{{ $svg_width - 40 }}" y2="{{ $chart_height - $chart_padding }}" 
+                                      style="stroke: var(--color-text); stroke-width: 2;" />
+                                <line x1="{{ $chart_padding }}" y1="{{ $chart_padding }}" 
+                                      x2="{{ $chart_padding }}" y2="{{ $chart_height - $chart_padding }}" 
+                                      style="stroke: var(--color-text); stroke-width: 2;" />
+                                      
+                                <!-- Y axis labels -->
+                                @for ($i = 1; $i <= 4; $i++)
+                                    @php
+                                        $y_label_pos = $chart_height - $chart_padding - ($i - $scale_bottom) / ($scale_top - $scale_bottom) * $plot_height;
+                                    @endphp
+                                    <line x1="{{ $chart_padding - 5 }}" y1="{{ $y_label_pos }}" 
+                                          x2="{{ $chart_padding }}" y2="{{ $y_label_pos }}" 
+                                          style="stroke: var(--color-text); stroke-width: 1;" />
+                                    <text x="{{ $chart_padding - 10 }}" y="{{ $y_label_pos + 4 }}" 
+                                          style="font-size: 11px; text-anchor: end; fill: var(--color-text);">{{ $i }}.00</text>
+                                @endfor
+                            </svg>
+                        </div>
+
+                        <!-- Legenda -->
+                        <div class="flex flex-wrap gap-4 text-sm">
+                            @foreach (['TC', 'TE', 'ITT', 'YB'] as $kod)
+                                @php
+                                    $konstruk = config('tiyas.konstruk')[$kod];
+                                    $color = $colorFallback[$kod];
+                                @endphp
+                                <div class="flex items-center gap-2">
+                                    <div style="width: 12px; height: 12px; background-color: {{ $color }}; border-radius: 2px;"></div>
+                                    <span style="color: var(--color-text);">{{ $konstruk['nama'] }} ({{ $kod }})</span>
+                                </div>
+                            @endforeach
+                        </div>
+
+                        <!-- B.3: Komposisi klaster per pelatihan (hanya untuk cakupan=semua) -->
+                        @if ($cakupan === 'semua')
+                            <div class="mt-6 pt-6" style="border-top: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);">
+                                <h3 class="font-semibold text-sm mb-3" style="color: var(--color-text);">Komposisi Klaster per Pelatihan</h3>
+                                
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-sm" style="border-collapse: collapse;">
+                                        <thead>
+                                            <tr style="border-bottom: 2px solid color-mix(in srgb, var(--color-text) 20%, transparent);">
+                                                <th style="padding: 0.75rem; text-align: left; color: var(--color-text); font-weight: 600;">Pelatihan</th>
+                                                @foreach ($klasterResult['klaster_labels'] as $label)
+                                                    <th style="padding: 0.75rem; text-align: center; color: var(--color-text); font-weight: 600; white-space: nowrap;">{{ $label }}</th>
+                                                @endforeach
+                                                <th style="padding: 0.75rem; text-align: center; color: var(--color-text); font-weight: 600;">Total</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @php
+                                                // Build cluster composition per pelatihan
+                                                $clusterComposition = [];
+                                                foreach ($pelatihansForComparison as $pel_id) {
+                                                    $clusterComposition[$pel_id] = [];
+                                                    foreach ($klasterResult['klaster_labels'] ?? [] as $idx => $label) {
+                                                        $clusterComposition[$pel_id][$idx] = 0;
+                                                    }
+                                                }
+                                                
+                                                // Count peserta per klaster per pelatihan
+                                                if (isset($klasterResult['data']) && is_array($klasterResult['data'])) {
+                                                    foreach ($klasterResult['data'] as $resp_id => $peserta) {
+                                                        if (isset($peserta['pelatihan_id']) && isset($peserta['klaster_dominan'])) {
+                                                            $pel_id = $peserta['pelatihan_id'];
+                                                            $klaster_idx = $peserta['klaster_dominan'];
+                                                            if (isset($clusterComposition[$pel_id][$klaster_idx])) {
+                                                                $clusterComposition[$pel_id][$klaster_idx]++;
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            @endphp
+                                            
+                                            @foreach ($comparisonData as $pel_id => $pel_data)
+                                                <tr style="border-bottom: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent); {{ $pelatihan->id === $pel_id ? 'background-color: color-mix(in srgb, var(--color-primary) 10%, transparent);' : '' }}">
+                                                    <td style="padding: 0.75rem; color: var(--color-text); font-weight: 600;">{{ $pel_data['name'] }}</td>
+                                                    @php $row_total = 0; @endphp
+                                                    @foreach ($klasterResult['klaster_labels'] ?? [] as $klaster_idx => $label)
+                                                        @php
+                                                            $count = $clusterComposition[$pel_id][$klaster_idx] ?? 0;
+                                                            $row_total += $count;
+                                                        @endphp
+                                                        <td style="padding: 0.75rem; text-align: center; color: var(--color-text);">{{ $count }}</td>
+                                                    @endforeach
+                                                    <td style="padding: 0.75rem; text-align: center; color: var(--color-text); font-weight: 600;">{{ $pel_data['count'] }}</td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        @endif
+                    </x-card>
+                @elseif (count($pelatihansForComparison) === 1)
+                    <x-card class="mb-6">
+                        <p style="color: var(--color-text); opacity: 0.7;" class="text-center py-6">
+                            Perbandingan butuh minimal 2 pelatihan yang sudah punya data TIYAS.
+                        </p>
+                    </x-card>
+                @endif
 
                             <!-- Cara Membaca Hasil -->
                             <div style="background-color: color-mix(in srgb, var(--color-accent) 8%, transparent); border-left: 4px solid var(--color-accent); padding: 1rem; border-radius: var(--radius-card);">

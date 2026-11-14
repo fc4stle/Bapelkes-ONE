@@ -37,8 +37,10 @@ class TiyasHasilClusteringTest extends TestCase
             $peserta = User::factory()->create(['role' => 'peserta']);
             $peserta_optimal[] = $peserta;
             $pendaftaran = Pendaftaran::factory()->hadir()->create([
+                'status_verifikasi' => 'diverifikasi',
                 'peserta_id' => $peserta->id,
                 'pelatihan_id' => $pelatihan->id,
+                'status_verifikasi' => 'diverifikasi',
             ]);
             TiyasResponse::factory()->withProfil('optimal')->create([
                 'pendaftaran_id' => $pendaftaran->id,
@@ -49,8 +51,10 @@ class TiyasHasilClusteringTest extends TestCase
             $peserta = User::factory()->create(['role' => 'peserta']);
             $peserta_risk[] = $peserta;
             $pendaftaran = Pendaftaran::factory()->hadir()->create([
+                'status_verifikasi' => 'diverifikasi',
                 'peserta_id' => $peserta->id,
                 'pelatihan_id' => $pelatihan->id,
+                'status_verifikasi' => 'diverifikasi',
             ]);
             TiyasResponse::factory()->withProfil('at_risk')->create([
                 'pendaftaran_id' => $pendaftaran->id,
@@ -84,6 +88,7 @@ class TiyasHasilClusteringTest extends TestCase
         for ($i = 0; $i < 3; $i++) {
             $peserta = User::factory()->create(['role' => 'peserta']);
             $pendaftaran = Pendaftaran::factory()->hadir()->create([
+                'status_verifikasi' => 'diverifikasi',
                 'peserta_id' => $peserta->id,
                 'pelatihan_id' => $pelatihan->id,
             ]);
@@ -129,6 +134,7 @@ class TiyasHasilClusteringTest extends TestCase
         for ($i = 0; $i < 6; $i++) {
             $peserta = User::factory()->create(['role' => 'peserta']);
             $pendaftaran = Pendaftaran::factory()->hadir()->create([
+                'status_verifikasi' => 'diverifikasi',
                 'peserta_id' => $peserta->id,
                 'pelatihan_id' => $pelatihan->id,
             ]);
@@ -140,6 +146,7 @@ class TiyasHasilClusteringTest extends TestCase
         for ($i = 0; $i < 6; $i++) {
             $peserta = User::factory()->create(['role' => 'peserta']);
             $pendaftaran = Pendaftaran::factory()->hadir()->create([
+                'status_verifikasi' => 'diverifikasi',
                 'peserta_id' => $peserta->id,
                 'pelatihan_id' => $pelatihan->id,
             ]);
@@ -184,6 +191,7 @@ class TiyasHasilClusteringTest extends TestCase
         for ($i = 0; $i < 3; $i++) {
             $peserta = User::factory()->create(['role' => 'peserta']);
             $pendaftaran = Pendaftaran::factory()->hadir()->create([
+                'status_verifikasi' => 'diverifikasi',
                 'peserta_id' => $peserta->id,
                 'pelatihan_id' => $pelatihan->id,
             ]);
@@ -243,6 +251,7 @@ class TiyasHasilClusteringTest extends TestCase
         for ($i = 0; $i < 6; $i++) {
             $peserta = User::factory()->create(['role' => 'peserta']);
             $pendaftaran = Pendaftaran::factory()->hadir()->create([
+                'status_verifikasi' => 'diverifikasi',
                 'peserta_id' => $peserta->id,
                 'pelatihan_id' => $pelatihan->id,
             ]);
@@ -254,6 +263,7 @@ class TiyasHasilClusteringTest extends TestCase
         for ($i = 0; $i < 6; $i++) {
             $peserta = User::factory()->create(['role' => 'peserta']);
             $pendaftaran = Pendaftaran::factory()->hadir()->create([
+                'status_verifikasi' => 'diverifikasi',
                 'peserta_id' => $peserta->id,
                 'pelatihan_id' => $pelatihan->id,
             ]);
@@ -289,6 +299,7 @@ class TiyasHasilClusteringTest extends TestCase
         for ($i = 0; $i < 6; $i++) {
             $peserta = User::factory()->create(['role' => 'peserta']);
             $pendaftaran = Pendaftaran::factory()->hadir()->create([
+                'status_verifikasi' => 'diverifikasi',
                 'peserta_id' => $peserta->id,
                 'pelatihan_id' => $pelatihan->id,
             ]);
@@ -300,6 +311,7 @@ class TiyasHasilClusteringTest extends TestCase
         for ($i = 0; $i < 6; $i++) {
             $peserta = User::factory()->create(['role' => 'peserta']);
             $pendaftaran = Pendaftaran::factory()->hadir()->create([
+                'status_verifikasi' => 'diverifikasi',
                 'peserta_id' => $peserta->id,
                 'pelatihan_id' => $pelatihan->id,
             ]);
@@ -340,6 +352,7 @@ class TiyasHasilClusteringTest extends TestCase
         // Untuk safety, buat 8 peserta dengan profil yang bisa collapse, atau just 1 peserta
         $peserta = User::factory()->create(['role' => 'peserta']);
         $pendaftaran = Pendaftaran::factory()->hadir()->create([
+            'status_verifikasi' => 'diverifikasi',
             'peserta_id' => $peserta->id,
             'pelatihan_id' => $pelatihan->id,
         ]);
@@ -352,6 +365,7 @@ class TiyasHasilClusteringTest extends TestCase
         for ($i = 0; $i < 7; $i++) {
             $peserta_i = User::factory()->create(['role' => 'peserta']);
             $pendaftaran_i = Pendaftaran::factory()->hadir()->create([
+                'status_verifikasi' => 'diverifikasi',
                 'peserta_id' => $peserta_i->id,
                 'pelatihan_id' => $pelatihan->id,
             ]);
@@ -387,6 +401,7 @@ class TiyasHasilClusteringTest extends TestCase
         for ($i = 0; $i < 6; $i++) {
             $peserta = User::factory()->create(['role' => 'peserta']);
             $pendaftaran = Pendaftaran::factory()->hadir()->create([
+                'status_verifikasi' => 'diverifikasi',
                 'peserta_id' => $peserta->id,
                 'pelatihan_id' => $pelatihan->id,
             ]);
@@ -398,6 +413,7 @@ class TiyasHasilClusteringTest extends TestCase
         for ($i = 0; $i < 6; $i++) {
             $peserta = User::factory()->create(['role' => 'peserta']);
             $pendaftaran = Pendaftaran::factory()->hadir()->create([
+                'status_verifikasi' => 'diverifikasi',
                 'peserta_id' => $peserta->id,
                 'pelatihan_id' => $pelatihan->id,
             ]);
@@ -434,6 +450,7 @@ class TiyasHasilClusteringTest extends TestCase
         for ($i = 0; $i < 6; $i++) {
             $peserta = User::factory()->create(['role' => 'peserta']);
             $pendaftaran = Pendaftaran::factory()->hadir()->create([
+                'status_verifikasi' => 'diverifikasi',
                 'peserta_id' => $peserta->id,
                 'pelatihan_id' => $pelatihan->id,
             ]);
@@ -445,6 +462,7 @@ class TiyasHasilClusteringTest extends TestCase
         for ($i = 0; $i < 6; $i++) {
             $peserta = User::factory()->create(['role' => 'peserta']);
             $pendaftaran = Pendaftaran::factory()->hadir()->create([
+                'status_verifikasi' => 'diverifikasi',
                 'peserta_id' => $peserta->id,
                 'pelatihan_id' => $pelatihan->id,
             ]);
@@ -489,6 +507,7 @@ class TiyasHasilClusteringTest extends TestCase
         for ($i = 0; $i < 5; $i++) {
             $peserta = User::factory()->create(['role' => 'peserta']);
             $pendaftaran = Pendaftaran::factory()->hadir()->create([
+                'status_verifikasi' => 'diverifikasi',
                 'peserta_id' => $peserta->id,
                 'pelatihan_id' => $pelatihan->id,
             ]);
@@ -531,6 +550,7 @@ class TiyasHasilClusteringTest extends TestCase
         for ($i = 0; $i < 6; $i++) {
             $peserta = User::factory()->create(['role' => 'peserta']);
             $pendaftaran = Pendaftaran::factory()->hadir()->create([
+                'status_verifikasi' => 'diverifikasi',
                 'peserta_id' => $peserta->id,
                 'pelatihan_id' => $pelatihan->id,
             ]);
@@ -542,6 +562,7 @@ class TiyasHasilClusteringTest extends TestCase
         for ($i = 0; $i < 6; $i++) {
             $peserta = User::factory()->create(['role' => 'peserta']);
             $pendaftaran = Pendaftaran::factory()->hadir()->create([
+                'status_verifikasi' => 'diverifikasi',
                 'peserta_id' => $peserta->id,
                 'pelatihan_id' => $pelatihan->id,
             ]);

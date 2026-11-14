@@ -28,6 +28,7 @@ class TiyasFormDropdownValidationTest extends TestCase
         ]);
 
         $pendaftaran = Pendaftaran::factory()->hadir()->create([
+            'status_verifikasi' => 'diverifikasi',
             'peserta_id' => $peserta->id,
             'pelatihan_id' => $pelatihan->id,
             'status_verifikasi' => 'diverifikasi',

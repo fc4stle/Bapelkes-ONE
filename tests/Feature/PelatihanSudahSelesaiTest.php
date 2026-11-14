@@ -122,6 +122,7 @@ class PelatihanSudahSelesaiTest extends TestCase
         ]);
 
         $pendaftaran = Pendaftaran::factory()->hadir()->create([
+            'status_verifikasi' => 'diverifikasi',
             'peserta_id' => $peserta->id,
             'pelatihan_id' => $pelatihan->id,
             'status_verifikasi' => 'diverifikasi',
@@ -145,6 +146,7 @@ class PelatihanSudahSelesaiTest extends TestCase
         ]);
 
         $pendaftaran = Pendaftaran::factory()->hadir()->create([
+            'status_verifikasi' => 'diverifikasi',
             'peserta_id' => $peserta->id,
             'pelatihan_id' => $pelatihan->id,
             'status_verifikasi' => 'diverifikasi',
@@ -170,6 +172,7 @@ class PelatihanSudahSelesaiTest extends TestCase
         ]);
 
         $pendaftaran = Pendaftaran::factory()->hadir()->create([
+            'status_verifikasi' => 'diverifikasi',
             'peserta_id' => $peserta->id,
             'pelatihan_id' => $pelatihan->id,
             'status_verifikasi' => 'diverifikasi',
@@ -193,6 +196,7 @@ class PelatihanSudahSelesaiTest extends TestCase
         ]);
 
         $pendaftaran = Pendaftaran::factory()->hadir()->create([
+            'status_verifikasi' => 'diverifikasi',
             'peserta_id' => $peserta->id,
             'pelatihan_id' => $pelatihan->id,
             'status_verifikasi' => 'diverifikasi',
@@ -216,6 +220,7 @@ class PelatihanSudahSelesaiTest extends TestCase
         ]);
 
         $pendaftaran = Pendaftaran::factory()->hadir()->create([
+            'status_verifikasi' => 'diverifikasi',
             'peserta_id' => $peserta->id,
             'pelatihan_id' => $pelatihan->id,
             'status_verifikasi' => 'diverifikasi',
@@ -242,6 +247,7 @@ class PelatihanSudahSelesaiTest extends TestCase
         ]);
 
         $pendaftaran_a = Pendaftaran::factory()->hadir()->create([
+            'status_verifikasi' => 'diverifikasi',
             'peserta_id' => $peserta->id,
             'pelatihan_id' => $pelatihan_a->id,
             'status_verifikasi' => 'diverifikasi',
@@ -257,6 +263,7 @@ class PelatihanSudahSelesaiTest extends TestCase
         ]);
 
         $pendaftaran_b = Pendaftaran::factory()->hadir()->create([
+            'status_verifikasi' => 'diverifikasi',
             'peserta_id' => $peserta->id,
             'pelatihan_id' => $pelatihan_b->id,
             'status_verifikasi' => 'diverifikasi',
