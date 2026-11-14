@@ -361,7 +361,7 @@
                                             ];
                                         @endphp
                                         
-                                        <svg width="100%" height="auto" viewBox="0 0 {{ $svgW }} {{ $svgH }}" style="border: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent); background: white; border-radius: var(--radius-card);" role="img" aria-label="Grafik sebaran peserta berdasarkan PCA skor TC, TE, ITT, YB dengan warna menunjukkan klaster dominan">
+                                        <svg width="100%" viewBox="0 0 {{ $svgW }} {{ $svgH }}" style="max-height: 420px; border: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent); background: white; border-radius: var(--radius-card);" role="img" aria-label="Grafik sebaran peserta berdasarkan PCA skor TC, TE, ITT, YB dengan warna menunjukkan klaster dominan">
                                             <!-- Grid lines -->
                                             <line x1="40" y1="40" x2="40" y2="{{ $svgH - 30 }}" stroke="color-mix(in srgb, var(--color-text) 20%, transparent)" stroke-width="1" />
                                             <line x1="40" y1="{{ $svgH - 30 }}" x2="{{ $svgW - 20 }}" y2="{{ $svgH - 30 }}" stroke="color-mix(in srgb, var(--color-text) 20%, transparent)" stroke-width="1" />
@@ -425,35 +425,47 @@
                                                 <circle cx="{{ $cx }}" cy="{{ $cy }}" r="8" fill="none" stroke="{{ $cColor }}" stroke-width="2" opacity="0.8" />
                                                 <circle cx="{{ $cx }}" cy="{{ $cy }}" r="6" fill="{{ $cColor }}" opacity="0.3" />
                                             @endforeach
-                                            
-                                            <!-- Legenda -->
-                                            <g transform="translate({{ $svgW - 150 }}, 10)">
-                                                <text x="0" y="0" font-size="11" font-weight="bold" fill="var(--color-text)" opacity="0.8">Legenda:</text>
-                                                @foreach ($klasterResult['tabel_klaster'] as $idx => $klasterItem)
-                                                    @php
-                                                        $klasterNum = $klasterItem['klaster'];
-                                                        $profil = $klasterItem['profil'];
-                                                        $cColor = $clusterColors[($klasterNum - 1) % count($clusterColors)] ?? 'var(--color-primary)';
-                                                        $shapes = ['circle', 'rect', 'triangle', 'diamond', 'star'];
-                                                        $shape = $shapes[($klasterNum - 1) % count($shapes)];
-                                                    @endphp
-                                                    <g transform="translate(0, {{ ($idx + 1) * 15 }})">
-                                                        @if ($shape === 'circle')
-                                                            <circle cx="5" cy="0" r="3" fill="{{ $cColor }}" />
-                                                        @elseif ($shape === 'rect')
-                                                            <rect x="2" y="-3" width="6" height="6" fill="{{ $cColor }}" />
-                                                        @else
-                                                            <circle cx="5" cy="0" r="3" fill="{{ $cColor }}" />
-                                                        @endif
-                                                        <text x="12" y="4" font-size="10" fill="var(--color-text)" opacity="0.8">K{{ $klasterNum }}: {{ substr($profil, 0, 15) }}...</text>
-                                                    </g>
-                                                @endforeach
-                                            </g>
                                         </svg>
                                     </div>
                                     <p style="color: var(--color-text); opacity: 0.6;" class="text-xs mt-2">
                                         <strong>Catatan:</strong> Setiap bentuk mewakili klaster berbeda. Opacity menunjukkan derajat keanggotaan terhadap klaster dominan (35%-100%).
                                     </p>
+                                    
+                                    <!-- Legenda HTML di bawah SVG -->
+                                    <div style="background-color: color-mix(in srgb, var(--color-bg) 50%, var(--color-text) 2%); border: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent); border-radius: var(--radius-card); padding: 1rem; margin-top: 1rem;">
+                                        <p style="color: var(--color-text);" class="font-semibold text-sm mb-3">Legenda Klaster:</p>
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                            @foreach ($klasterResult['tabel_klaster'] as $klasterItem)
+                                                @php
+                                                    $klasterNum = $klasterItem['klaster'];
+                                                    $profil = $klasterItem['profil'];
+                                                    $cColor = $clusterColors[($klasterNum - 1) % count($clusterColors)] ?? 'var(--color-primary)';
+                                                    $shapes = ['circle', 'rect', 'triangle', 'diamond', 'star'];
+                                                    $shape = $shapes[($klasterNum - 1) % count($shapes)];
+                                                @endphp
+                                                <div class="flex items-center gap-3" style="border: 1px solid color-mix(in srgb, var(--color-text) 8%, transparent); border-radius: calc(var(--radius-card) - 2px); padding: 0.75rem;">
+                                                    <!-- Simbol klaster (SVG kecil) -->
+                                                    <svg width="32" height="32" viewBox="0 0 32 32" style="flex-shrink: 0;">
+                                                        @if ($shape === 'circle')
+                                                            <circle cx="16" cy="16" r="6" fill="{{ $cColor }}" opacity="0.7" stroke="var(--color-text)" stroke-width="1" />
+                                                        @elseif ($shape === 'rect')
+                                                            <rect x="10" y="10" width="12" height="12" fill="{{ $cColor }}" opacity="0.7" stroke="var(--color-text)" stroke-width="1" />
+                                                        @elseif ($shape === 'triangle')
+                                                            <polygon points="16,6 26,24 6,24" fill="{{ $cColor }}" opacity="0.7" stroke="var(--color-text)" stroke-width="1" />
+                                                        @elseif ($shape === 'diamond')
+                                                            <polygon points="16,5 26,16 16,27 6,16" fill="{{ $cColor }}" opacity="0.7" stroke="var(--color-text)" stroke-width="1" />
+                                                        @else
+                                                            <circle cx="16" cy="16" r="6" fill="{{ $cColor }}" opacity="0.7" stroke="var(--color-text)" stroke-width="1" />
+                                                        @endif
+                                                    </svg>
+                                                    <!-- Label klaster -->
+                                                    <div class="flex-1 min-w-0">
+                                                        <p style="color: var(--color-text);" class="font-semibold text-sm">Klaster {{ $klasterNum }}: {{ $profil }}</p>
+                                                    </div>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    </div>
                                 </div>
                             @endif
 
@@ -555,7 +567,7 @@
                                         <thead style="background-color: var(--color-bg);">
                                             <tr>
                                                 <th class="px-4 py-3 text-left font-medium" style="color: var(--color-text);">Peserta</th>
-                                                @foreach (range(0, $klasterResult['c_optimal'] - 1) as $k)
+                                                @foreach (range(1, $klasterResult['c_optimal']) as $k)
                                                     <th class="px-4 py-3 text-center font-medium" style="color: var(--color-text);">Klaster {{ $k }}</th>
                                                 @endforeach
                                                 <th class="px-4 py-3 text-center font-medium" style="color: var(--color-text);">Dominan</th>
