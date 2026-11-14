@@ -183,22 +183,22 @@ return [
     // Levelisasi: Rendah < 2.00, Sedang 2.00–3.00, Tinggi > 3.00
     'profil_klaster' => [
         'A' => [
-            'label' => 'A: Optimal Transfer',
+            'label' => 'Optimal Transfer',
             'deskripsi' => 'Dukungan organisasi dan lingkungan kerja kondusif, peserta memiliki niat transfer yang kuat serta mampu menerapkan hasil pelatihan secara konsisten.',
             'rekomendasi' => 'Dipertahankan sebagai role model, mentor, atau fasilitator praktik baik serta diprioritaskan dalam program pengembangan kompetensi lanjutan.',
         ],
         'B' => [
-            'label' => 'B: Developing Transfer',
+            'label' => 'Developing Transfer',
             'deskripsi' => 'Dukungan organisasi dan niat transfer telah terbentuk, namun penerapan perilaku kerja belum optimal.',
             'rekomendasi' => 'Coaching pascapelatihan, supervisi berkala, monitoring RTL, dan pemberian umpan balik berkelanjutan.',
         ],
         'C' => [
-            'label' => 'C: Constrained Transfer',
+            'label' => 'Constrained Transfer',
             'deskripsi' => 'Peserta memiliki niat kuat untuk mentransfer hasil pelatihan, tetapi implementasi terhambat oleh lingkungan kerja dan dukungan organisasi yang kurang memadai.',
             'rekomendasi' => 'Penguatan dukungan pimpinan, penyediaan sumber daya, pembentukan community of practice, dan perbaikan transfer climate.',
         ],
         'D' => [
-            'label' => 'D: At-Risk Transfer',
+            'label' => 'At-Risk Transfer',
             'deskripsi' => 'Dukungan organisasi, lingkungan kerja, niat transfer, dan perubahan perilaku sama-sama rendah sehingga berisiko gagal mentransfer hasil pelatihan.',
             'rekomendasi' => 'Refreshment training, coaching individual, peningkatan efikasi diri dan motivasi, serta perbaikan kebijakan organisasi dan sistem supervisi.',
         ],

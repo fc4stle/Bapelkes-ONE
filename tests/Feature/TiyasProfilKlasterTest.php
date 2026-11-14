@@ -106,10 +106,10 @@ class TiyasProfilKlasterTest extends TestCase
         // Check tabel_klaster has profil assignments
         $this->assertCount($result['c_optimal'], $result['tabel_klaster']);
         $validLabels = [
-            'A: Optimal Transfer',
-            'B: Developing Transfer',
-            'C: Constrained Transfer',
-            'D: At-Risk Transfer',
+            'Optimal Transfer',
+            'Developing Transfer',
+            'Constrained Transfer',
+            'At-Risk Transfer',
             'Belum cocok dengan 4 profil konseptual',
         ];
         foreach ($result['tabel_klaster'] as $klaster) {
@@ -269,22 +269,22 @@ class TiyasProfilKlasterTest extends TestCase
         $result_a = $reflection->invoke($service, [3.8, 3.8, 3.8, 3.8]);
         $this->assertIsArray($result_a);
         $this->assertArrayHasKey('label', $result_a);
-        $this->assertEquals('A: Optimal Transfer', $result_a['label']);
+        $this->assertEquals('Optimal Transfer', $result_a['label']);
 
         // Test Case 2: Centroid B — [3.5, 3.5, 3.5, 2.0] => Developing Transfer
         // TC, TE, ITT Tinggi; YB Sedang (2.0-3.0)
         $result_b = $reflection->invoke($service, [3.5, 3.5, 3.5, 2.0]);
-        $this->assertEquals('B: Developing Transfer', $result_b['label']);
+        $this->assertEquals('Developing Transfer', $result_b['label']);
 
         // Test Case 3: Centroid C — [2.0, 2.0, 3.8, 2.0] => Constrained Transfer
         // TC, TE Rendah/Sedang; ITT Tinggi; YB Rendah/Sedang
         $result_c = $reflection->invoke($service, [2.0, 2.0, 3.8, 2.0]);
-        $this->assertEquals('C: Constrained Transfer', $result_c['label']);
+        $this->assertEquals('Constrained Transfer', $result_c['label']);
 
         // Test Case 4: Centroid D — [1.2, 1.2, 1.2, 1.2] => At-Risk Transfer
         // Semuanya Rendah (< 2.0)
         $result_d = $reflection->invoke($service, [1.2, 1.2, 1.2, 1.2]);
-        $this->assertEquals('D: At-Risk Transfer', $result_d['label']);
+        $this->assertEquals('At-Risk Transfer', $result_d['label']);
 
         // Test Case 5: Unmatched — [2.5, 3.5, 2.5, 2.5] => Belum cocok dengan 4 profil konseptual
         // TC Sedang, TE Tinggi, ITT Sedang, YB Sedang — tidak match profil manapun
