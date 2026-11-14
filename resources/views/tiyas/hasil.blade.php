@@ -735,6 +735,57 @@
                                             <!-- Label centroid -->
                                             <text x="{{$cpx + 10}}" y="{{$cpy - 8}}" style="font-size: 12px; font-weight: 700; fill: {{$centroidColor}};">{{ $centroid['label'] }}</text>
                                         @endforeach
+                                        
+                                        <!-- Plot penanda pelatihan (kotak belah ketupat per pelatihan) -->
+                                        @if ($cakupan === 'semua' && count($pelatihansForComparison) >= 2 && !empty($posisiPelatihan))
+                                            @foreach ($posisiPelatihan as $pelatihan_pos)
+                                                @php
+                                                    $centroidX = $pelatihan_pos['centroid_pelatihan'][$xIdx] ?? null;
+                                                    $centroidY = $pelatihan_pos['centroid_pelatihan'][$yIdx] ?? null;
+                                                    
+                                                    // Validasi
+                                                    if (!is_finite($centroidX) || !is_finite($centroidY) || $centroidX < 1 || $centroidX > 4 || $centroidY < 1 || $centroidY > 4) {
+                                                        continue;
+                                                    }
+                                                    
+                                                    // Posisi SVG
+                                                    $px = $margin['l'] + (($centroidX - 1) / 3) * $plotW;
+                                                    $py = $margin['t'] + (1 - ($centroidY - 1) / 3) * $plotH;
+                                                    
+                                                    // Klaster terdekat untuk warna
+                                                    $klasterTerdekat = $pelatihan_pos['klaster_terdekat'];
+                                                    $penandaColor = isset($klasterColors['K' . $klasterTerdekat]) 
+                                                        ? $klasterColors['K' . $klasterTerdekat]
+                                                        : 'var(--color-primary)';
+                                                    
+                                                    // Build tooltip: nama pelatihan + n peserta + semua keanggotaan klaster
+                                                    $tooltipLines = [
+                                                        $pelatihan_pos['nama'] . ' (n=' . $pelatihan_pos['n_peserta'] . ')'
+                                                    ];
+                                                    foreach ($pelatihan_pos['rata_keanggotaan'] as $k => $m) {
+                                                        $tooltipLines[] = 'K' . $k . ': ' . number_format($m, 1) . '%';
+                                                    }
+                                                    $penandaTitle = implode(' | ', $tooltipLines);
+                                                    
+                                                    // Ukuran penanda (kotak belah ketupat)
+                                                    $markerSize = 6;
+                                                @endphp
+                                                
+                                                <!-- Kotak belah ketupat (diamond) untuk penanda pelatihan -->
+                                                <polygon points="{{$px}},{{$py - $markerSize}} {{$px + $markerSize}},{{$py}} {{$px}},{{$py + $markerSize}} {{$px - $markerSize}},{{$py}}" 
+                                                    fill="{{$penandaColor}}" 
+                                                    stroke="var(--color-text)" 
+                                                    stroke-width="2" 
+                                                    opacity="0.85">
+                                                    <title>{{$penandaTitle}}</title>
+                                                </polygon>
+                                                
+                                                <!-- Label nama pelatihan di dekat marker -->
+                                                <text x="{{$px + 12}}" y="{{$py + 12}}" style="font-size: 11px; font-weight: 600; fill: {{$penandaColor}};">
+                                                    {{ substr($pelatihan_pos['nama'], 0, 15) }}{{ strlen($pelatihan_pos['nama']) > 15 ? '...' : '' }}
+                                                </text>
+                                            @endforeach
+                                        @endif
                                     </svg>
                                     
                                     <!-- Legend HTML -->
@@ -751,11 +802,23 @@
                                                 <span>Klaster {{ $klasterNum }} · {{ $klaster['kode_profil'] }}: {{ $klaster['profil'] }} ({{ $klaster['jumlah_peserta'] }} peserta)</span>
                                             </div>
                                         @endforeach
+                                        
+                                        @if ($cakupan === 'semua' && count($pelatihansForComparison) >= 2 && !empty($posisiPelatihan))
+                                            <div class="flex items-center gap-2">
+                                                <svg width="12" height="12" viewBox="0 0 12 12" style="flex-shrink: 0;">
+                                                    <polygon points="6,2 10,6 6,10 2,6" fill="var(--color-primary)" stroke="var(--color-text)" stroke-width="1" opacity="0.85"/>
+                                                </svg>
+                                                <span>Penanda pelatihan (posisi rata-rata skor di plot)</span>
+                                            </div>
+                                        @endif
                                     </div>
                                     
                                     <!-- Catatan warna dan opacity -->
                                     <p class="text-xs mt-3" style="color: var(--color-text); opacity: 0.6;">
                                         <strong>Catatan:</strong> Warna titik = klaster dominan. Kepekatan (opacity) menunjukkan derajat keanggotaan klaster dominan: semakin pekat, semakin kuat keanggotaannya.
+                                        @if ($cakupan === 'semua' && count($pelatihansForComparison) >= 2 && !empty($posisiPelatihan))
+                                            Berlian (◇) menunjukkan posisi rata-rata per pelatihan di plot; warnanya sesuai klaster terdekat.
+                                        @endif
                                     </p>
                                 </div>
                             @endif
