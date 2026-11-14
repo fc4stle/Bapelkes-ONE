@@ -610,7 +610,7 @@
                                         // SVG dimensions
                                         $svgW = 700;
                                         $svgH = 500;
-                                        $margin = ['l' => 70, 'r' => 40, 't' => 80, 'b' => 50];
+                                        $margin = ['l' => 70, 'r' => 40, 't' => 56, 'b' => 50];
                                         $plotW = $svgW - $margin['l'] - $margin['r'];
                                         $plotH = $svgH - $margin['t'] - $margin['b'];
                                     @endphp
@@ -622,10 +622,10 @@
                                             <tspan x="{{$svgW / 2}}" dy="0">Sebaran Peserta: {{ $kodeToLabel[$xAxis] }} vs {{ $kodeToLabel[$yAxis] }}</tspan>
                                             @if ($cakupan === 'semua' && count($pelatihansForComparison) >= 2)
                                                 <!-- Comparison mode: sub-title "Semua Pelatihan" -->
-                                                <tspan x="{{$svgW / 2}}" dy="1.2em" style="font-size: 12px; opacity: 0.7;">Semua Pelatihan</tspan>
+                                                <tspan x="{{$svgW / 2}}" dy="0.8em" style="font-size: 12px; opacity: 0.7;">Semua Pelatihan</tspan>
                                             @else
                                                 <!-- Single training: sub-title is training name -->
-                                                <tspan x="{{$svgW / 2}}" dy="1.2em" style="font-size: 12px; opacity: 0.7;">{{ $pelatihan->nama }}</tspan>
+                                                <tspan x="{{$svgW / 2}}" dy="0.8em" style="font-size: 12px; opacity: 0.7;">{{ $pelatihan->nama }}</tspan>
                                             @endif
                                         </text>
                                         
