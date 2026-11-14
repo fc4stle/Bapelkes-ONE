@@ -514,17 +514,30 @@
                                     <h3 class="font-semibold mb-3" style="color: var(--color-text);">Sebaran Peserta FCM</h3>
                                     
                                     <!-- Axis Selector Form (GET params, no JS) -->
+                                    @php
+                                        // Pre-compute fallback untuk form display
+                                        $formXAxis = request('x', 'TC');
+                                        $formYAxis = request('y', 'YB');
+                                        $validKodes = ['TC', 'TE', 'ITT', 'YB'];
+                                        
+                                        // Validasi: jika parameter tidak valid atau x == y, fallback ke default
+                                        if (!in_array($formXAxis, $validKodes) || !in_array($formYAxis, $validKodes) || $formXAxis === $formYAxis) {
+                                            $formXAxis = 'TC';
+                                            $formYAxis = 'YB';
+                                        }
+                                    @endphp
+                                    
                                     <form method="GET" class="mb-3 flex gap-2 flex-wrap items-center text-sm">
                                         <label style="color: var(--color-text); opacity: 0.8;">Sumbu:</label>
                                         <select name="x" style="padding: 0.25rem 0.5rem; border: 1px solid color-mix(in srgb, var(--color-text) 20%, transparent); border-radius: 0.25rem; background-color: var(--color-surface); color: var(--color-text); font-size: 0.875rem;">
                                             @foreach (['TC', 'TE', 'ITT', 'YB'] as $kod)
-                                                <option value="{{ $kod }}" @selected(request('x', 'TC') == $kod)>{{ $kod }} ({{ config('tiyas.konstruk.' . $kod . '.judul', 'N/A') }})</option>
+                                                <option value="{{ $kod }}" @selected($formXAxis == $kod)>{{ $kod }} ({{ config('tiyas.konstruk.' . $kod . '.judul', 'N/A') }})</option>
                                             @endforeach
                                         </select>
                                         vs
                                         <select name="y" style="padding: 0.25rem 0.5rem; border: 1px solid color-mix(in srgb, var(--color-text) 20%, transparent); border-radius: 0.25rem; background-color: var(--color-surface); color: var(--color-text); font-size: 0.875rem;">
                                             @foreach (['TC', 'TE', 'ITT', 'YB'] as $kod)
-                                                <option value="{{ $kod }}" @selected(request('y', 'YB') == $kod)>{{ $kod }} ({{ config('tiyas.konstruk.' . $kod . '.judul', 'N/A') }})</option>
+                                                <option value="{{ $kod }}" @selected($formYAxis == $kod)>{{ $kod }} ({{ config('tiyas.konstruk.' . $kod . '.judul', 'N/A') }})</option>
                                             @endforeach
                                         </select>
                                         <button type="submit" class="px-3 py-1" style="background-color: var(--color-primary); color: white; border: none; border-radius: 0.25rem; cursor: pointer; font-size: 0.875rem;">Tampilkan</button>
@@ -532,15 +545,8 @@
 
                                     <!-- SVG Scatter Plot -->
                                     @php
-                                        $xAxis = request('x', 'TC');
-                                        $yAxis = request('y', 'YB');
-                                        $validKodes = ['TC', 'TE', 'ITT', 'YB'];
-                                        
-                                        // Validasi: jika parameter tidak valid atau x == y, fallback ke default
-                                        if (!in_array($xAxis, $validKodes) || !in_array($yAxis, $validKodes) || $xAxis === $yAxis) {
-                                            $xAxis = 'TC';
-                                            $yAxis = 'YB';
-                                        }
+                                        $xAxis = $formXAxis;
+                                        $yAxis = $formYAxis;
                                         
                                         // Map konstruk ke indeks data (data array: [TC, TE, ITT, YB] @ indeks 0-3)
                                         $kodeToIndex = ['TC' => 0, 'TE' => 1, 'ITT' => 2, 'YB' => 3];
