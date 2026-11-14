@@ -108,6 +108,48 @@ class TiyasProfilKlaster
             $jumlah_peserta[$max_j]++;
         }
 
+        // Buat tabel klaster: daftar profil per klaster dengan karakteristik dan rekomendasi
+        $tabel_klaster = [];
+        for ($j = 0; $j < $c_optimal; $j++) {
+            $kode_profil = $profil_klaster[$j];
+            $profil_config = config('tiyas.profil_klaster');
+
+            // Tentukan label profil dan rekomendasi dari config
+            $label = null;
+            $rekomendasi = '';
+            if (isset($profil_config[$kode_profil])) {
+                $label = $profil_config[$kode_profil]['label'];
+                $rekomendasi = $profil_config[$kode_profil]['rekomendasi'];
+            } else {
+                $label = 'Belum cocok dengan 4 profil konseptual';
+                $rekomendasi = '—';
+            }
+
+            // Karakteristik: ringkas dari deskripsi
+            $karakteristik = '';
+            if (isset($profil_config[$kode_profil]['deskripsi'])) {
+                $karakteristik = $profil_config[$kode_profil]['deskripsi'];
+            }
+
+            // Buat centroid untuk klaster ini sebagai array dengan kunci TC, TE, ITT, YB
+            $centroid_klaster = [
+                'TC' => $centroid[$j][0] ?? 0,
+                'TE' => $centroid[$j][1] ?? 0,
+                'ITT' => $centroid[$j][2] ?? 0,
+                'YB' => $centroid[$j][3] ?? 0,
+            ];
+
+            $tabel_klaster[] = [
+                'klaster' => $j + 1, // Nomor klaster 1..c
+                'kode_profil' => $kode_profil,
+                'profil' => $label,
+                'karakteristik' => $karakteristik,
+                'rekomendasi' => $rekomendasi,
+                'jumlah_peserta' => $jumlah_peserta[$j],
+                'centroid' => $centroid_klaster,
+            ];
+        }
+
         // Buat tabel peserta dengan derajat keanggotaan
         $tabel_peserta = [];
         foreach ($responses as $i => $respons) {
@@ -116,7 +158,7 @@ class TiyasProfilKlaster
                 $memberships[$j] = round(($U[$i][$j] ?? 0) * 100, 1);
             }
 
-            // Klaster dominan (hard assignment)
+            // Klaster dominan (hard assignment) — nomor 1..c
             $dominant_cluster = 0;
             $max_membership = $memberships[0];
             for ($j = 1; $j < $c_optimal; $j++) {
@@ -126,12 +168,14 @@ class TiyasProfilKlaster
                 }
             }
 
+            // Nama peserta dari relasi (eager-loaded di controller)
+            $nama = $respons->pendaftaran->peserta->name ?? '—';
+
             $tabel_peserta[] = [
                 'id' => $respons->id,
-                'nama' => $respons->identitas['nama'] ?? '—',
+                'nama' => $nama,
                 'memberships' => $memberships,
-                'dominant_cluster' => $dominant_cluster,
-                'profil' => $profil_klaster[$dominant_cluster],
+                'klaster_dominan' => $dominant_cluster + 1, // Nomor 1..c (bukan 0..c-1)
             ];
         }
 
@@ -139,9 +183,7 @@ class TiyasProfilKlaster
             'status' => 'sukses',
             'c_optimal' => $c_optimal,
             'validity_table' => $validity_table,
-            'centroid' => $centroid,
-            'profil_klaster' => $profil_klaster,
-            'jumlah_peserta' => $jumlah_peserta,
+            'tabel_klaster' => $tabel_klaster,
             'tabel_peserta' => $tabel_peserta,
         ];
     }

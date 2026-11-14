@@ -92,7 +92,7 @@ class FuzzyCMeans
             $sum_i = array_sum($data[$i]);
             $sum_j = array_sum($data[$j]);
 
-            return $sum_i - $sum_j;
+            return $sum_i <=> $sum_j;
         });
 
         // Select c centroids spread across sorted data

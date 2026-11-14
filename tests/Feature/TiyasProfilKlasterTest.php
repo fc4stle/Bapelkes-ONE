@@ -93,16 +93,26 @@ class TiyasProfilKlasterTest extends TestCase
         $this->assertGreaterThanOrEqual(2, $result['c_optimal']);
         $this->assertLessThanOrEqual(4, $result['c_optimal']);
 
-        // Check tabel_peserta has profil assignments
+        // Check tabel_peserta has klaster_dominan and memberships
         $this->assertCount(8, $result['tabel_peserta']);
         foreach ($result['tabel_peserta'] as $peserta) {
-            $this->assertArrayHasKey('profil', $peserta);
-            $this->assertThat($peserta['profil'], $this->logicalOr(
-                $this->equalTo('A'),
-                $this->equalTo('B'),
-                $this->equalTo('C'),
-                $this->equalTo('D'),
-                $this->equalTo('Belum Cocok dengan 4 profil konseptual')
+            $this->assertArrayHasKey('klaster_dominan', $peserta);
+            $this->assertArrayHasKey('memberships', $peserta);
+            $this->assertIsInt($peserta['klaster_dominan']);
+            $this->assertGreaterThanOrEqual(1, $peserta['klaster_dominan']);
+            $this->assertLessThanOrEqual($result['c_optimal'], $peserta['klaster_dominan']);
+        }
+
+        // Check tabel_klaster has profil assignments
+        $this->assertCount($result['c_optimal'], $result['tabel_klaster']);
+        foreach ($result['tabel_klaster'] as $klaster) {
+            $this->assertArrayHasKey('profil', $klaster);
+            $this->assertThat($klaster['profil'], $this->logicalOr(
+                $this->stringContains('Optimal Transfer'),
+                $this->stringContains('Perlu Pembinaan'),
+                $this->stringContains('Transfer Terbatas'),
+                $this->stringContains('Perlu Asistensi'),
+                $this->equalTo('Belum cocok dengan 4 profil konseptual')
             ));
         }
     }
