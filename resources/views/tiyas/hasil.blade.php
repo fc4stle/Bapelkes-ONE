@@ -224,7 +224,7 @@
                 <!-- SECTION 1: Statistik Deskriptif + Grafik -->
                 @if (empty($deskriptif))
                     <x-card class="mb-6">
-                        <h2 class="text-xl font-semibold mb-4" style="color: var(--color-text);">Statistik Deskriptif</h2>
+                        <h2 class="text-xl font-semibold mb-4" style="color: var(--color-text);">1. Statistik Deskriptif</h2>
                         <div style="background-color: color-mix(in srgb, var(--color-accent) 10%, transparent); border-left: 4px solid var(--color-accent); padding: 1rem; border-radius: var(--radius-card);">
                             <p style="color: var(--color-text);" class="text-sm">
                                 Belum ada data TIYAS yang terisi untuk pelatihan ini.
