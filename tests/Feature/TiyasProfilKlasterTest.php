@@ -105,15 +105,16 @@ class TiyasProfilKlasterTest extends TestCase
 
         // Check tabel_klaster has profil assignments
         $this->assertCount($result['c_optimal'], $result['tabel_klaster']);
+        $validLabels = [
+            'A: Optimal Transfer',
+            'B: Developing Transfer',
+            'C: Constrained Transfer',
+            'D: At-Risk Transfer',
+            'Belum cocok dengan 4 profil konseptual',
+        ];
         foreach ($result['tabel_klaster'] as $klaster) {
             $this->assertArrayHasKey('profil', $klaster);
-            $this->assertThat($klaster['profil'], $this->logicalOr(
-                $this->stringContains('Optimal Transfer'),
-                $this->stringContains('Perlu Pembinaan'),
-                $this->stringContains('Transfer Terbatas'),
-                $this->stringContains('Perlu Asistensi'),
-                $this->equalTo('Belum cocok dengan 4 profil konseptual')
-            ));
+            $this->assertContains($klaster['profil'], $validLabels);
         }
     }
 
@@ -195,37 +196,228 @@ class TiyasProfilKlasterTest extends TestCase
     }
 
     /**
+     * NEW TEST 5: Unit test deskriptif—hitung rerata, simpangan baku, min, maks benar untuk data kecil manual
+     */
+    public function test_deskriptif_calculates_statistics_correctly()
+    {
+        // Buat data simpel: 3 respons dengan skor yang bisa dihitung manual
+        $pelatihan = Pelatihan::factory()->create();
+        $responses = collect();
+
+        // Peserta 1: TC=2.0, TE=2.0, ITT=2.0, YB=2.0 => avg semua 2.0
+        $responses->push(TiyasResponse::factory()->create([
+            'pendaftaran_id' => Pendaftaran::factory()->create(['pelatihan_id' => $pelatihan->id])->id,
+            'submitted_at' => now(),
+            'jawaban' => $this->generateJawaban(['TC' => 2.0, 'TE' => 2.0, 'ITT' => 2.0, 'YB' => 2.0]),
+            'identitas' => ['nama' => 'P1'],
+        ]));
+
+        // Peserta 2: TC=3.0, TE=3.0, ITT=3.0, YB=3.0 => avg semua 3.0
+        $responses->push(TiyasResponse::factory()->create([
+            'pendaftaran_id' => Pendaftaran::factory()->create(['pelatihan_id' => $pelatihan->id])->id,
+            'submitted_at' => now(),
+            'jawaban' => $this->generateJawaban(['TC' => 3.0, 'TE' => 3.0, 'ITT' => 3.0, 'YB' => 3.0]),
+            'identitas' => ['nama' => 'P2'],
+        ]));
+
+        // Peserta 3: TC=4.0, TE=4.0, ITT=4.0, YB=4.0 => avg semua 4.0
+        $responses->push(TiyasResponse::factory()->create([
+            'pendaftaran_id' => Pendaftaran::factory()->create(['pelatihan_id' => $pelatihan->id])->id,
+            'submitted_at' => now(),
+            'jawaban' => $this->generateJawaban(['TC' => 4.0, 'TE' => 4.0, 'ITT' => 4.0, 'YB' => 4.0]),
+            'identitas' => ['nama' => 'P3'],
+        ]));
+
+        $result = $this->service->deskriptif($responses);
+
+        $this->assertArrayHasKey('TC', $result);
+        $this->assertArrayHasKey('TE', $result);
+        $this->assertArrayHasKey('ITT', $result);
+        $this->assertArrayHasKey('YB', $result);
+
+        foreach (['TC', 'TE', 'ITT', 'YB'] as $construct) {
+            $this->assertArrayHasKey('mean', $result[$construct]);
+            $this->assertArrayHasKey('stdev', $result[$construct]);
+            $this->assertArrayHasKey('min', $result[$construct]);
+            $this->assertArrayHasKey('max', $result[$construct]);
+
+            // Verify exact values (as strings since they're number_format'd)
+            $this->assertEquals('3.00', $result[$construct]['mean']);
+            $this->assertEquals('2.00', $result[$construct]['min']);
+            $this->assertEquals('4.00', $result[$construct]['max']);
+            // Stdev for [2, 3, 4]: variance = sum((x-mean)^2)/(n-1) = 2/2 = 1, so stdev = 1.0
+            // But number_format may round differently
+            $this->assertEqualsWithDelta(1.0, floatval($result[$construct]['stdev']), 0.2);
+        }
+    }
+
+    /**
+     * NEW TEST 6: Unit test pcaProjection—varians ternormalisasi, jumlah titik, zero-variance safety
+     */
+    public function test_pca_projection_varians_normalized_and_safe()
+    {
+        $pelatihan = Pelatihan::factory()->create();
+        $responses = collect();
+
+        // Create 8 responses dengan variasi
+        for ($i = 0; $i < 8; $i++) {
+            $responses->push(TiyasResponse::factory()->create([
+                'pendaftaran_id' => Pendaftaran::factory()->create(['pelatihan_id' => $pelatihan->id])->id,
+                'submitted_at' => now(),
+                'jawaban' => $this->generateJawaban(),
+                'identitas' => ['nama' => 'P'.$i],
+            ]));
+        }
+
+        $result = $this->service->analisis($responses);
+
+        $this->assertEquals('sukses', $result['status']);
+        $this->assertArrayHasKey('pcaData', $result);
+
+        $pcaData = $result['pcaData'];
+        $this->assertArrayHasKey('points', $pcaData);
+        $this->assertArrayHasKey('variance', $pcaData);
+
+        $pca = $pcaData['points'];
+        $this->assertNotEmpty($pca);
+        $this->assertCount(8, $pca); // 8 titik sama dengan 8 data
+
+        // Check varians ternormalisasi <= 1
+        $var1_pct = $pcaData['variance'][0];
+        $var2_pct = $pcaData['variance'][1];
+        $totalVar = ($var1_pct + $var2_pct) / 100; // Convert from percentage back to 0-1 normalized
+        $this->assertLessThanOrEqual(1.0, $totalVar);
+
+        // Check setiap titik adalah [x, y]
+        foreach ($pca as $point) {
+            $this->assertIsArray($point);
+            $this->assertCount(2, $point);
+            $this->assertIsNumeric($point[0]);
+            $this->assertIsNumeric($point[1]);
+        }
+    }
+
+    /**
+     * NEW TEST 7: Unit test pcaProjection dengan zero-variance data (tidak error)
+     */
+    public function test_pca_projection_handles_zero_variance_data()
+    {
+        $pelatihan = Pelatihan::factory()->create();
+        $responses = collect();
+
+        // Semua respons identik (zero variance): TC=2, TE=2, ITT=2, YB=2
+        $jawaban_static = $this->generateJawaban(['TC' => 2.0, 'TE' => 2.0, 'ITT' => 2.0, 'YB' => 2.0]);
+        for ($i = 0; $i < 8; $i++) {
+            $responses->push(TiyasResponse::factory()->create([
+                'pendaftaran_id' => Pendaftaran::factory()->create(['pelatihan_id' => $pelatihan->id])->id,
+                'submitted_at' => now(),
+                'jawaban' => $jawaban_static,
+                'identitas' => ['nama' => 'P'.$i],
+            ]));
+        }
+
+        // Should not throw error
+        $result = $this->service->analisis($responses);
+
+        $this->assertEquals('sukses', $result['status']);
+        $this->assertArrayHasKey('pcaData', $result);
+
+        $pcaData = $result['pcaData'];
+        $this->assertArrayHasKey('points', $pcaData);
+
+        // Semua titik seharusnya di tengah (sama)
+        $pca = $pcaData['points'];
+        $this->assertCount(8, $pca);
+
+        // Semua titik seharusnya identik
+        $first = $pca[0];
+        foreach ($pca as $point) {
+            $this->assertEquals($first[0], $point[0], 0.01);
+            $this->assertEquals($first[1], $point[1], 0.01);
+        }
+    }
+
+    /**
+     * NEW TEST 8: Unit test determineProfil dengan 5 synthetic centroids (A/B/C/D/Unmatched)
+     * Menggunakan Reflection untuk test private method dengan centroid scores yang diketahui
+     */
+    public function test_determine_profil_with_synthetic_centroids()
+    {
+        // Inisialisasi service
+        $service = new TiyasProfilKlaster(new TiyasScorer, new FuzzyCMeans);
+
+        // Gunakan Reflection untuk akses private determineProfil method
+        $reflection = new \ReflectionMethod($service, 'determineProfil');
+        $reflection->setAccessible(true);
+
+        // Test Case 1: Centroid A — [3.8, 3.8, 3.8, 3.8] => Optimal Transfer
+        // TC, TE, ITT, YB semuanya Tinggi (> 3.0)
+        $result_a = $reflection->invoke($service, [3.8, 3.8, 3.8, 3.8]);
+        $this->assertIsArray($result_a);
+        $this->assertArrayHasKey('label', $result_a);
+        $this->assertEquals('A: Optimal Transfer', $result_a['label']);
+
+        // Test Case 2: Centroid B — [3.5, 3.5, 3.5, 2.0] => Developing Transfer
+        // TC, TE, ITT Tinggi; YB Sedang (2.0-3.0)
+        $result_b = $reflection->invoke($service, [3.5, 3.5, 3.5, 2.0]);
+        $this->assertEquals('B: Developing Transfer', $result_b['label']);
+
+        // Test Case 3: Centroid C — [2.0, 2.0, 3.8, 2.0] => Constrained Transfer
+        // TC, TE Rendah/Sedang; ITT Tinggi; YB Rendah/Sedang
+        $result_c = $reflection->invoke($service, [2.0, 2.0, 3.8, 2.0]);
+        $this->assertEquals('C: Constrained Transfer', $result_c['label']);
+
+        // Test Case 4: Centroid D — [1.2, 1.2, 1.2, 1.2] => At-Risk Transfer
+        // Semuanya Rendah (< 2.0)
+        $result_d = $reflection->invoke($service, [1.2, 1.2, 1.2, 1.2]);
+        $this->assertEquals('D: At-Risk Transfer', $result_d['label']);
+
+        // Test Case 5: Unmatched — [2.5, 3.5, 2.5, 2.5] => Belum cocok dengan 4 profil konseptual
+        // TC Sedang, TE Tinggi, ITT Sedang, YB Sedang — tidak match profil manapun
+        $result_unmatched = $reflection->invoke($service, [2.5, 3.5, 2.5, 2.5]);
+        $this->assertEquals('Belum cocok dengan 4 profil konseptual', $result_unmatched['label']);
+    }
+
+    /**
      * Helper: Generate jawaban respons (mapping ke 4 skor: TC, TE, ITT, YB)
+     * Input: skor dalam skala 1.0-4.0
+     * Output: jawaban array dengan butir bernilai 1-4 (sesuai skala)
      */
     private function generateJawaban(array $override = []): array
     {
+        // Skala default: 2.0 (sedang/netral) untuk setiap konstruk
         $default = [
             'TC' => 2.0, 'TE' => 2.0, 'ITT' => 2.0, 'YB' => 2.0,
         ];
         $scores = array_merge($default, $override);
 
+        // Clamp scores ke [1.0, 4.0] karena ini skala Likert 1-4
+        $scores = array_map(function ($v) {
+            return max(1.0, min(4.0, $v));
+        }, $scores);
+
         $jawaban = [];
 
-        // TC (3 butir)
-        $tc_val = (int) round($scores['TC'] * 4); // 1-4 scale
+        // TC (3 butir): set semua ke nilai score (1-4)
+        $tc_val = (int) round($scores['TC']);
         for ($i = 0; $i < 3; $i++) {
             $jawaban['TC'.($i + 1)] = $tc_val;
         }
 
         // TE (3 butir)
-        $te_val = (int) round($scores['TE'] * 4);
+        $te_val = (int) round($scores['TE']);
         for ($i = 0; $i < 3; $i++) {
             $jawaban['TE'.($i + 1)] = $te_val;
         }
 
         // ITT (4 butir)
-        $itt_val = (int) round($scores['ITT'] * 4);
+        $itt_val = (int) round($scores['ITT']);
         for ($i = 0; $i < 4; $i++) {
             $jawaban['ITT'.($i + 1)] = $itt_val;
         }
 
         // YB (20 butir)
-        $yb_val = (int) round($scores['YB'] * 4);
+        $yb_val = (int) round($scores['YB']);
         for ($i = 0; $i < 20; $i++) {
             $jawaban['YB'.($i + 1)] = $yb_val;
         }

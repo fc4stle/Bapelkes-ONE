@@ -16,13 +16,16 @@ class TiyasHasilClusteringTest extends TestCase
     /**
      * Test: halaman hasil clustering merender dengan 12 respons (>= 2 kelompok).
      * Panitia dapat melihat:
-     * - "Profil Klaster Peserta"
-     * - "Jumlah klaster terpilih"
+     * - \"Profil Klaster Peserta\"
+     * - \"Jumlah klaster terpilih\"
      * - nama salah satu peserta (dari relasi pendaftaran->peserta->name, bukan 'nama dummy')
      * - judul profil dari config (mis. 'Optimal Transfer')
      */
     public function test_hasil_clustering_panitia_12_responses_render_page()
     {
+        // Clean up any existing responses (optional but safe)
+        TiyasResponse::truncate();
+
         $panitia = User::factory()->create(['role' => 'panitia']);
         $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
 
@@ -65,7 +68,7 @@ class TiyasHasilClusteringTest extends TestCase
         $nama_peserta_diharapkan = $peserta_optimal[0]->name;
         $response->assertSee($nama_peserta_diharapkan);
 
-        // Verifikasi ada label profil dari config
+        // Verifikasi ada label profil dari config (profil label ada di SVG legend dan tabel klaster)
         $response->assertSee('Optimal Transfer');
     }
 
@@ -108,5 +111,119 @@ class TiyasHasilClusteringTest extends TestCase
             ->get(route('tiyas.hasil', $pelatihan));
 
         $response->assertForbidden();
+    }
+
+    /**
+     * NEW TEST 1: Feature dengan 12 respons—halaman memuat SVG grafik PCA, legenda Klaster,
+     * tabel statistik deskriptif, kotak 'Cara membaca hasil ini', kalimat penjelasan per klaster.
+     */
+    public function test_12_responses_page_renders_all_components_svg_deskriptif_explanation()
+    {
+        // Clean up any existing responses (optional but safe)
+        TiyasResponse::truncate();
+
+        $panitia = User::factory()->create(['role' => 'panitia']);
+        $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
+
+        // Buat 6 peserta optimal + 6 peserta at_risk => 2 kelompok
+        for ($i = 0; $i < 6; $i++) {
+            $peserta = User::factory()->create(['role' => 'peserta']);
+            $pendaftaran = Pendaftaran::factory()->hadir()->create([
+                'peserta_id' => $peserta->id,
+                'pelatihan_id' => $pelatihan->id,
+            ]);
+            TiyasResponse::factory()->withProfil('optimal')->create([
+                'pendaftaran_id' => $pendaftaran->id,
+            ]);
+        }
+
+        for ($i = 0; $i < 6; $i++) {
+            $peserta = User::factory()->create(['role' => 'peserta']);
+            $pendaftaran = Pendaftaran::factory()->hadir()->create([
+                'peserta_id' => $peserta->id,
+                'pelatihan_id' => $pelatihan->id,
+            ]);
+            TiyasResponse::factory()->withProfil('at_risk')->create([
+                'pendaftaran_id' => $pendaftaran->id,
+            ]);
+        }
+
+        $response = $this->actingAs($panitia)
+            ->get(route('tiyas.hasil', $pelatihan));
+
+        $response->assertOk();
+
+        // 1-2. Verifikasi SVG grafik sebaran PCA ada dengan legenda klaster
+        $response->assertSee('<svg', false);  // SVG element literal
+        $response->assertSee('Klaster 1');  // Legenda klaster ada jika SVG render
+
+        // 3. Verifikasi tabel statistik deskriptif ada (cek untuk kata kunci deskriptif)
+        $response->assertSee('Rerata');  // Header tabel statistik
+        $response->assertSee('Statistik Deskriptif');
+
+        // 4. Verifikasi kotak 'Cara membaca hasil ini' ada
+        $response->assertSee('Cara Membaca Hasil Ini');
+
+        // 5. Verifikasi penjelasan per klaster (cek untuk kata 'berprofil')
+        $response->assertSee('berprofil');
+    }
+
+    /**
+     * NEW TEST 2: Feature dengan 3 respons—halaman memuat tabel statistik deskriptif,
+     * TIDAK memuat grafik SVG sebaran, memuat pesan 'minimal 8 peserta'.
+     */
+    public function test_3_responses_renders_deskriptif_no_svg_and_minimal_8_message()
+    {
+        // Clean up any existing responses (optional but safe)
+        TiyasResponse::truncate();
+
+        $panitia = User::factory()->create(['role' => 'panitia']);
+        $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
+
+        // Buat hanya 3 responses
+        for ($i = 0; $i < 3; $i++) {
+            $peserta = User::factory()->create(['role' => 'peserta']);
+            $pendaftaran = Pendaftaran::factory()->hadir()->create([
+                'peserta_id' => $peserta->id,
+                'pelatihan_id' => $pelatihan->id,
+            ]);
+            TiyasResponse::factory()->create([
+                'pendaftaran_id' => $pendaftaran->id,
+            ]);
+        }
+
+        $response = $this->actingAs($panitia)
+            ->get(route('tiyas.hasil', $pelatihan));
+
+        $response->assertOk();
+
+        // DEBUG: check what klaster result is
+        $content = $response->getContent();
+        if (str_contains($content, 'kurang_data')) {
+            error_log('TEST 5: kurang_data message found in response');
+        } else {
+            error_log('TEST 5: kurang_data message NOT found - response likely hit sukses status');
+        }
+
+        // 1. Verifikasi tabel statistik deskriptif tampil
+        $response->assertSee('Rerata');
+        $response->assertSee('Statistik Deskriptif');
+
+        // 2. Verifikasi SVG grafik TIDAK tampil (tidak ada PCA SVG section untuk kurang_data)
+        // For kurang_data, we don't expect SVG or PCA-related content
+        $content = $response->getContent();
+
+        // Check if PCA SVG is present (width="100%" is unique to PCA SVG, not icon SVGs)
+        $hasPcaSvg = strpos($content, 'width="100%" height="auto" viewBox=') !== false;
+
+        // Also check for min-responsive container which wraps PCA section
+        $hasPcaSection = strpos($content, 'Grafik Sebaran Peserta (PCA)') !== false;
+
+        if ($hasPcaSvg || $hasPcaSection) {
+            $this->fail("Expected NO PCA SVG and NO PCA section for kurang_data case (< 8 responses). hasPcaSvg=$hasPcaSvg, hasPcaSection=$hasPcaSection");
+        }
+
+        // 3. Verifikasi pesan 'minimal 8 peserta' tampil
+        $response->assertSee('minimal 8 peserta');
     }
 }

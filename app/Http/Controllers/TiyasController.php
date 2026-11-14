@@ -166,6 +166,13 @@ class TiyasController extends Controller
         $klasterService = new TiyasProfilKlaster($scorer, new FuzzyCMeans);
         $klasterResult = $klasterService->analisis($responses);
 
+        // Hitung statistik deskriptif (tampil untuk semua, termasuk kurang_data)
+        $deskriptif = $klasterResult['deskriptif'] ?? [];
+
+        // Ambil PCA dan penjelasan klaster dari hasil analisis
+        $pcaData = $klasterResult['pcaData'] ?? null;
+        $clusterExplanations = $klasterResult['clusterExplanations'] ?? [];
+
         // Hitung rata-rata skor per konstruk
         $skorTotal = ['TC' => [], 'TE' => [], 'ITT' => [], 'YB' => []];
         $dataPerPeserta = [];
@@ -243,6 +250,9 @@ class TiyasController extends Controller
             'dataPerPeserta' => $dataPerPeserta,
             'rataRataDimensi' => $rataRataDimensi,
             'klasterResult' => $klasterResult,
+            'deskriptif' => $deskriptif,
+            'pcaData' => $pcaData,
+            'clusterExplanations' => $clusterExplanations,
             'config' => $config,
         ]);
     }
