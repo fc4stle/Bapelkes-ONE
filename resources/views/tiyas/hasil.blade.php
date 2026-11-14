@@ -358,7 +358,7 @@
                         <!-- Chart 2: Distribusi Kategori (Stacked Bar %) -->
                         <div class="mb-6">
                             <h3 class="font-semibold mb-3" style="color: var(--color-text);">Distribusi Kategori per Konstruk</h3>
-                            <svg viewBox="0 0 800 400" class="w-full rounded" style="border: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent); background-color: var(--color-surface);" data-chart="deskriptif-kategori-stacked">
+                            <svg viewBox="0 0 800 480" class="w-full rounded" style="border: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent); background-color: var(--color-surface);" data-chart="deskriptif-kategori-stacked">
                                 <!-- Title -->
                                 <text x="400" y="25" text-anchor="middle" style="font-size: 16px; font-weight: 600; fill: var(--color-text);">Proporsi Kategori (%)</text>
                                 
@@ -417,7 +417,7 @@
                                 <!-- Legend -->
                                 @php
                                     $legX = 60;
-                                    $legY = 370;
+                                    $legY = 420;
                                 @endphp
                                 
                                 @foreach (['Rendah', 'Sedang', 'Tinggi'] as $idx => $catLabel)
@@ -680,38 +680,24 @@
                                                     $memberships[$idx + 1] = $m / 100.0; // Konversi % ke ratio
                                                 }
                                                 
-                                                // Build color-mix expression untuk blending warna klaster
-                                                $colorMixParts = [];
+                                                // Cari klaster DOMINAN (highest membership)
+                                                $dominantKlaster = 1;
+                                                $maxMembership = 0;
                                                 foreach ($memberships as $klasterIdx => $weight) {
-                                                    $colorVar = isset($klasterColors['K' . $klasterIdx]) 
-                                                        ? $klasterColors['K' . $klasterIdx]
-                                                        : 'var(--color-primary)';
-                                                    if ($weight > 0.01) { // Skip jika weight sangat kecil
-                                                        $colorMixParts[] = ["color" => $colorVar, "weight" => $weight];
+                                                    if ($weight > $maxMembership) {
+                                                        $maxMembership = $weight;
+                                                        $dominantKlaster = $klasterIdx;
                                                     }
                                                 }
                                                 
-                                                // Normalisasi weights supaya totalnya 100%
-                                                $totalWeight = array_sum(array_column($colorMixParts, 'weight'));
-                                                if ($totalWeight > 0) {
-                                                    $colorMixParts = array_map(function($part) use ($totalWeight) {
-                                                        return $part["color"] . " " . round(($part["weight"] / $totalWeight) * 100) . "%";
-                                                    }, $colorMixParts);
-                                                }
+                                                // Warna titik = warna klaster dominan (SOLID, bukan color-mix)
+                                                $pointColor = isset($klasterColors['K' . $dominantKlaster]) 
+                                                    ? $klasterColors['K' . $dominantKlaster]
+                                                    : 'var(--color-primary)';
                                                 
-                                                // Pilih color berdasarkan jumlah parts
-                                                if (count($colorMixParts) == 1) {
-                                                    // Hanya 1 warna: ambil warna itu langsung (tanpa color-mix)
-                                                    $pointColor = $colorMixParts[0]; // Format: "var(--color-...) 100%"
-                                                    // Hapus trailing "100%" jika ada, pakai warna saja
-                                                    $pointColor = preg_replace('/\s+100%$/', '', $pointColor);
-                                                } else if (count($colorMixParts) > 1) {
-                                                    // Multiple colors: use color-mix
-                                                    $pointColor = 'color-mix(in srgb, ' . implode(', ', $colorMixParts) . ')';
-                                                } else {
-                                                    // Fallback jika tidak ada warna valid
-                                                    $pointColor = 'var(--color-primary)';
-                                                }
+                                                // Opacity = 0.35 + 0.65 * (derajat keanggotaan dominan)
+                                                // Range: 0.35 (lemah) to 1.0 (sangat kuat)
+                                                $pointOpacity = 0.35 + (0.65 * max(0, min(1, $maxMembership)));
                                                 
                                                 // Buat membership title (e.g., "Peserta Name | K1: 70% | K2: 30%")
                                                 $membershipStr = $peserta['nama'];
@@ -720,7 +706,7 @@
                                                 }
                                             @endphp
                                             
-                                            <circle cx="{{$plotX}}" cy="{{$plotY}}" r="4" fill="{{$pointColor}}" opacity="0.7">
+                                            <circle cx="{{$plotX}}" cy="{{$plotY}}" r="4" fill="{{$pointColor}}" opacity="{{$pointOpacity}}" stroke="{{$pointColor}}" stroke-width="0.5">
                                                 <title>{{$membershipStr}}</title>
                                             </circle>
                                         @endforeach
@@ -769,13 +755,18 @@
                                             </div>
                                         @endforeach
                                     </div>
+                                    
+                                    <!-- Catatan warna dan opacity -->
+                                    <p class="text-xs mt-3" style="color: var(--color-text); opacity: 0.6;">
+                                        <strong>Catatan:</strong> Warna titik = klaster dominan. Kepekatan (opacity) menunjukkan derajat keanggotaan klaster dominan: semakin pekat, semakin kuat keanggotaannya.
+                                    </p>
                                 </div>
                             @endif
                             
                             <!-- 3a. Centroid Klaster (Grouped Bars) -->
                             <div class="mb-6">
                                 <h3 class="font-semibold mb-3" style="color: var(--color-text);">a) Centroid per Klaster dan Konstruk</h3>
-                                <svg viewBox="0 0 1000 500" class="w-full rounded" style="border: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent); background-color: var(--color-surface);" data-chart="centroid-grouped-bars">
+                                <svg viewBox="0 0 1000 620" class="w-full rounded" style="border: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent); background-color: var(--color-surface);" data-chart="centroid-grouped-bars">
                                     <!-- Title -->
                                     <text x="500" y="25" text-anchor="middle" style="font-size: 16px; font-weight: 600; fill: var(--color-text);">Centroid Setiap Klaster</text>
                                     
@@ -830,7 +821,7 @@
                                     <!-- Legend -->
                                     @php
                                         $legX = 100;
-                                        $legY = 520;
+                                        $legY = 540;
                                     @endphp
                                     
                                     @foreach (['TC', 'TE', 'ITT', 'YB'] as $idx => $kode)
