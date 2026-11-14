@@ -477,6 +477,45 @@ class TiyasTahap2CompleteTest extends TestCase
         // Dengan 2 pelatihan dan 4 konstruk (TC, TE, ITT, YB), harus ada 8 rect (2*4)
         $rects = $xpath->query('.//rect', $svg);
         $this->assertGreaterThanOrEqual(8, $rects->length, 'Should have at least 8 rect elements (2 trainings * 4 constructs)');
+        
+        // Verify exactly 8 rects (no hidden/conditional rendering)
+        $this->assertCount(8, iterator_to_array($rects->getIterator()), 'Should render exactly 8 bar rects');
+    }
+
+    /**
+     * T2.14b: HTML Rendering - bar chart tetap render 4 rect + label untuk pelatihan dengan mean = 1.00 (terendah)
+     */
+    public function test_html_rendering_chart_bar_minimum_value_renders(): void
+    {
+        // PelA: 10 responses dengan value [4,4,4,4] = mean 4.00
+        // PelB: 10 responses dengan value [1,1,1,1] = mean 1.00 (minimum scale value)
+        $this->createResponses($this->pelA, array_fill(0, 10, [4, 4, 4, 4]));
+        $this->createResponses($this->pelB, array_fill(0, 10, [1, 1, 1, 1]));
+
+        $response = $this->actingAs($this->panitia)
+            ->get(route('tiyas.hasil', $this->pelA).'?cakupan=semua');
+
+        $response->assertOk();
+        $html = $response->getContent();
+
+        // Parse dengan DOMDocument
+        $dom = new \DOMDocument;
+        @$dom->loadHTML('<?xml encoding="UTF-8">'.$html);
+        $xpath = new \DOMXPath($dom);
+
+        // Find SVG element dengan data-chart="antar-pelatihan-mean"
+        $svgs = $xpath->query('//svg[@data-chart="antar-pelatihan-mean"]');
+        $this->assertGreaterThan(0, $svgs->length, 'Should have SVG chart');
+
+        $svg = $svgs->item(0);
+
+        // Count rect elements (harus 8 untuk kedua pelatihan)
+        $rects = $xpath->query('.//rect', $svg);
+        $this->assertCount(8, iterator_to_array($rects->getIterator()), 'Should render exactly 8 bar rects including minimum value bars');
+
+        // Verify text labels with "1.00" untuk 4 bars dari PelB
+        $texts = $xpath->query('.//text[contains(text(), "1.00")]', $svg);
+        $this->assertGreaterThanOrEqual(4, $texts->length, 'Should have at least 4 text labels showing "1.00" for minimum-value bars');
     }
 
     /**

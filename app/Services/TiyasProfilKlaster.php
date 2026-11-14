@@ -22,9 +22,10 @@ class TiyasProfilKlaster
      * Analisis FCM pada respons TIYAS.
      *
      * @param  array  $tiyasResponses
+     * @param  int|null  $pelatihan_id  Pelatihan ID untuk tagging (opsional, gunakan saat cakupan=semua)
      * @return array Status, c_optimal, tabel_klaster, tabel_peserta, indeks validitas
      */
-    public function analisis($tiyasResponses)
+    public function analisis($tiyasResponses, $pelatihan_id = null)
     {
         $n = count($tiyasResponses);
         if ($n < 8) {
@@ -48,6 +49,7 @@ class TiyasProfilKlaster
         $data = [];
         $names = [];
         $scores = [];
+        $pelatihan_ids = [];
         foreach ($tiyasResponses as $resp) {
             $names[] = $resp->pendaftaran->peserta->name;
             $skor = $this->scorer->hitungSkor($resp->jawaban ?? []);
@@ -58,6 +60,8 @@ class TiyasProfilKlaster
                 floatval($skor['ITT']['skor'] ?? 2.0),
                 floatval($skor['YB']['skor'] ?? 2.0),
             ];
+            // Extract pelatihan_id dari response jika parameter null
+            $pelatihan_ids[] = $pelatihan_id ?? $resp->pendaftaran->pelatihan_id;
         }
 
         // Pilih jumlah klaster optimal menggunakan FuzzyCMeans::pilihJumlahKlaster()
@@ -138,6 +142,7 @@ class TiyasProfilKlaster
                 'kode_profil_dominan' => $profilDominan['code'] ?? null,
                 'label_profil_dominan' => $profilDominan['label'] ?? 'Belum cocok',
                 'memberships' => $memberships,
+                'pelatihan_id' => $pelatihan_ids[$i] ?? $pelatihan_id,
             ];
 
             // Hitung jumlah peserta per klaster berdasarkan dominan

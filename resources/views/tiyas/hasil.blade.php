@@ -610,16 +610,22 @@
                                         // SVG dimensions
                                         $svgW = 700;
                                         $svgH = 500;
-                                        $margin = ['l' => 70, 'r' => 40, 't' => 40, 'b' => 50];
+                                        $margin = ['l' => 70, 'r' => 40, 't' => 68, 'b' => 50];
                                         $plotW = $svgW - $margin['l'] - $margin['r'];
                                         $plotH = $svgH - $margin['t'] - $margin['b'];
                                     @endphp
                                     
                                     <svg viewBox="0 0 {{$svgW}} {{$svgH}}" class="w-full rounded" style="border: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent); background-color: var(--color-surface);" data-chart="fcm-scatter">
                                         <!-- Title -->
-                                        <text x="{{$svgW / 2}}" y="25" text-anchor="middle" style="font-size: 16px; font-weight: 600; fill: var(--color-text);">Sebaran Peserta: {{ $kodeToLabel[$xAxis] }} vs {{ $kodeToLabel[$yAxis] }}
-                                            @if ($cakupan === 'semua')
-                                                <tspan x="{{$svgW / 2}}" dy="1.2em" style="font-size: 12px; opacity: 0.7;">Semua Pelatihan</tspan>
+                                        <text x="{{$svgW / 2}}" y="25" text-anchor="middle" style="font-size: 16px; font-weight: 600; fill: var(--color-text);">
+                                            <!-- Main title: "Sebaran Peserta: X vs Y" (same for both comparison and single modes) -->
+                                            <tspan x="{{$svgW / 2}}" dy="0">Sebaran Peserta: {{ $kodeToLabel[$xAxis] }} vs {{ $kodeToLabel[$yAxis] }}</tspan>
+                                            @if ($cakupan === 'semua' && count($pelatihansForComparison) >= 2)
+                                                <!-- Comparison mode: sub-title "Semua Pelatihan" -->
+                                                <tspan x="{{$svgW / 2}}" dy="1.5em" style="font-size: 12px; opacity: 0.7;">Semua Pelatihan</tspan>
+                                            @else
+                                                <!-- Single training: sub-title is training name -->
+                                                <tspan x="{{$svgW / 2}}" dy="1.5em" style="font-size: 12px; opacity: 0.7;">{{ $pelatihan->nama }}</tspan>
                                             @endif
                                         </text>
                                         
@@ -1070,13 +1076,7 @@
                                     'YB' => 'var(--color-danger)',
                                 ];
                                 
-                                // Konversi CSS var ke hex (fallback)
-                                $colorFallback = [
-                                    'TC' => '#0ea5e9',
-                                    'TE' => '#10b981',
-                                    'ITT' => '#f59e0b',
-                                    'YB' => '#ef4444',
-                                ];
+
                             @endphp
                             
                             <svg style="width: 100%; max-width: 100%; height: auto; min-height: 300px; border: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent); border-radius: 0.5rem; background-color: var(--color-surface);" viewBox="0 0 {{ $svg_width }} {{ $chart_height }}" data-chart="antar-pelatihan-mean">
@@ -1104,24 +1104,45 @@
                                 @php $group_x = $chart_padding; @endphp
                                 @foreach ($comparisonData as $pel_idx => $pel_data)
                                     @php
-                                        $pel_name_short = substr($pel_data['nama'], 0, 15);
                                         $bar_x = $group_x;
                                     @endphp
                                     
-                                    <!-- Label pelatihan -->
+                                    <!-- Label pelatihan: split nama jadi max 2 baris, ~18 chars per baris -->
+                                    @php
+                                        $nama = $pel_data['nama'];
+                                        $words = explode(' ', $nama);
+                                        $line1 = '';
+                                        $line2 = '';
+                                        foreach ($words as $word) {
+                                            if (strlen($line1) + strlen($word) + 1 <= 18 && empty($line2)) {
+                                                $line1 .= ($line1 ? ' ' : '') . $word;
+                                            } else {
+                                                $line2 .= ($line2 ? ' ' : '') . $word;
+                                            }
+                                        }
+                                    @endphp
                                     <text x="{{ $group_x + $group_width / 2 }}" y="{{ $chart_height - $chart_padding / 2 + 10 }}" 
-                                          style="font-size: 11px; text-anchor: middle; fill: var(--color-text);">{{ $pel_name_short }}</text>
+                                          style="font-size: 11px; text-anchor: middle; fill: var(--color-text);">
+                                        <title>{{ $nama }}</title>
+                                        @if ($line2)
+                                            <tspan x="{{ $group_x + $group_width / 2 }}" dy="0">{{ $line1 }}</tspan>
+                                            <tspan x="{{ $group_x + $group_width / 2 }}" dy="1.1em">{{ $line2 }}</tspan>
+                                        @else
+                                            {{ $line1 }}
+                                        @endif
+                                    </text>
                                     
-                                    <!-- 4 bars per pelatihan (TC, TE, ITT, YB) -->
+                                    <!-- 4 bars per pelatihan (TC, TE, ITT, YB) - always render -->
                                     @foreach (['TC', 'TE', 'ITT', 'YB'] as $kod)
                                         @php
-                                            $value = $pel_data['means'][$kod] ?? 0;
-                                            $bar_height = ($value - $scale_bottom) / ($scale_top - $scale_bottom) * $plot_height;
+                                            $value = $pel_data['mean'][$kod] ?? 0;
+                                            $bar_height = max(0, ($value - $scale_bottom) / ($scale_top - $scale_bottom) * $plot_height);
                                             $bar_y = $chart_height - $chart_padding - $bar_height;
-                                            $color = $colorFallback[$kod];
+                                            $color = $colors[$kod];
                                         @endphp
+                                        <!-- Always render rect and label; use max(0, bar_height) to prevent negative heights -->
                                         <rect x="{{ $bar_x }}" y="{{ $bar_y }}" width="{{ $bar_width - 4 }}" height="{{ $bar_height }}" 
-                                              style="fill: {{ $color }}; opacity: 0.8;" />
+                                              style="fill: {{ $color }};" />
                                         <text x="{{ $bar_x + ($bar_width - 4) / 2 }}" y="{{ $bar_y - 3 }}" 
                                               style="font-size: 9px; text-anchor: middle; fill: var(--color-text); font-weight: 500;">{{ number_format($value, 2) }}</text>
                                         @php $bar_x += $bar_width; @endphp
@@ -1157,10 +1178,9 @@
                             @foreach (['TC', 'TE', 'ITT', 'YB'] as $kod)
                                 @php
                                     $konstruk = config('tiyas.konstruk')[$kod];
-                                    $color = $colorFallback[$kod];
                                 @endphp
                                 <div class="flex items-center gap-2">
-                                    <div style="width: 12px; height: 12px; background-color: {{ $color }}; border-radius: 2px;"></div>
+                                    <div style="width: 12px; height: 12px; background-color: {{ $colors[$kod] }}; border-radius: 2px;"></div>
                                     <span style="color: var(--color-text);">{{ $konstruk['nama'] }} ({{ $kod }})</span>
                                 </div>
                             @endforeach
@@ -1189,13 +1209,14 @@
                                                 foreach ($pelatihansForComparison as $pel_id) {
                                                     $clusterComposition[$pel_id] = [];
                                                     foreach ($klasterResult['klaster_labels'] ?? [] as $idx => $label) {
-                                                        $clusterComposition[$pel_id][$idx] = 0;
+                                                        $klaster_num = $idx + 1; // 1-based key for lookup
+                                                        $clusterComposition[$pel_id][$klaster_num] = 0;
                                                     }
                                                 }
                                                 
                                                 // Count peserta per klaster per pelatihan
-                                                if (isset($klasterResult['data']) && is_array($klasterResult['data'])) {
-                                                    foreach ($klasterResult['data'] as $resp_id => $peserta) {
+                                                if (isset($klasterResult['tabel_peserta']) && is_array($klasterResult['tabel_peserta'])) {
+                                                    foreach ($klasterResult['tabel_peserta'] as $resp_id => $peserta) {
                                                         if (isset($peserta['pelatihan_id']) && isset($peserta['klaster_dominan'])) {
                                                             $pel_id = $peserta['pelatihan_id'];
                                                             $klaster_idx = $peserta['klaster_dominan'];
@@ -1213,7 +1234,8 @@
                                                     @php $row_total = 0; @endphp
                                                     @foreach ($klasterResult['klaster_labels'] ?? [] as $klaster_idx => $label)
                                                         @php
-                                                            $count = $clusterComposition[$pel_id][$klaster_idx] ?? 0;
+                                                            $klaster_num = $klaster_idx + 1; // Convert 0-based to 1-based for lookup
+                                                            $count = $clusterComposition[$pel_id][$klaster_num] ?? 0;
                                                             $row_total += $count;
                                                         @endphp
                                                         <td style="padding: 0.75rem; text-align: center; color: var(--color-text);">{{ $count }}</td>
