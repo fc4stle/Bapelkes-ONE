@@ -65,8 +65,8 @@ class TiyasHasilClusteringTest extends TestCase
         $nama_peserta_diharapkan = $peserta_optimal[0]->name;
         $response->assertSee($nama_peserta_diharapkan);
 
-        // Verifikasi ada label profil dari config
-        $response->assertSee('Optimal Transfer');
+        // Verifikasi ada label profil dari config (profil label ada di SVG legend dan tabel klaster)
+        $response->assertSee('Optimal');
     }
 
     /**

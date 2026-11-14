@@ -222,12 +222,12 @@
                 </x-card>
 
                 <!-- Profil Klaster Peserta (Fuzzy C-Means) -->
-                @if ($klasterResult['status'] === 'kurang_data')
+                @if (empty($deskriptif))
                     <x-card class="mb-6">
                         <h2 class="text-xl font-semibold mb-4" style="color: var(--color-text);">Profil Klaster Peserta (Fuzzy C-Means)</h2>
                         <div style="background-color: color-mix(in srgb, var(--color-accent) 10%, transparent); border-left: 4px solid var(--color-accent); padding: 1rem; border-radius: var(--radius-card);">
                             <p style="color: var(--color-text);" class="text-sm">
-                                Profil klaster butuh minimal 8 peserta yang sudah mengisi. Saat ini: <strong>{{ $klasterResult['jumlah_sekarang'] }}</strong> peserta.
+                                Belum ada data TIYAS yang terisi untuk pelatihan ini.
                             </p>
                         </div>
                     </x-card>
@@ -235,36 +235,34 @@
                     <x-card class="mb-6">
                         <h2 class="text-xl font-semibold mb-4" style="color: var(--color-text);">Profil Klaster Peserta (Fuzzy C-Means)</h2>
 
-                        <!-- Ringkasan: c terpilih dan tabel indeks -->
+                        <!-- 1. Statistik Deskriptif -->
                         <div class="mb-6">
-                            <p style="color: var(--color-text);" class="mb-3 text-sm">
-                                <strong>Jumlah klaster terpilih:</strong> {{ $klasterResult['c_optimal'] }}
-                            </p>
-                            <p style="color: var(--color-text); opacity: 0.7;" class="text-xs mb-3">Indeks validitas per jumlah klaster:</p>
+                            <h3 class="font-semibold mb-3 text-sm" style="color: var(--color-text);">1. Statistik Deskriptif</h3>
                             <div class="overflow-x-auto">
                                 <table class="min-w-full text-xs" style="border-collapse: collapse;">
                                     <thead>
                                         <tr style="border-bottom: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent);">
-                                            <th class="text-left px-2 py-2" style="color: var(--color-text);">c</th>
-                                            <th class="text-center px-2 py-2" style="color: var(--color-text);">PC</th>
-                                            <th class="text-center px-2 py-2" style="color: var(--color-text);">PE</th>
-                                            <th class="text-center px-2 py-2" style="color: var(--color-text);">XB</th>
-                                            <th class="text-center px-2 py-2" style="color: var(--color-text);">Silhouette</th>
+                                            <th class="text-left px-2 py-2" style="color: var(--color-text);">Konstruk</th>
+                                            <th class="text-center px-2 py-2" style="color: var(--color-text);">Rerata</th>
+                                            <th class="text-center px-2 py-2" style="color: var(--color-text);">SD</th>
+                                            <th class="text-center px-2 py-2" style="color: var(--color-text);">Min</th>
+                                            <th class="text-center px-2 py-2" style="color: var(--color-text);">Maks</th>
+                                            <th class="text-left px-2 py-2" style="color: var(--color-text);">Kategori (n / %)</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach ($klasterResult['validity_table'] as $row)
-                                            <tr style="border-bottom: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);" class="hover:opacity-75">
-                                                <td class="px-2 py-2" style="color: var(--color-text);">
-                                                    <strong>{{ $row['c'] }}</strong>
-                                                    @if ($row['is_optimal'])
-                                                        <span style="background-color: var(--color-success); color: white;" class="ml-1 px-1.5 py-0.5 rounded text-xs">Terpilih</span>
-                                                    @endif
+                                        @foreach ($deskriptif as $konstruk => $stat)
+                                            <tr style="border-bottom: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);">
+                                                <td class="px-2 py-2 font-medium" style="color: var(--color-text);">{{ $konstruk }}</td>
+                                                <td class="text-center px-2 py-2" style="color: var(--color-primary);">{{ $stat['mean'] }}</td>
+                                                <td class="text-center px-2 py-2" style="color: var(--color-primary);">{{ $stat['stdev'] }}</td>
+                                                <td class="text-center px-2 py-2" style="color: var(--color-primary);">{{ $stat['min'] }}</td>
+                                                <td class="text-center px-2 py-2" style="color: var(--color-primary);">{{ $stat['max'] }}</td>
+                                                <td class="px-2 py-2 text-xs" style="color: var(--color-text);">
+                                                    Rendah: {{ $stat['kategori']['Rendah']['count'] }} / {{ $stat['kategori']['Rendah']['percent'] }}%<br>
+                                                    Sedang: {{ $stat['kategori']['Sedang']['count'] }} / {{ $stat['kategori']['Sedang']['percent'] }}%<br>
+                                                    Tinggi: {{ $stat['kategori']['Tinggi']['count'] }} / {{ $stat['kategori']['Tinggi']['percent'] }}%
                                                 </td>
-                                                <td class="text-center px-2 py-2" style="color: var(--color-primary);">{{ number_format($row['pc'], 4) }}</td>
-                                                <td class="text-center px-2 py-2" style="color: var(--color-primary);">{{ number_format($row['pe'], 4) }}</td>
-                                                <td class="text-center px-2 py-2" style="color: var(--color-primary);">{{ number_format($row['xb'], 4) }}</td>
-                                                <td class="text-center px-2 py-2" style="color: var(--color-primary);">{{ number_format($row['silhouette'], 4) }}</td>
                                             </tr>
                                         @endforeach
                                     </tbody>
@@ -272,111 +270,287 @@
                             </div>
                         </div>
 
-                        <!-- Centroid dan profil per klaster -->
-                        <div class="mb-6">
-                            <p style="color: var(--color-text); opacity: 0.7;" class="text-xs mb-3">Profil klaster berdasarkan nilai centroid:</p>
-                            <div class="space-y-4">
-                                @foreach ($klasterResult['tabel_klaster'] as $klaster)
-                                    <div style="border: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent); border-radius: var(--radius-card); padding: 1rem;">
-                                        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 mb-3">
-                                            <div>
-                                                <h3 class="font-semibold" style="color: var(--color-text);">Klaster {{ $klaster['klaster'] }}: {{ $klaster['profil'] }}</h3>
-                                                <p style="color: var(--color-text); opacity: 0.6;" class="text-xs">{{ $klaster['jumlah_peserta'] }} peserta</p>
-                                            </div>
-                                            <span style="background-color: var(--color-accent); color: white;" class="inline-block px-2 py-1 rounded text-xs whitespace-nowrap">
-                                                Centroid
-                                            </span>
-                                        </div>
-
-                                        <!-- Centroid values (TC, TE, ITT, YB) -->
-                                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
-                                            <div>
-                                                <p style="color: var(--color-text); opacity: 0.7;" class="text-xs">TC</p>
-                                                <p style="color: var(--color-primary);" class="font-semibold">{{ number_format($klaster['centroid']['TC'], 2) }}</p>
-                                            </div>
-                                            <div>
-                                                <p style="color: var(--color-text); opacity: 0.7;" class="text-xs">TE</p>
-                                                <p style="color: var(--color-primary);" class="font-semibold">{{ number_format($klaster['centroid']['TE'], 2) }}</p>
-                                            </div>
-                                            <div>
-                                                <p style="color: var(--color-text); opacity: 0.7;" class="text-xs">ITT</p>
-                                                <p style="color: var(--color-primary);" class="font-semibold">{{ number_format($klaster['centroid']['ITT'], 2) }}</p>
-                                            </div>
-                                            <div>
-                                                <p style="color: var(--color-text); opacity: 0.7;" class="text-xs">YB</p>
-                                                <p style="color: var(--color-primary);" class="font-semibold">{{ number_format($klaster['centroid']['YB'], 2) }}</p>
-                                            </div>
-                                        </div>
-
-                                        <!-- Karakteristik -->
-                                        <p style="color: var(--color-text);" class="text-sm mb-2">
-                                            <strong>Karakteristik:</strong> {{ $klaster['karakteristik'] }}
-                                        </p>
-
-                                        <!-- Rekomendasi -->
-                                        <p style="color: var(--color-text);" class="text-sm">
-                                            <strong>Rekomendasi:</strong> {{ $klaster['rekomendasi'] }}
-                                        </p>
-                                    </div>
-                                @endforeach
+                        @if ($klasterResult['status'] === 'kurang_data')
+                            <!-- Jika kurang_data, tampilkan pesan -->
+                            <div style="background-color: color-mix(in srgb, var(--color-accent) 10%, transparent); border-left: 4px solid var(--color-accent); padding: 1rem; border-radius: var(--radius-card); margin-top: 1rem;">
+                                <p style="color: var(--color-text);" class="text-sm">
+                                    <strong>Profil klaster</strong> butuh minimal 8 peserta yang sudah mengisi. Saat ini: <strong>{{ $klasterResult['jumlah_sekarang'] }}</strong> peserta.
+                                </p>
                             </div>
-                        </div>
-
-                        <!-- Tabel derajat keanggotaan peserta -->
-                        <div>
-                            <p style="color: var(--color-text); opacity: 0.7;" class="text-xs mb-3">Derajat keanggotaan (%): mewakili probabilitas peserta terhadap tiap klaster</p>
-
-                            <!-- Tabel scrollable (md:hidden untuk kartu di HP) -->
-                            <div class="md:hidden space-y-3">
-                                @foreach ($klasterResult['tabel_peserta'] as $peserta)
-                                    <div style="border: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent); border-radius: var(--radius-card); padding: 1rem;">
-                                        <p class="font-medium text-sm mb-2" style="color: var(--color-text);">{{ $peserta['nama'] }}</p>
-                                        <p class="text-xs mb-2" style="color: var(--color-primary); font-semibold;">Klaster dominan: {{ $peserta['klaster_dominan'] }}</p>
-                                        <div class="space-y-1">
-                                            @foreach ($peserta['memberships'] as $k => $m)
-                                                <div class="flex justify-between text-xs">
-                                                    <span style="color: var(--color-text);">Klaster {{ $k }}</span>
-                                                    <span style="color: var(--color-text); font-medium;">{{ $m }}%</span>
-                                                </div>
-                                            @endforeach
-                                        </div>
-                                    </div>
-                                @endforeach
+                        @else
+                            <!-- Summary: Jumlah klaster terpilih -->
+                            <div style="background-color: color-mix(in srgb, var(--color-success) 10%, transparent); border-left: 4px solid var(--color-success); padding: 1rem; border-radius: var(--radius-card); margin-top: 1rem; margin-bottom: 1rem;">
+                                <p style="color: var(--color-text);" class="text-sm">
+                                    <strong>Jumlah klaster terpilih:</strong> <strong style="color: var(--color-success);">{{ $klasterResult['c_optimal'] }}</strong> | 
+                                    <strong>PC:</strong> {{ number_format($klasterResult['fuzzy_partition_coefficient'], 4) }} | 
+                                    <strong>PE:</strong> {{ number_format($klasterResult['normalized_classification_entropy'], 4) }}
+                                </p>
                             </div>
-
-                            <!-- Tabel di desktop (hidden md:block) -->
-                            <div class="hidden md:block overflow-x-auto">
-                                <table class="min-w-full text-sm divide-y" style="border-color: color-mix(in srgb, var(--color-text) 15%, transparent);">
-                                    <thead style="background-color: var(--color-bg);">
-                                        <tr>
-                                            <th class="px-4 py-3 text-left font-medium" style="color: var(--color-text);">Peserta</th>
-                                            @foreach (range(0, $klasterResult['c_optimal'] - 1) as $k)
-                                                <th class="px-4 py-3 text-center font-medium" style="color: var(--color-text);">Klaster {{ $k }}</th>
+                            <!-- 2. Grafik Sebaran Peserta (PCA) -->
+                            @if ($pcaData)
+                                <div class="mb-6">
+                                    <h3 class="font-semibold mb-3 text-sm" style="color: var(--color-text);">2. Grafik Sebaran Peserta (PCA)</h3>
+                                    <div class="bg-gray-50 dark:bg-gray-900 rounded p-4" style="background-color: color-mix(in srgb, var(--color-bg) 50%, var(--color-text) 5%); border: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent);">
+                                        @php
+                                            $points = $pcaData['points'];
+                                            $variance = $pcaData['variance'];
+                                            $tabelPeserta = $klasterResult['tabel_peserta'];
+                                            
+                                            // Cari scale untuk SVG (padding)
+                                            $xVals = array_map(fn($p) => $p[0], $points);
+                                            $yVals = array_map(fn($p) => $p[1], $points);
+                                            $xMin = min($xVals);
+                                            $xMax = max($xVals);
+                                            $yMin = min($yVals);
+                                            $yMax = max($yVals);
+                                            
+                                            $xRange = max(0.1, $xMax - $xMin);
+                                            $yRange = max(0.1, $yMax - $yMin);
+                                            $scale = 250 / max($xRange, $yRange);
+                                            
+                                            $svgW = 500;
+                                            $svgH = 400;
+                                            
+                                            // Fungsi transform: dari koordinat data ke SVG
+                                            $transformX = function($x) use ($xMin, $scale, $svgW) {
+                                                return ($x - $xMin) * $scale + 40;
+                                            };
+                                            $transformY = function($y) use ($yMin, $yMax, $yRange, $scale, $svgH) {
+                                                return $svgH - (($y - $yMin) * $scale + 40);
+                                            };
+                                            
+                                            // Warna per klaster dari config (CSS variables)
+                                            $clusterColors = [
+                                                'var(--color-primary)',
+                                                'var(--color-success)',
+                                                'var(--color-danger)',
+                                                'var(--color-warning)',
+                                                'var(--color-info)',
+                                            ];
+                                        @endphp
+                                        
+                                        <svg width="100%" height="auto" viewBox="0 0 {{ $svgW }} {{ $svgH }}" style="border: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent); background: white; border-radius: var(--radius-card);" role="img" aria-label="Grafik sebaran peserta berdasarkan PCA skor TC, TE, ITT, YB dengan warna menunjukkan klaster dominan">
+                                            <!-- Grid lines -->
+                                            <line x1="40" y1="40" x2="40" y2="{{ $svgH - 30 }}" stroke="color-mix(in srgb, var(--color-text) 20%, transparent)" stroke-width="1" />
+                                            <line x1="40" y1="{{ $svgH - 30 }}" x2="{{ $svgW - 20 }}" y2="{{ $svgH - 30 }}" stroke="color-mix(in srgb, var(--color-text) 20%, transparent)" stroke-width="1" />
+                                            
+                                            <!-- Axis labels -->
+                                            <text x="{{ $svgW / 2 }}" y="{{ $svgH - 5 }}" font-size="12" fill="var(--color-text)" text-anchor="middle" opacity="0.7">
+                                                Komponen 1 ({{ $variance[0] }}% varians)
+                                            </text>
+                                            <text x="15" y="{{ $svgH / 2 }}" font-size="12" fill="var(--color-text)" text-anchor="middle" opacity="0.7" transform="rotate(-90 15 {{ $svgH / 2 }})">
+                                                Komponen 2 ({{ $variance[1] }}% varians)
+                                            </text>
+                                            
+                                            <!-- Titik peserta -->
+                                            @foreach ($tabelPeserta as $idx => $peserta)
+                                                @php
+                                                    $x = $transformX($points[$idx][0]);
+                                                    $y = $transformY($points[$idx][1]);
+                                                    $klasterIdx = $peserta['klaster_dominan'] - 1;
+                                                    $color = $clusterColors[$klasterIdx % count($clusterColors)] ?? 'var(--color-primary)';
+                                                    $opacity = min(0.8, max(0.35, max($peserta['memberships']) / 100)); // memberships already in 0-100
+                                                    
+                                                    // Shape berbeda per klaster
+                                                    $shapes = ['circle', 'rect', 'triangle', 'diamond', 'star'];
+                                                    $shape = $shapes[$klasterIdx % count($shapes)];
+                                                @endphp
+                                                
+                                                @if ($shape === 'circle')
+                                                    <circle cx="{{ $x }}" cy="{{ $y }}" r="5" fill="{{ $color }}" opacity="{{ $opacity }}" stroke="var(--color-text)" stroke-width="1" />
+                                                @elseif ($shape === 'rect')
+                                                    <rect x="{{ $x - 4 }}" y="{{ $y - 4 }}" width="8" height="8" fill="{{ $color }}" opacity="{{ $opacity }}" stroke="var(--color-text)" stroke-width="1" />
+                                                @elseif ($shape === 'triangle')
+                                                    <polygon points="{{ $x }},{{ $y - 5 }} {{ $x + 5 }},{{ $y + 4 }} {{ $x - 5 }},{{ $y + 4 }}" fill="{{ $color }}" opacity="{{ $opacity }}" stroke="var(--color-text)" stroke-width="1" />
+                                                @elseif ($shape === 'diamond')
+                                                    <polygon points="{{ $x }},{{ $y - 5 }} {{ $x + 5 }},{{ $y }} {{ $x }},{{ $y + 5 }} {{ $x - 5 }},{{ $y }}" fill="{{ $color }}" opacity="{{ $opacity }}" stroke="var(--color-text)" stroke-width="1" />
+                                                @else
+                                                    <circle cx="{{ $x }}" cy="{{ $y }}" r="5" fill="{{ $color }}" opacity="{{ $opacity }}" stroke="var(--color-text)" stroke-width="1" />
+                                                @endif
                                             @endforeach
-                                            <th class="px-4 py-3 text-center font-medium" style="color: var(--color-text);">Dominan</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class="divide-y" style="border-color: color-mix(in srgb, var(--color-text) 15%, transparent);">
-                                        @foreach ($klasterResult['tabel_peserta'] as $peserta)
-                                            <tr style="background-color: transparent;" class="hover:opacity-75">
-                                                <td class="px-4 py-3 font-medium" style="color: var(--color-text);">{{ $peserta['nama'] }}</td>
-                                                @foreach ($peserta['memberships'] as $m)
-                                                    <td class="px-4 py-3 text-center" style="color: var(--color-primary);">{{ $m }}%</td>
+                                            
+                                            <!-- Centroid per klaster -->
+                                            @foreach ($klasterResult['tabel_klaster'] as $klasterItem)
+                                                @php
+                                                    $cData = [
+                                                        $klasterItem['centroid']['TC'],
+                                                        $klasterItem['centroid']['TE'],
+                                                        $klasterItem['centroid']['ITT'],
+                                                        $klasterItem['centroid']['YB'],
+                                                    ];
+                                                    // Proyeksikan centroid dengan transformasi PCA yang sama
+                                                    $pc1 = 0;
+                                                    $pc2 = 0;
+                                                    for ($d = 0; $d < 4; $d++) {
+                                                        $pc1 += $cData[$d] * $pcaData['loadings'][0][$d];
+                                                        $pc2 += $cData[$d] * $pcaData['loadings'][1][$d];
+                                                    }
+                                                    $cx = $transformX($pc1);
+                                                    $cy = $transformY($pc2);
+                                                    $klasterNum = $klasterItem['klaster'];
+                                                    $cColor = $clusterColors[($klasterNum - 1) % count($clusterColors)] ?? 'var(--color-primary)';
+                                                @endphp
+                                                <circle cx="{{ $cx }}" cy="{{ $cy }}" r="8" fill="none" stroke="{{ $cColor }}" stroke-width="2" opacity="0.8" />
+                                                <circle cx="{{ $cx }}" cy="{{ $cy }}" r="6" fill="{{ $cColor }}" opacity="0.3" />
+                                            @endforeach
+                                            
+                                            <!-- Legenda -->
+                                            <g transform="translate({{ $svgW - 150 }}, 10)">
+                                                <text x="0" y="0" font-size="11" font-weight="bold" fill="var(--color-text)" opacity="0.8">Legenda:</text>
+                                                @foreach ($klasterResult['tabel_klaster'] as $idx => $klasterItem)
+                                                    @php
+                                                        $klasterNum = $klasterItem['klaster'];
+                                                        $profil = $klasterItem['profil'];
+                                                        $cColor = $clusterColors[($klasterNum - 1) % count($clusterColors)] ?? 'var(--color-primary)';
+                                                        $shapes = ['circle', 'rect', 'triangle', 'diamond', 'star'];
+                                                        $shape = $shapes[($klasterNum - 1) % count($shapes)];
+                                                    @endphp
+                                                    <g transform="translate(0, {{ ($idx + 1) * 15 }})">
+                                                        @if ($shape === 'circle')
+                                                            <circle cx="5" cy="0" r="3" fill="{{ $cColor }}" />
+                                                        @elseif ($shape === 'rect')
+                                                            <rect x="2" y="-3" width="6" height="6" fill="{{ $cColor }}" />
+                                                        @else
+                                                            <circle cx="5" cy="0" r="3" fill="{{ $cColor }}" />
+                                                        @endif
+                                                        <text x="12" y="4" font-size="10" fill="var(--color-text)" opacity="0.8">K{{ $klasterNum }}: {{ substr($profil, 0, 15) }}...</text>
+                                                    </g>
                                                 @endforeach
-                                                <td class="px-4 py-3 text-center font-semibold" style="color: var(--color-success);">{{ $peserta['klaster_dominan'] }}</td>
-                                            </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
+                                            </g>
+                                        </svg>
+                                    </div>
+                                    <p style="color: var(--color-text); opacity: 0.6;" class="text-xs mt-2">
+                                        <strong>Catatan:</strong> Setiap bentuk mewakili klaster berbeda. Opacity menunjukkan derajat keanggotaan terhadap klaster dominan (35%-100%).
+                                    </p>
+                                </div>
+                            @endif
 
-                        <!-- Catatan kecil -->
-                        <div class="mt-4 pt-4" style="border-top: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent);">
-                            <p style="color: var(--color-text); opacity: 0.6;" class="text-xs">
-                                <strong>Catatan:</strong> FCM (m=2). Skor memakai rerata skala 1–4, bukan estimasi PCM.
-                            </p>
-                        </div>
+                            <!-- 3. Ringkasan Validitas Klaster -->
+                            <div class="mb-6">
+                                <h3 class="font-semibold mb-3 text-sm" style="color: var(--color-text);">3. Indeks Validitas Klaster</h3>
+                                <div class="overflow-x-auto">
+                                    <table class="min-w-full text-xs" style="border-collapse: collapse;">
+                                        <thead>
+                                            <tr style="border-bottom: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent);">
+                                                <th class="text-left px-2 py-2" style="color: var(--color-text);">c</th>
+                                                <th class="text-center px-2 py-2" style="color: var(--color-text);">PC</th>
+                                                <th class="text-center px-2 py-2" style="color: var(--color-text);">PE</th>
+                                                <th class="text-center px-2 py-2" style="color: var(--color-text);">XB</th>
+                                                <th class="text-center px-2 py-2" style="color: var(--color-text);">Silhouette</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach ($klasterResult['validity_table'] as $row)
+                                                <tr style="border-bottom: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);" class="hover:opacity-75">
+                                                    <td class="px-2 py-2" style="color: var(--color-text);">
+                                                        <strong>{{ $row['c'] }}</strong>
+                                                        @if ($row['is_optimal'])
+                                                            <span style="background-color: var(--color-success); color: white;" class="ml-1 px-1.5 py-0.5 rounded text-xs">Terpilih</span>
+                                                        @endif
+                                                    </td>
+                                                    <td class="text-center px-2 py-2" style="color: var(--color-primary);">{{ number_format($row['pc'], 4) }}</td>
+                                                    <td class="text-center px-2 py-2" style="color: var(--color-primary);">{{ number_format($row['pe'], 4) }}</td>
+                                                    <td class="text-center px-2 py-2" style="color: var(--color-primary);">{{ number_format($row['xb'], 4) }}</td>
+                                                    <td class="text-center px-2 py-2" style="color: var(--color-primary);">{{ number_format($row['silhouette'], 4) }}</td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- 4. Penjelasan Otomatis per Klaster -->
+                            <div class="mb-6">
+                                <h3 class="font-semibold mb-3 text-sm" style="color: var(--color-text);">4. Profil Klaster</h3>
+                                <div class="space-y-4">
+                                    @foreach ($klasterResult['tabel_klaster'] as $idx => $klaster)
+                                        <div style="border: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent); border-radius: var(--radius-card); padding: 1rem;">
+                                            <!-- Penjelasan otomatis -->
+                                            <p style="color: var(--color-text);" class="text-sm mb-3">
+                                                {{ $clusterExplanations[$idx] ?? '—' }}
+                                            </p>
+                                            
+                                            <!-- Karakteristik dan Rekomendasi -->
+                                            <p style="color: var(--color-text);" class="text-sm mb-2">
+                                                <strong>Karakteristik:</strong> {{ $klaster['karakteristik'] }}
+                                            </p>
+                                            <p style="color: var(--color-text);" class="text-sm">
+                                                <strong>Rekomendasi:</strong> {{ $klaster['rekomendasi'] }}
+                                            </p>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+
+                            <!-- 5. Kotak Penjelasan "Cara Membaca Hasil" -->
+                            <div class="mb-6" style="background-color: color-mix(in srgb, var(--color-accent) 8%, transparent); border-left: 4px solid var(--color-accent); padding: 1rem; border-radius: var(--radius-card);">
+                                <h3 class="font-semibold mb-3 text-sm" style="color: var(--color-text);">Cara Membaca Hasil Ini</h3>
+                                <div class="space-y-2 text-sm" style="color: var(--color-text);">
+                                    <p><strong>1. Fuzzy C-Means (FCM):</strong> Algoritma mengelompokkan peserta berdasarkan kemiripan skor TC, TE, ITT, YB. Setiap peserta boleh sebagian masuk beberapa klaster (fuzzy), bukan kategori tegas.</p>
+                                    <p><strong>2. Derajat Keanggotaan:</strong> Persentase menunjukkan seberapa kuat peserta "masuk" ke tiap klaster. Contoh: 58% di K1, 42% di K2 = peserta berada di perbatasan dua profil.</p>
+                                    <p><strong>3. Indeks Validitas (PC, PE, XB, Silhouette):</strong> Mengukur kualitas pengelompokan. Silhouette tinggi = klaster terpisah jelas. XB rendah = klaster kompak dan terpisah.</p>
+                                    <p><strong>4. Profil A–D:</strong> Ditentukan dari pola centroid terhadap profil konseptual. "Belum Cocok" = pola data tidak sesuai 4 profil utama.</p>
+                                    <p><strong>5. Skor dan Centroid:</strong> Menggunakan rerata skala 1–4 (bukan estimasi PCM). Centroid adalah nilai rata-rata skor semua peserta dalam klaster.</p>
+                                    <p><strong>6. PCA (Grafik):</strong> Proyeksi 4D → 2D untuk visualisasi. Setiap bentuk/warna = klaster berbeda. Ukuran opacity = kuat lemahnya keanggotaan dominan.</p>
+                                </div>
+                            </div>
+
+                            <!-- Tabel derajat keanggotaan peserta -->
+                            <div>
+                                <h3 class="font-semibold mb-3 text-sm" style="color: var(--color-text);">Derajat Keanggotaan Peserta (%)</h3>
+
+                                <!-- Tabel scrollable (md:hidden untuk kartu di HP) -->
+                                <div class="md:hidden space-y-3">
+                                    @foreach ($klasterResult['tabel_peserta'] as $peserta)
+                                        <div style="border: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent); border-radius: var(--radius-card); padding: 1rem;">
+                                            <p class="font-medium text-sm mb-2" style="color: var(--color-text);">{{ $peserta['nama'] }}</p>
+                                            <p class="text-xs mb-2" style="color: var(--color-primary); font-semibold;">Klaster dominan: {{ $peserta['klaster_dominan'] }}</p>
+                                            <div class="space-y-1">
+                                                @foreach ($peserta['memberships'] as $k => $m)
+                                                    <div class="flex justify-between text-xs">
+                                                        <span style="color: var(--color-text);">Klaster {{ $k }}</span>
+                                                        <span style="color: var(--color-text); font-medium;">{{ $m }}%</span>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+
+                                <!-- Tabel di desktop (hidden md:block) -->
+                                <div class="hidden md:block overflow-x-auto">
+                                    <table class="min-w-full text-sm divide-y" style="border-color: color-mix(in srgb, var(--color-text) 15%, transparent);">
+                                        <thead style="background-color: var(--color-bg);">
+                                            <tr>
+                                                <th class="px-4 py-3 text-left font-medium" style="color: var(--color-text);">Peserta</th>
+                                                @foreach (range(0, $klasterResult['c_optimal'] - 1) as $k)
+                                                    <th class="px-4 py-3 text-center font-medium" style="color: var(--color-text);">Klaster {{ $k }}</th>
+                                                @endforeach
+                                                <th class="px-4 py-3 text-center font-medium" style="color: var(--color-text);">Dominan</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y" style="border-color: color-mix(in srgb, var(--color-text) 15%, transparent);">
+                                            @foreach ($klasterResult['tabel_peserta'] as $peserta)
+                                                <tr style="background-color: transparent;" class="hover:opacity-75">
+                                                    <td class="px-4 py-3 font-medium" style="color: var(--color-text);">{{ $peserta['nama'] }}</td>
+                                                    @foreach ($peserta['memberships'] as $m)
+                                                        <td class="px-4 py-3 text-center" style="color: var(--color-primary);">{{ $m }}%</td>
+                                                    @endforeach
+                                                    <td class="px-4 py-3 text-center font-semibold" style="color: var(--color-success);">{{ $peserta['klaster_dominan'] }}</td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Catatan kecil -->
+                            <div class="mt-4 pt-4" style="border-top: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent);">
+                                <p style="color: var(--color-text); opacity: 0.6;" class="text-xs">
+                                    <strong>Catatan:</strong> FCM (m=2). Skor memakai rerata skala 1–4, bukan estimasi PCM.
+                                </p>
+                            </div>
+                        @endif
                     </x-card>
                 @endif
             @endif

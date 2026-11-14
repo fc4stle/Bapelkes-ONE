@@ -166,6 +166,32 @@ class TiyasController extends Controller
         $klasterService = new TiyasProfilKlaster($scorer, new FuzzyCMeans);
         $klasterResult = $klasterService->analisis($responses);
 
+        // Hitung statistik deskriptif (tampil untuk semua, termasuk kurang_data)
+        $deskriptif = $klasterService->deskriptif($responses);
+
+        // Hitung PCA dan penjelasan klaster jika status sukses
+        $pcaData = null;
+        $clusterExplanations = [];
+        if ($klasterResult['status'] === 'sukses') {
+            // Kumpulkan data raw untuk PCA
+            $data4d = [];
+            foreach ($responses as $respons) {
+                $skor = $scorer->hitungSkor($respons->jawaban ?? []);
+                $data4d[] = [
+                    $skor['TC']['skor'] ?? 0,
+                    $skor['TE']['skor'] ?? 0,
+                    $skor['ITT']['skor'] ?? 0,
+                    $skor['YB']['skor'] ?? 0,
+                ];
+            }
+
+            $pcaData = $klasterService->pcaProjection($data4d, $klasterResult['centroids_raw']);
+
+            // Generate penjelasan per klaster
+            $totalPeserta = count($responses);
+            $clusterExplanations = $klasterService->generateClusterExplanations($klasterResult['tabel_klaster'], $klasterResult['tabel_peserta'], $totalPeserta);
+        }
+
         // Hitung rata-rata skor per konstruk
         $skorTotal = ['TC' => [], 'TE' => [], 'ITT' => [], 'YB' => []];
         $dataPerPeserta = [];
@@ -243,6 +269,9 @@ class TiyasController extends Controller
             'dataPerPeserta' => $dataPerPeserta,
             'rataRataDimensi' => $rataRataDimensi,
             'klasterResult' => $klasterResult,
+            'deskriptif' => $deskriptif,
+            'pcaData' => $pcaData,
+            'clusterExplanations' => $clusterExplanations,
             'config' => $config,
         ]);
     }
