@@ -220,9 +220,166 @@
                         </table>
                     </div>
                 </x-card>
-            @endif
 
-            <!-- Kembali -->
+                <!-- Profil Klaster Peserta (Fuzzy C-Means) -->
+                @if ($klasterResult['status'] === 'kurang_data')
+                    <x-card class="mb-6">
+                        <h2 class="text-xl font-semibold mb-4" style="color: var(--color-text);">Profil Klaster Peserta (Fuzzy C-Means)</h2>
+                        <div style="background-color: color-mix(in srgb, var(--color-accent) 10%, transparent); border-left: 4px solid var(--color-accent); padding: 1rem; border-radius: var(--radius-card);">
+                            <p style="color: var(--color-text);" class="text-sm">
+                                Profil klaster butuh minimal 8 peserta yang sudah mengisi. Saat ini: <strong>{{ $klasterResult['jumlah_sekarang'] }}</strong> peserta.
+                            </p>
+                        </div>
+                    </x-card>
+                @else
+                    <x-card class="mb-6">
+                        <h2 class="text-xl font-semibold mb-4" style="color: var(--color-text);">Profil Klaster Peserta (Fuzzy C-Means)</h2>
+
+                        <!-- Ringkasan: c terpilih dan tabel indeks -->
+                        <div class="mb-6">
+                            <p style="color: var(--color-text);" class="mb-3 text-sm">
+                                <strong>Jumlah klaster terpilih:</strong> {{ $klasterResult['c_optimal'] }}
+                            </p>
+                            <p style="color: var(--color-text); opacity: 0.7;" class="text-xs mb-3">Indeks validitas per jumlah klaster:</p>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full text-xs" style="border-collapse: collapse;">
+                                    <thead>
+                                        <tr style="border-bottom: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent);">
+                                            <th class="text-left px-2 py-2" style="color: var(--color-text);">c</th>
+                                            <th class="text-center px-2 py-2" style="color: var(--color-text);">PC</th>
+                                            <th class="text-center px-2 py-2" style="color: var(--color-text);">PE</th>
+                                            <th class="text-center px-2 py-2" style="color: var(--color-text);">XB</th>
+                                            <th class="text-center px-2 py-2" style="color: var(--color-text);">Silhouette</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($klasterResult['validity_table'] as $row)
+                                            <tr style="border-bottom: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);" class="hover:opacity-75">
+                                                <td class="px-2 py-2" style="color: var(--color-text);">
+                                                    <strong>{{ $row['c'] }}</strong>
+                                                    @if ($row['is_optimal'])
+                                                        <span style="background-color: var(--color-success); color: white;" class="ml-1 px-1.5 py-0.5 rounded text-xs">Terpilih</span>
+                                                    @endif
+                                                </td>
+                                                <td class="text-center px-2 py-2" style="color: var(--color-primary);">{{ number_format($row['pc'], 4) }}</td>
+                                                <td class="text-center px-2 py-2" style="color: var(--color-primary);">{{ number_format($row['pe'], 4) }}</td>
+                                                <td class="text-center px-2 py-2" style="color: var(--color-primary);">{{ number_format($row['xb'], 4) }}</td>
+                                                <td class="text-center px-2 py-2" style="color: var(--color-primary);">{{ number_format($row['silhouette'], 4) }}</td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Centroid dan profil per klaster -->
+                        <div class="mb-6">
+                            <p style="color: var(--color-text); opacity: 0.7;" class="text-xs mb-3">Profil klaster berdasarkan nilai centroid:</p>
+                            <div class="space-y-4">
+                                @foreach ($klasterResult['tabel_klaster'] as $klaster)
+                                    <div style="border: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent); border-radius: var(--radius-card); padding: 1rem;">
+                                        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 mb-3">
+                                            <div>
+                                                <h3 class="font-semibold" style="color: var(--color-text);">Klaster {{ $klaster['klaster'] }}: {{ $klaster['profil'] }}</h3>
+                                                <p style="color: var(--color-text); opacity: 0.6;" class="text-xs">{{ $klaster['jumlah_peserta'] }} peserta</p>
+                                            </div>
+                                            <span style="background-color: var(--color-accent); color: white;" class="inline-block px-2 py-1 rounded text-xs whitespace-nowrap">
+                                                Centroid
+                                            </span>
+                                        </div>
+
+                                        <!-- Centroid values (TC, TE, ITT, YB) -->
+                                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
+                                            <div>
+                                                <p style="color: var(--color-text); opacity: 0.7;" class="text-xs">TC</p>
+                                                <p style="color: var(--color-primary);" class="font-semibold">{{ number_format($klaster['centroid']['TC'], 2) }}</p>
+                                            </div>
+                                            <div>
+                                                <p style="color: var(--color-text); opacity: 0.7;" class="text-xs">TE</p>
+                                                <p style="color: var(--color-primary);" class="font-semibold">{{ number_format($klaster['centroid']['TE'], 2) }}</p>
+                                            </div>
+                                            <div>
+                                                <p style="color: var(--color-text); opacity: 0.7;" class="text-xs">ITT</p>
+                                                <p style="color: var(--color-primary);" class="font-semibold">{{ number_format($klaster['centroid']['ITT'], 2) }}</p>
+                                            </div>
+                                            <div>
+                                                <p style="color: var(--color-text); opacity: 0.7;" class="text-xs">YB</p>
+                                                <p style="color: var(--color-primary);" class="font-semibold">{{ number_format($klaster['centroid']['YB'], 2) }}</p>
+                                            </div>
+                                        </div>
+
+                                        <!-- Karakteristik -->
+                                        <p style="color: var(--color-text);" class="text-sm mb-2">
+                                            <strong>Karakteristik:</strong> {{ $klaster['karakteristik'] }}
+                                        </p>
+
+                                        <!-- Rekomendasi -->
+                                        <p style="color: var(--color-text);" class="text-sm">
+                                            <strong>Rekomendasi:</strong> {{ $klaster['rekomendasi'] }}
+                                        </p>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+
+                        <!-- Tabel derajat keanggotaan peserta -->
+                        <div>
+                            <p style="color: var(--color-text); opacity: 0.7;" class="text-xs mb-3">Derajat keanggotaan (%): mewakili probabilitas peserta terhadap tiap klaster</p>
+
+                            <!-- Tabel scrollable (md:hidden untuk kartu di HP) -->
+                            <div class="md:hidden space-y-3">
+                                @foreach ($klasterResult['tabel_peserta'] as $peserta)
+                                    <div style="border: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent); border-radius: var(--radius-card); padding: 1rem;">
+                                        <p class="font-medium text-sm mb-2" style="color: var(--color-text);">{{ $peserta['nama'] }}</p>
+                                        <p class="text-xs mb-2" style="color: var(--color-primary); font-semibold;">Klaster dominan: {{ $peserta['klaster_dominan'] }}</p>
+                                        <div class="space-y-1">
+                                            @foreach ($peserta['memberships'] as $k => $m)
+                                                <div class="flex justify-between text-xs">
+                                                    <span style="color: var(--color-text);">Klaster {{ $k }}</span>
+                                                    <span style="color: var(--color-text); font-medium;">{{ $m }}%</span>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+
+                            <!-- Tabel di desktop (hidden md:block) -->
+                            <div class="hidden md:block overflow-x-auto">
+                                <table class="min-w-full text-sm divide-y" style="border-color: color-mix(in srgb, var(--color-text) 15%, transparent);">
+                                    <thead style="background-color: var(--color-bg);">
+                                        <tr>
+                                            <th class="px-4 py-3 text-left font-medium" style="color: var(--color-text);">Peserta</th>
+                                            @foreach (range(0, $klasterResult['c_optimal'] - 1) as $k)
+                                                <th class="px-4 py-3 text-center font-medium" style="color: var(--color-text);">Klaster {{ $k }}</th>
+                                            @endforeach
+                                            <th class="px-4 py-3 text-center font-medium" style="color: var(--color-text);">Dominan</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y" style="border-color: color-mix(in srgb, var(--color-text) 15%, transparent);">
+                                        @foreach ($klasterResult['tabel_peserta'] as $peserta)
+                                            <tr style="background-color: transparent;" class="hover:opacity-75">
+                                                <td class="px-4 py-3 font-medium" style="color: var(--color-text);">{{ $peserta['nama'] }}</td>
+                                                @foreach ($peserta['memberships'] as $m)
+                                                    <td class="px-4 py-3 text-center" style="color: var(--color-primary);">{{ $m }}%</td>
+                                                @endforeach
+                                                <td class="px-4 py-3 text-center font-semibold" style="color: var(--color-success);">{{ $peserta['klaster_dominan'] }}</td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Catatan kecil -->
+                        <div class="mt-4 pt-4" style="border-top: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent);">
+                            <p style="color: var(--color-text); opacity: 0.6;" class="text-xs">
+                                <strong>Catatan:</strong> FCM (m=2). Skor memakai rerata skala 1–4, bukan estimasi PCM.
+                            </p>
+                        </div>
+                    </x-card>
+                @endif
+            @endif
             <div class="mt-6">
                 <a href="{{ route('pelatihans.index') }}" style="color: var(--color-primary);" class="hover:opacity-80">← Kembali ke Pelatihan</a>
             </div>

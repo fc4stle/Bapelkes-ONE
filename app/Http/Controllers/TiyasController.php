@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Pelatihan;
 use App\Models\Pendaftaran;
 use App\Models\TiyasResponse;
+use App\Services\FuzzyCMeans;
+use App\Services\TiyasProfilKlaster;
 use App\Services\TiyasScorer;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\RedirectResponse;
@@ -160,6 +162,10 @@ class TiyasController extends Controller
             $q->where('pelatihan_id', $pelatihan->id);
         })->with('pendaftaran.peserta')->get();
 
+        // Hitung profil klaster (FCM)
+        $klasterService = new TiyasProfilKlaster($scorer, new FuzzyCMeans);
+        $klasterResult = $klasterService->analisis($responses);
+
         // Hitung rata-rata skor per konstruk
         $skorTotal = ['TC' => [], 'TE' => [], 'ITT' => [], 'YB' => []];
         $dataPerPeserta = [];
@@ -236,6 +242,7 @@ class TiyasController extends Controller
             'skorRataRata' => $skorRataRataKategori,
             'dataPerPeserta' => $dataPerPeserta,
             'rataRataDimensi' => $rataRataDimensi,
+            'klasterResult' => $klasterResult,
             'config' => $config,
         ]);
     }
