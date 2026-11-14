@@ -176,6 +176,7 @@ class TiyasController extends Controller
         $skorTotal = ['TC' => [], 'TE' => [], 'ITT' => [], 'YB' => []];
         $dataPerPeserta = [];
         $skorDimensiSemuaPeserta = []; // Kumpulkan skor dimensi per peserta
+        $skorKonstrukRaw = []; // Untuk scatter plot FCM
 
         foreach ($responses as $response) {
             $skor = $scorer->hitungSkor($response->jawaban);
@@ -194,6 +195,15 @@ class TiyasController extends Controller
                 'id' => $response->id,
                 'nama' => $response->pendaftaran->peserta->name,
                 'skor' => $skor,
+            ];
+
+            // Skor raw (TC, TE, ITT, YB) untuk scatter plot
+            $skorKonstrukRaw[] = [
+                'nama' => $response->pendaftaran->peserta->name,
+                'TC' => $skor['TC']['skor'] ?? 0,
+                'TE' => $skor['TE']['skor'] ?? 0,
+                'ITT' => $skor['ITT']['skor'] ?? 0,
+                'YB' => $skor['YB']['skor'] ?? 0,
             ];
         }
 
@@ -252,6 +262,7 @@ class TiyasController extends Controller
             'deskriptif' => $deskriptif,
             'clusterExplanations' => $clusterExplanations,
             'config' => $config,
+            'skorKonstrukRaw' => $skorKonstrukRaw ?? [], // Untuk scatter plot FCM
         ]);
     }
 

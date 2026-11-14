@@ -82,19 +82,18 @@ class TiyasProfilKlaster
             ];
         }
 
-        // Bangun tabel klaster dengan centroid nilai
+        // Bangun tabel klaster dulu untuk tahu profil setiap cluster
         $tabelKlaster = [];
         $centroids_raw = [];
+        $profilPerKlaster = []; // Map cluster -> profil info
+        $klasterPesertaCount = [];
+
         for ($k = 0; $k < $bestC; $k++) {
             $centroid = $V[$k];
             $centroids_raw[] = $centroid;
             $profil = $this->determineProfil($centroid);
-            $jumlahPeserta = 0;
-            for ($i = 0; $i < $n; $i++) {
-                if ($U[$i][$k] > 0.5) {
-                    $jumlahPeserta++;
-                }
-            }
+            $profilPerKlaster[$k + 1] = $profil;
+            $klasterPesertaCount[$k + 1] = 0;
 
             $tabelKlaster[] = [
                 'klaster' => $k + 1,
@@ -102,7 +101,7 @@ class TiyasProfilKlaster
                 'profil' => $profil['label'],
                 'karakteristik' => $profil['karakteristik'],
                 'rekomendasi' => $profil['rekomendasi'],
-                'jumlah_peserta' => $jumlahPeserta,
+                'jumlah_peserta' => 0, // Akan diisi dari tabel peserta
                 'centroid' => [
                     'TC' => number_format($centroid[0], 2),
                     'TE' => number_format($centroid[1], 2),
@@ -112,7 +111,7 @@ class TiyasProfilKlaster
             ];
         }
 
-        // Bangun tabel peserta
+        // Bangun tabel peserta dengan profil dominan (kode + label)
         $tabelPeserta = [];
         for ($i = 0; $i < $n; $i++) {
             $klasterDominan = 0;
@@ -126,11 +125,24 @@ class TiyasProfilKlaster
                 }
             }
 
+            $profilDominan = $profilPerKlaster[$klasterDominan] ?? [];
+
             $tabelPeserta[] = [
                 'nama' => $names[$i],
+                'skor_raw' => $data[$i], // Tambah skor raw (array [TC, TE, ITT, YB])
                 'klaster_dominan' => $klasterDominan,
+                'kode_profil_dominan' => $profilDominan['code'] ?? null,
+                'label_profil_dominan' => $profilDominan['label'] ?? 'Belum cocok',
                 'memberships' => $memberships,
             ];
+
+            // Hitung jumlah peserta per klaster berdasarkan dominan
+            $klasterPesertaCount[$klasterDominan]++;
+        }
+
+        // Update jumlah peserta di tabel klaster
+        foreach ($tabelKlaster as &$klaster) {
+            $klaster['jumlah_peserta'] = $klasterPesertaCount[$klaster['klaster']] ?? 0;
         }
 
         // Hitung PC dan PE untuk summary (dari best result)
