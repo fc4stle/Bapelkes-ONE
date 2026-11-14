@@ -660,5 +660,18 @@ class TiyasSemuaPelatihanTest extends TestCase
         $this->assertStringContainsString('Sebaran Peserta',
             $mainText,
             "E: Main title harus mengandung 'Sebaran Peserta', got: '$mainText'");
+
+        // E.8: NEW - Verify main title contains axis labels (X vs Y)
+        // For cakupan=semua with 2+ pelatihan: axis will be different profiles
+        // For single training: axis will be konstruk labels (TC, TE, ITT, YB mapped to $kodeToLabel)
+        // In both cases, "vs" should separate X and Y components
+        $this->assertStringContainsString(' vs ',
+            $mainText,
+            "E: Main title harus mengandung ' vs ' untuk memisahkan X dan Y axes, got: '$mainText'");
+
+        // Count how many components are after "Sebaran Peserta: "
+        $afterTitle = str_replace('Sebaran Peserta: ', '', $mainText);
+        $this->assertNotEmpty($afterTitle,
+            "E: Setelah 'Sebaran Peserta: ' harus ada X vs Y labels, got: '$mainText'");
     }
 }

@@ -618,13 +618,13 @@
                                     <svg viewBox="0 0 {{$svgW}} {{$svgH}}" class="w-full rounded" style="border: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent); background-color: var(--color-surface);" data-chart="fcm-scatter">
                                         <!-- Title -->
                                         <text x="{{$svgW / 2}}" y="25" text-anchor="middle" style="font-size: 16px; font-weight: 600; fill: var(--color-text);">
+                                            <!-- Main title: "Sebaran Peserta: X vs Y" (same for both comparison and single modes) -->
+                                            <tspan x="{{$svgW / 2}}" dy="0">Sebaran Peserta: {{ $kodeToLabel[$xAxis] }} vs {{ $kodeToLabel[$yAxis] }}</tspan>
                                             @if ($cakupan === 'semua' && count($pelatihansForComparison) >= 2)
-                                                <!-- Comparison mode: keep "Sebaran Peserta" main title for consistency -->
-                                                <tspan x="{{$svgW / 2}}" dy="0">Sebaran Peserta: Klaster</tspan>
+                                                <!-- Comparison mode: sub-title "Semua Pelatihan" -->
                                                 <tspan x="{{$svgW / 2}}" dy="1.2em" style="font-size: 12px; opacity: 0.7;">Semua Pelatihan</tspan>
                                             @else
-                                                <!-- Single training: "Sebaran Peserta: X vs Y" + training name -->
-                                                <tspan x="{{$svgW / 2}}" dy="0">Sebaran Peserta: {{ $kodeToLabel[$xAxis] }} vs {{ $kodeToLabel[$yAxis] }}</tspan>
+                                                <!-- Single training: sub-title is training name -->
                                                 <tspan x="{{$svgW / 2}}" dy="1.2em" style="font-size: 12px; opacity: 0.7;">{{ $pelatihan->nama }}</tspan>
                                             @endif
                                         </text>
