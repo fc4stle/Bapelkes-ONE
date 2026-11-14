@@ -582,4 +582,104 @@ class TiyasHasilClusteringTest extends TestCase
         $this->assertStringNotContainsString('INF', $content, 'HTML output harus tidak mengandung INF (numeric guard failure)');
         $this->assertStringNotContainsString('Infinity', $content, 'HTML output harus tidak mengandung Infinity');
     }
+
+    /**
+     * NEW TEST: SVG struktur validation — memastikan tidak ada &quot; escape, line elements proper, dan XML valid.
+     * Validasi 3 SVG charts di halaman hasil: fcm-scatter, deskriptif-mean-sd, deskriptif-kategori-stacked.
+     */
+    public function test_12_responses_svg_structure_validation_no_escaped_quotes_proper_nesting(): void
+    {
+        TiyasResponse::truncate();
+
+        $panitia = User::factory()->create(['role' => 'panitia']);
+        $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
+
+        // Buat 12 respons (mixed klaster)
+        for ($i = 0; $i < 6; $i++) {
+            $peserta = User::factory()->create(['role' => 'peserta']);
+            $pendaftaran = Pendaftaran::factory()->hadir()->create([
+                'status_verifikasi' => 'diverifikasi',
+                'peserta_id' => $peserta->id,
+                'pelatihan_id' => $pelatihan->id,
+            ]);
+            TiyasResponse::factory()->withProfil('optimal')->create([
+                'pendaftaran_id' => $pendaftaran->id,
+            ]);
+        }
+
+        for ($i = 0; $i < 6; $i++) {
+            $peserta = User::factory()->create(['role' => 'peserta']);
+            $pendaftaran = Pendaftaran::factory()->hadir()->create([
+                'status_verifikasi' => 'diverifikasi',
+                'peserta_id' => $peserta->id,
+                'pelatihan_id' => $pelatihan->id,
+            ]);
+            TiyasResponse::factory()->withProfil('at_risk')->create([
+                'pendaftaran_id' => $pendaftaran->id,
+            ]);
+        }
+
+        $response = $this->actingAs($panitia)
+            ->get(route('tiyas.hasil', $pelatihan));
+
+        $response->assertOk();
+        $html = $response->getContent();
+
+        // Array of SVG data-chart identifiers to validate
+        // Note: centroid-grouped-bars uses <rect> instead of <circle>; fcm-scatter uses <circle>
+        $svgCharts = ['fcm-scatter', 'deskriptif-mean-sd', 'deskriptif-kategori-stacked'];
+        $chartsWithCircles = ['fcm-scatter'];
+
+        foreach ($svgCharts as $chartId) {
+            // Extract SVG block using regex (capture from <svg data-chart="..."> to </svg>)
+            if (preg_match('/<svg[^>]*data-chart=["\']'.preg_quote($chartId).'["\'][^>]*>.*?<\/svg>/s', $html, $matches)) {
+                $svgMarkup = $matches[0];
+
+                // Test 1: No escaped quotes inside SVG markup
+                $this->assertStringNotContainsString('&quot;', $svgMarkup,
+                    "SVG chart '$chartId' must not contain escaped quotes (&quot;) - indicates improper attribute escaping");
+
+                // Test 2: No unclosed <line> elements (lines should not contain child elements)
+                // Check that <line .../> is self-closing, not <line ...>...</line>
+                $lineMatches = [];
+                preg_match_all('/<line[^>]*(?:\/>|>.*?<\/line>)/s', $svgMarkup, $lineMatches);
+                foreach ($lineMatches[0] as $lineTag) {
+                    $this->assertStringNotContainsString('</', $lineTag,
+                        "SVG chart '$chartId' contains unclosed or nested <line> element (line tags must be self-closing)");
+                }
+
+                // Test 3: XML strict parsing via DOMDocument
+                $dom = new \DOMDocument;
+                // Wrap SVG in a root element for proper XML parsing
+                $wrappedXml = '<?xml version="1.0"?><root>'.$svgMarkup.'</root>';
+                $libxmlUseErrors = libxml_use_internal_errors(true);
+                $loaded = @$dom->loadXML($wrappedXml);
+                $xmlErrors = libxml_get_errors();
+                libxml_use_internal_errors($libxmlUseErrors);
+
+                $this->assertTrue($loaded,
+                    "SVG chart '$chartId' must be valid XML. Errors: ".implode('; ', array_map(function ($e) {
+                        return $e->message;
+                    }, $xmlErrors)));
+
+                // Test 4: For scatter charts with circles, verify circles are not nested inside <line>
+                if (in_array($chartId, $chartsWithCircles)) {
+                    $xpath = new \DOMXPath($dom);
+                    $circles = $xpath->query('//circle');
+                    $this->assertGreaterThan(0, $circles->length,
+                        "SVG chart '$chartId' should contain at least one <circle> element (peserta points)");
+
+                    // Verify circles are not descendants of <line> (which would indicate improper nesting)
+                    foreach ($circles as $circle) {
+                        $parent = $circle->parentNode;
+                        while ($parent) {
+                            $this->assertNotEquals('line', $parent->nodeName,
+                                "Circle element in chart '$chartId' is nested inside <line> element (indicates XML structure corruption)");
+                            $parent = $parent->parentNode;
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
