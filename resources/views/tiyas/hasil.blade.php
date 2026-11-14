@@ -629,12 +629,12 @@
                                                 $xGridPos = $margin['l'] + (($i - 1) / 3) * $plotW;
                                                 $yGridPos = $margin['t'] + (1 - ($i - 1) / 3) * $plotH;
                                                 $lineColor = ($i == 2 || $i == 3) ? 'color-mix(in srgb, var(--color-text) 20%, transparent)' : 'color-mix(in srgb, var(--color-text) 10%, transparent)';
-                                                $strokeDash = ($i == 2 || $i == 3) ? 'stroke-dasharray="5,5"' : '';
+                                                $strokeDashValue = ($i == 2 || $i == 3) ? '5,5' : 'none';
                                             @endphp
                                             <!-- Vertical grid -->
-                                            <line x1="{{$xGridPos}}" y1="{{$margin['t']}}" x2="{{$xGridPos}}" y2="{{$svgH - $margin['b']}}" stroke="{{$lineColor}}" stroke-width="1" {{$strokeDash}}/>
+                                            <line x1="{{$xGridPos}}" y1="{{$margin['t']}}" x2="{{$xGridPos}}" y2="{{$svgH - $margin['b']}}" stroke="{{$lineColor}}" stroke-width="1" stroke-dasharray="{{$strokeDashValue}}"/>
                                             <!-- Horizontal grid -->
-                                            <line x1="{{$margin['l']}}" y1="{{$yGridPos}}" x2="{{$svgW - $margin['r']}}" y2="{{$yGridPos}}" stroke="{{$lineColor}}" stroke-width="1" {{$strokeDash}}/>
+                                            <line x1="{{$margin['l']}}" y1="{{$yGridPos}}" x2="{{$svgW - $margin['r']}}" y2="{{$yGridPos}}" stroke="{{$lineColor}}" stroke-width="1" stroke-dasharray="{{$strokeDashValue}}"/>
                                         @endfor
                                         
                                         <!-- Axes -->
@@ -687,12 +687,31 @@
                                                         ? $klasterColors['K' . $klasterIdx]
                                                         : 'var(--color-primary)';
                                                     if ($weight > 0.01) { // Skip jika weight sangat kecil
-                                                        $colorMixParts[] = "$colorVar " . round($weight * 100) . "%";
+                                                        $colorMixParts[] = ["color" => $colorVar, "weight" => $weight];
                                                     }
                                                 }
-                                                $pointColor = count($colorMixParts) > 0 
-                                                    ? 'color-mix(in srgb, ' . implode(', ', $colorMixParts) . ')'
-                                                    : 'var(--color-primary)';
+                                                
+                                                // Normalisasi weights supaya totalnya 100%
+                                                $totalWeight = array_sum(array_column($colorMixParts, 'weight'));
+                                                if ($totalWeight > 0) {
+                                                    $colorMixParts = array_map(function($part) use ($totalWeight) {
+                                                        return $part["color"] . " " . round(($part["weight"] / $totalWeight) * 100) . "%";
+                                                    }, $colorMixParts);
+                                                }
+                                                
+                                                // Pilih color berdasarkan jumlah parts
+                                                if (count($colorMixParts) == 1) {
+                                                    // Hanya 1 warna: ambil warna itu langsung (tanpa color-mix)
+                                                    $pointColor = $colorMixParts[0]; // Format: "var(--color-...) 100%"
+                                                    // Hapus trailing "100%" jika ada, pakai warna saja
+                                                    $pointColor = preg_replace('/\s+100%$/', '', $pointColor);
+                                                } else if (count($colorMixParts) > 1) {
+                                                    // Multiple colors: use color-mix
+                                                    $pointColor = 'color-mix(in srgb, ' . implode(', ', $colorMixParts) . ')';
+                                                } else {
+                                                    // Fallback jika tidak ada warna valid
+                                                    $pointColor = 'var(--color-primary)';
+                                                }
                                                 
                                                 // Buat membership title (e.g., "Peserta Name | K1: 70% | K2: 30%")
                                                 $membershipStr = $peserta['nama'];
