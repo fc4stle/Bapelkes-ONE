@@ -249,7 +249,8 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach (['TC' => 'Teamwork & Collaboration', 'TE' => 'Technical Excellence', 'ITT' => 'Innovation & IT', 'YB' => 'Yayasan Belief'] as $kode => $label)
+                                        @foreach (config('tiyas')['konstruk'] as $kode => $konstruk)
+                                            @php $label = $konstruk['judul']; @endphp
                                             @if (isset($deskriptif[$kode]))
                                                 <tr style="border-bottom: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);">
                                                     <td class="px-4 py-2 font-medium" style="color: var(--color-text);">{{ $label }} ({{ $kode }})</td>
@@ -272,26 +273,26 @@
                                 <!-- Title -->
                                 <text x="400" y="25" text-anchor="middle" style="font-size: 16px; font-weight: 600; fill: var(--color-text);">Rata-rata ± SD per Konstruk</text>
                                 
-                                <!-- Y-axis labels (0-5 scale) -->
-                                @for ($i = 0; $i <= 5; $i++)
-                                    <text x="50" y="{{380 - ($i * 60)}}" text-anchor="end" dy="0.3em" style="font-size: 12px; fill: var(--color-text); opacity: 0.6;">{{ $i }}</text>
-                                    <line x1="55" y1="{{380 - ($i * 60)}}" x2="750" y2="{{380 - ($i * 60)}}" stroke="color-mix(in srgb, var(--color-text) 15%, transparent)" stroke-width="1"/>
+                                <!-- Y-axis labels (1-4 scale) -->
+                                @for ($i = 1; $i <= 4; $i++)
+                                    @php $yPos = 380 - (($i - 1) * 100); @endphp
+                                    <text x="50" y="{{$yPos}}" text-anchor="end" dy="0.3em" style="font-size: 12px; fill: var(--color-text); opacity: 0.6;">{{ $i }}</text>
+                                    <line x1="55" y1="{{$yPos}}" x2="750" y2="{{$yPos}}" stroke="color-mix(in srgb, var(--color-text) 15%, transparent)" stroke-width="1"/>
                                 @endfor
+                                
+                                <!-- Grid lines di 2.00 dan 3.00 -->
+                                @php $y2 = 380 - (1 * 100); $y3 = 380 - (2 * 100); @endphp
+                                <line x1="55" y1="{{$y2}}" x2="750" y2="{{$y2}}" stroke="color-mix(in srgb, var(--color-text) 20%, transparent)" stroke-width="2" stroke-dasharray="5,5"/>
+                                <line x1="55" y1="{{$y3}}" x2="750" y2="{{$y3}}" stroke="color-mix(in srgb, var(--color-text) 20%, transparent)" stroke-width="2" stroke-dasharray="5,5"/>
                                 
                                 <!-- Y-axis -->
                                 <line x1="55" y1="50" x2="55" y2="380" stroke="var(--color-text)" stroke-width="2"/>
                                 <!-- X-axis -->
                                 <line x1="55" y1="380" x2="750" y2="380" stroke="var(--color-text)" stroke-width="2"/>
                                 
-                                <!-- Bars untuk setiap konstruk -->
+                                <!-- Bars untuk setiap konstruk (satu warna token) -->
                                 @php
                                     $konstruks = ['TC', 'TE', 'ITT', 'YB'];
-                                    $colors = [
-                                        'TC' => 'var(--color-danger)',
-                                        'TE' => 'var(--color-primary)',
-                                        'ITT' => 'var(--color-success)',
-                                        'YB' => 'var(--color-accent)'
-                                    ];
                                     $barWidth = 60;
                                     $spacing = 140;
                                     $startX = 120;
@@ -303,19 +304,20 @@
                                             $mean = floatval($deskriptif[$kode]['mean']);
                                             $stdev = floatval($deskriptif[$kode]['stdev']);
                                             $barX = $startX + ($idx * $spacing);
-                                            $barHeight = ($mean / 5) * 300;
-                                            $bandHeight = ($stdev / 5) * 300;
+                                            // Skala: (mean - 1) / 3 * 300 untuk rentang 1-4
+                                            $barHeight = (($mean - 1) / 3) * 300;
+                                            $bandHeight = ($stdev / 3) * 300;
                                             $topY = 380 - $barHeight;
                                             $bandTopY = 380 - ($barHeight + $bandHeight);
                                         @endphp
                                         
                                         <!-- SD band (lighter) -->
                                         <rect x="{{$barX - $barWidth/2 + 5}}" y="{{$bandTopY}}" width="{{$barWidth - 10}}" height="{{$bandHeight * 2}}" 
-                                            fill="{{ $colors[$kode] }}" opacity="0.2"/>
+                                            fill="var(--color-primary)" opacity="0.2"/>
                                         
-                                        <!-- Main bar -->
+                                        <!-- Main bar (satu warna token) -->
                                         <rect x="{{$barX - $barWidth/2}}" y="{{$topY}}" width="{{$barWidth}}" height="{{$barHeight}}" 
-                                            fill="{{ $colors[$kode] }}"/>
+                                            fill="var(--color-primary)"/>
                                         
                                         <!-- Value label on bar -->
                                         <text x="{{$barX}}" y="{{$topY - 5}}" text-anchor="middle" style="font-size: 14px; font-weight: 600; fill: var(--color-text);">
@@ -329,7 +331,7 @@
                                     @endif
                                 @endforeach
                             </svg>
-                            <p class="text-xs mt-2" style="color: var(--color-text); opacity: 0.6;">Warna terang menunjukkan kisaran ±1 SD dari rata-rata</p>
+                            <p class="text-xs mt-2" style="color: var(--color-text); opacity: 0.6;">Warna terang menunjukkan kisaran ±1 SD dari rata-rata. Garis putus-putus di 2.00 dan 3.00 adalah panduan skala.</p>
                         </div>
 
                         <!-- Chart 2: Distribusi Kategori (Stacked Bar %) -->
@@ -506,6 +508,217 @@
                         <x-card class="mb-6">
                             <h2 class="text-xl font-semibold mb-4" style="color: var(--color-text);">3. Gambar Klaster</h2>
                             
+                            <!-- 3. Scatter Plot FCM: Sebaran Peserta -->
+                            @if (count($klasterResult['tabel_peserta'] ?? []) >= 8)
+                                <div class="mb-6">
+                                    <h3 class="font-semibold mb-3" style="color: var(--color-text);">Sebaran Peserta FCM</h3>
+                                    
+                                    <!-- Axis Selector Form (GET params, no JS) -->
+                                    <form method="GET" class="mb-3 flex gap-2 flex-wrap items-center text-sm">
+                                        <label style="color: var(--color-text); opacity: 0.8;">Sumbu:</label>
+                                        <select name="x" style="padding: 0.25rem 0.5rem; border: 1px solid color-mix(in srgb, var(--color-text) 20%, transparent); border-radius: 0.25rem; background-color: var(--color-surface); color: var(--color-text); font-size: 0.875rem;">
+                                            @foreach (['TC', 'TE', 'ITT', 'YB'] as $kod)
+                                                <option value="{{ $kod }}" @selected(request('x', 'TC') == $kod)>{{ $kod }} ({{ config('tiyas.konstruk.' . $kod . '.judul', 'N/A') }})</option>
+                                            @endforeach
+                                        </select>
+                                        vs
+                                        <select name="y" style="padding: 0.25rem 0.5rem; border: 1px solid color-mix(in srgb, var(--color-text) 20%, transparent); border-radius: 0.25rem; background-color: var(--color-surface); color: var(--color-text); font-size: 0.875rem;">
+                                            @foreach (['TC', 'TE', 'ITT', 'YB'] as $kod)
+                                                <option value="{{ $kod }}" @selected(request('y', 'YB') == $kod)>{{ $kod }} ({{ config('tiyas.konstruk.' . $kod . '.judul', 'N/A') }})</option>
+                                            @endforeach
+                                        </select>
+                                        <button type="submit" class="px-3 py-1" style="background-color: var(--color-primary); color: white; border: none; border-radius: 0.25rem; cursor: pointer; font-size: 0.875rem;">Tampilkan</button>
+                                    </form>
+
+                                    <!-- SVG Scatter Plot -->
+                                    @php
+                                        $xAxis = request('x', 'TC');
+                                        $yAxis = request('y', 'YB');
+                                        $validKodes = ['TC', 'TE', 'ITT', 'YB'];
+                                        
+                                        // Validasi: jika parameter tidak valid atau x == y, fallback ke default
+                                        if (!in_array($xAxis, $validKodes) || !in_array($yAxis, $validKodes) || $xAxis === $yAxis) {
+                                            $xAxis = 'TC';
+                                            $yAxis = 'YB';
+                                        }
+                                        
+                                        // Map konstruk ke indeks data (data array: [TC, TE, ITT, YB] @ indeks 0-3)
+                                        $kodeToIndex = ['TC' => 0, 'TE' => 1, 'ITT' => 2, 'YB' => 3];
+                                        $xIdx = $kodeToIndex[$xAxis];
+                                        $yIdx = $kodeToIndex[$yAxis];
+                                        
+                                        // Map kode to label lengkap dari config
+                                        $kodeToLabel = [
+                                            'TC' => config('tiyas.konstruk.TC.nama', 'Transfer Climate'),
+                                            'TE' => config('tiyas.konstruk.TE.nama', 'Transfer Environment'),
+                                            'ITT' => config('tiyas.konstruk.ITT.nama', 'Intention to Transfer'),
+                                            'YB' => config('tiyas.konstruk.YB.nama', 'Yielded Behavior'),
+                                        ];
+                                        
+                                        // Warna klaster dari config
+                                        $klasterColors = config('tiyas.warna_klaster', [
+                                            'K1' => 'var(--color-danger)',
+                                            'K2' => 'var(--color-primary)',
+                                            'K3' => 'var(--color-success)',
+                                            'K4' => 'var(--color-accent)',
+                                        ]);
+                                        
+                                        // Extract centroid pada sumbu X dan Y
+                                        $centroidsPlot = [];
+                                        foreach ($klasterResult['tabel_klaster'] ?? [] as $klaster) {
+                                            $klasterNum = $klaster['klaster'];
+                                            $centroidRaw = $klasterResult['centroids_raw'][$klasterNum - 1] ?? null;
+                                            if ($centroidRaw) {
+                                                $centroidsPlot[$klasterNum] = [
+                                                    'x' => $centroidRaw[$xIdx],
+                                                    'y' => $centroidRaw[$yIdx],
+                                                    'label' => 'K' . $klasterNum,
+                                                ];
+                                            }
+                                        }
+                                        
+                                        // SVG dimensions
+                                        $svgW = 700;
+                                        $svgH = 500;
+                                        $margin = ['l' => 70, 'r' => 40, 't' => 40, 'b' => 50];
+                                        $plotW = $svgW - $margin['l'] - $margin['r'];
+                                        $plotH = $svgH - $margin['t'] - $margin['b'];
+                                    @endphp
+                                    
+                                    <svg viewBox="0 0 {{$svgW}} {{$svgH}}" class="w-full rounded" style="border: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent); background-color: var(--color-surface);" data-chart="fcm-scatter">
+                                        <!-- Title -->
+                                        <text x="{{$svgW / 2}}" y="25" text-anchor="middle" style="font-size: 16px; font-weight: 600; fill: var(--color-text);">Sebaran Peserta: {{ $kodeToLabel[$xAxis] }} vs {{ $kodeToLabel[$yAxis] }}</text>
+                                        
+                                        <!-- Grid lines di 1, 2, 3, 4 untuk kedua sumbu -->
+                                        @for ($i = 1; $i <= 4; $i++)
+                                            @php
+                                                $xGridPos = $margin['l'] + (($i - 1) / 3) * $plotW;
+                                                $yGridPos = $margin['t'] + (1 - ($i - 1) / 3) * $plotH;
+                                                $lineColor = ($i == 2 || $i == 3) ? 'color-mix(in srgb, var(--color-text) 20%, transparent)' : 'color-mix(in srgb, var(--color-text) 10%, transparent)';
+                                                $strokeDash = ($i == 2 || $i == 3) ? 'stroke-dasharray="5,5"' : '';
+                                            @endphp
+                                            <!-- Vertical grid -->
+                                            <line x1="{{$xGridPos}}" y1="{{$margin['t']}}" x2="{{$xGridPos}}" y2="{{$svgH - $margin['b']}}" stroke="{{$lineColor}}" stroke-width="1" {{$strokeDash}}/>
+                                            <!-- Horizontal grid -->
+                                            <line x1="{{$margin['l']}}" y1="{{$yGridPos}}" x2="{{$svgW - $margin['r']}}" y2="{{$yGridPos}}" stroke="{{$lineColor}}" stroke-width="1" {{$strokeDash}}/>
+                                        @endfor
+                                        
+                                        <!-- Axes -->
+                                        <line x1="{{$margin['l']}}" y1="{{$svgH - $margin['b']}}" x2="{{$svgW - $margin['r']}}" y2="{{$svgH - $margin['b']}}" stroke="var(--color-text)" stroke-width="2"/>
+                                        <line x1="{{$margin['l']}}" y1="{{$margin['t']}}" x2="{{$margin['l']}}" y2="{{$svgH - $margin['b']}}" stroke="var(--color-text)" stroke-width="2"/>
+                                        
+                                        <!-- Axis labels (1, 2, 3, 4) -->
+                                        @for ($i = 1; $i <= 4; $i++)
+                                            @php
+                                                $xLabelPos = $margin['l'] + (($i - 1) / 3) * $plotW;
+                                                $yLabelPos = $margin['t'] + (1 - ($i - 1) / 3) * $plotH;
+                                            @endphp
+                                            <!-- X-axis labels -->
+                                            <text x="{{$xLabelPos}}" y="{{$svgH - $margin['b'] + 20}}" text-anchor="middle" style="font-size: 11px; fill: var(--color-text); opacity: 0.7;">{{ $i }}</text>
+                                            <!-- Y-axis labels -->
+                                            <text x="{{$margin['l'] - 15}}" y="{{$yLabelPos + 4}}" text-anchor="end" style="font-size: 11px; fill: var(--color-text); opacity: 0.7;">{{ $i }}</text>
+                                        @endfor
+                                        
+                                        <!-- X-axis label -->
+                                        <text x="{{($margin['l'] + $svgW - $margin['r']) / 2}}" y="{{$svgH - 5}}" text-anchor="middle" style="font-size: 12px; fill: var(--color-text); opacity: 0.8; font-weight: 500;">{{ $xAxis }}</text>
+                                        
+                                        <!-- Y-axis label -->
+                                        <text x="15" y="{{($margin['t'] + $svgH - $margin['b']) / 2}}" text-anchor="middle" style="font-size: 12px; fill: var(--color-text); opacity: 0.8; font-weight: 500;" transform="rotate(-90 15 {{($margin['t'] + $svgH - $margin['b']) / 2}})">{{ $yAxis }}</text>
+                                        
+                                        <!-- Plot peserta sebagai titik -->
+                                        @foreach (($klasterResult['tabel_peserta'] ?? []) as $peserta)
+                                            @php
+                                                $skorX = $peserta['skor_raw'][$xIdx];
+                                                $skorY = $peserta['skor_raw'][$yIdx];
+                                                
+                                                // Validasi: jika skor tidak valid (NaN, INF, out of range), skip
+                                                if (!is_finite($skorX) || !is_finite($skorY) || $skorX < 1 || $skorX > 4 || $skorY < 1 || $skorY > 4) {
+                                                    continue;
+                                                }
+                                                
+                                                // Koordinat SVG
+                                                $plotX = $margin['l'] + (($skorX - 1) / 3) * $plotW;
+                                                $plotY = $margin['t'] + (1 - ($skorY - 1) / 3) * $plotH;
+                                                
+                                                // Hitung warna campuran dari derajat keanggotaan
+                                                $memberships = [];
+                                                foreach ($peserta['memberships'] as $idx => $m) {
+                                                    $memberships[$idx + 1] = $m / 100.0; // Konversi % ke ratio
+                                                }
+                                                
+                                                // Build color-mix expression untuk blending warna klaster
+                                                $colorMixParts = [];
+                                                foreach ($memberships as $klasterIdx => $weight) {
+                                                    $colorVar = isset($klasterColors['K' . $klasterIdx]) 
+                                                        ? $klasterColors['K' . $klasterIdx]
+                                                        : 'var(--color-primary)';
+                                                    if ($weight > 0.01) { // Skip jika weight sangat kecil
+                                                        $colorMixParts[] = "$colorVar " . round($weight * 100) . "%";
+                                                    }
+                                                }
+                                                $pointColor = count($colorMixParts) > 0 
+                                                    ? 'color-mix(in srgb, ' . implode(', ', $colorMixParts) . ')'
+                                                    : 'var(--color-primary)';
+                                                
+                                                // Buat membership title (e.g., "Peserta Name | K1: 70% | K2: 30%")
+                                                $membershipStr = $peserta['nama'];
+                                                foreach ($peserta['memberships'] as $idx => $m) {
+                                                    $membershipStr .= " | K" . ($idx + 1) . ": " . $m . "%";
+                                                }
+                                            @endphp
+                                            
+                                            <circle cx="{{$plotX}}" cy="{{$plotY}}" r="4" fill="{{$pointColor}}" opacity="0.7">
+                                                <title>{{$membershipStr}}</title>
+                                            </circle>
+                                        @endforeach
+                                        
+                                        <!-- Plot centroid sebagai X (crosshair) -->
+                                        @foreach ($centroidsPlot as $klasterNum => $centroid)
+                                            @php
+                                                $cx = $centroid['x'];
+                                                $cy = $centroid['y'];
+                                                
+                                                // Validasi centroid
+                                                if (!is_finite($cx) || !is_finite($cy) || $cx < 1 || $cx > 4 || $cy < 1 || $cy > 4) {
+                                                    continue;
+                                                }
+                                                
+                                                $cpx = $margin['l'] + (($cx - 1) / 3) * $plotW;
+                                                $cpy = $margin['t'] + (1 - ($cy - 1) / 3) * $plotH;
+                                                $crossSize = 8;
+                                                
+                                                $centroidColor = isset($klasterColors['K' . $klasterNum]) 
+                                                    ? $klasterColors['K' . $klasterNum]
+                                                    : 'var(--color-primary)';
+                                            @endphp
+                                            
+                                            <!-- Crosshair untuk centroid -->
+                                            <line x1="{{$cpx - $crossSize}}" y1="{{$cpy}}" x2="{{$cpx + $crossSize}}" y2="{{$cpy}}" stroke="{{$centroidColor}}" stroke-width="3"/>
+                                            <line x1="{{$cpx}}" y1="{{$cpy - $crossSize}}" x2="{{$cpx}}" y2="{{$cpy + $crossSize}}" stroke="{{$centroidColor}}" stroke-width="3"/>
+                                            
+                                            <!-- Label centroid -->
+                                            <text x="{{$cpx + 10}}" y="{{$cpy - 8}}" style="font-size: 12px; font-weight: 700; fill: {{$centroidColor}};">{{ $centroid['label'] }}</text>
+                                        @endforeach
+                                    </svg>
+                                    
+                                    <!-- Legend HTML -->
+                                    <div class="mt-3 flex flex-wrap gap-4 text-xs" style="color: var(--color-text);">
+                                        @foreach (($klasterResult['tabel_klaster'] ?? []) as $klaster)
+                                            @php
+                                                $klasterNum = $klaster['klaster'];
+                                                $klasterColor = isset($klasterColors['K' . $klasterNum]) 
+                                                    ? $klasterColors['K' . $klasterNum]
+                                                    : 'var(--color-primary)';
+                                            @endphp
+                                            <div class="flex items-center gap-2">
+                                                <span class="w-3 h-3 rounded-sm" style="background-color: {{$klasterColor}};"></span>
+                                                <span>Klaster {{ $klasterNum }} · {{ $klaster['kode_profil'] }}: {{ $klaster['profil'] }} ({{ $klaster['jumlah_peserta'] }} peserta)</span>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endif
+                            
                             <!-- 3a. Centroid Klaster (Grouped Bars) -->
                             <div class="mb-6">
                                 <h3 class="font-semibold mb-3" style="color: var(--color-text);">a) Centroid per Klaster dan Konstruk</h3>
@@ -663,9 +876,8 @@
                                 @foreach ($klasters as $klIdx => $klaster)
                                     <div style="border: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent); border-radius: var(--radius-card); padding: 1rem;">
                                         <h3 class="font-bold mb-2" style="color: var(--color-text);">
-                                            Klaster {{ $klIdx + 1 }}: {{ $klaster['kode_profil'] ?? '—' }}
+                                            Klaster {{ $klIdx + 1 }} · {{ $klaster['kode_profil'] ?? '—' }}: {{ $klaster['profil'] }}
                                         </h3>
-                                        <p class="text-sm mb-2" style="color: var(--color-text);"><strong>Profil:</strong> {{ $klaster['profil'] }}</p>
                                         <p class="text-sm mb-2" style="color: var(--color-text);"><strong>Jumlah Peserta:</strong> {{ $klaster['jumlah_peserta'] }}</p>
                                         <p class="text-sm mb-2" style="color: var(--color-text);"><strong>Karakteristik:</strong> {{ $klaster['karakteristik'] }}</p>
                                         
@@ -693,7 +905,7 @@
                                 @foreach ($klasterResult['tabel_peserta'] as $peserta)
                                     <div style="border: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent); border-radius: var(--radius-card); padding: 1rem;">
                                         <p class="font-medium text-sm mb-2" style="color: var(--color-text);">{{ $peserta['nama'] }}</p>
-                                        <p class="text-xs mb-2 font-semibold" style="color: var(--color-success);">Profil dominan: {{ $peserta['klaster_dominan'] }}</p>
+                                        <p class="text-xs mb-2 font-semibold" style="color: var(--color-success);">Profil dominan: Klaster {{ $peserta['klaster_dominan'] }} · {{ $peserta['kode_profil_dominan'] }}: {{ $peserta['label_profil_dominan'] }}</p>
                                         <div class="space-y-1">
                                             @foreach ($peserta['memberships'] as $k => $m)
                                                 <div class="flex justify-between text-xs">
@@ -725,7 +937,7 @@
                                                 @foreach ($peserta['memberships'] as $m)
                                                     <td class="px-4 py-3 text-center" style="color: var(--color-primary);">{{ $m }}%</td>
                                                 @endforeach
-                                                <td class="px-4 py-3 text-center font-semibold" style="color: var(--color-success);">{{ $peserta['klaster_dominan'] }}</td>
+                                                <td class="px-4 py-3 text-center font-semibold" style="color: var(--color-success);">Klaster {{ $peserta['klaster_dominan'] }} · {{ $peserta['kode_profil_dominan'] }}: {{ $peserta['label_profil_dominan'] }}</td>
                                             </tr>
                                         @endforeach
                                     </tbody>
