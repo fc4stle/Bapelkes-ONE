@@ -617,9 +617,13 @@
                                     
                                     <svg viewBox="0 0 {{$svgW}} {{$svgH}}" class="w-full rounded" style="border: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent); background-color: var(--color-surface);" data-chart="fcm-scatter">
                                         <!-- Title -->
-                                        <text x="{{$svgW / 2}}" y="25" text-anchor="middle" style="font-size: 16px; font-weight: 600; fill: var(--color-text);">Sebaran Peserta: {{ $kodeToLabel[$xAxis] }} vs {{ $kodeToLabel[$yAxis] }}
-                                            @if ($cakupan === 'semua')
+                                        <text x="{{$svgW / 2}}" y="25" text-anchor="middle" style="font-size: 16px; font-weight: 600; fill: var(--color-text);">
+                                            @if ($cakupan === 'semua' && count($pelatihansForComparison) >= 2)
+                                                <tspan x="{{$svgW / 2}}" dy="0">Profil Klaster</tspan>
                                                 <tspan x="{{$svgW / 2}}" dy="1.2em" style="font-size: 12px; opacity: 0.7;">Semua Pelatihan</tspan>
+                                            @else
+                                                <tspan x="{{$svgW / 2}}" dy="0">Sebaran Peserta: {{ $kodeToLabel[$xAxis] }} vs {{ $kodeToLabel[$yAxis] }}</tspan>
+                                                <tspan x="{{$svgW / 2}}" dy="1.2em" style="font-size: 12px; opacity: 0.7;">{{ $pelatihan->nama }}</tspan>
                                             @endif
                                         </text>
                                         

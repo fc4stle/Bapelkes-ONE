@@ -188,8 +188,15 @@ class TiyasController extends Controller
         $klasterLabels = [];
         if ($klasterResult['status'] === 'sukses' && ! empty($klasterResult['tabel_klaster'])) {
             foreach ($klasterResult['tabel_klaster'] as $klaster) {
-                // Format: "Klaster N · {kode}: {label}"
-                $klasterLabels[] = "Klaster {$klaster['klaster']} · {$klaster['kode_profil']}: {$klaster['profil']}";
+                // Format bergantung pada kode_profil
+                $kode = $klaster['kode_profil'] ?? null;
+                if (empty($kode) || $kode === '—') {
+                    // Tanpa kode: "Klaster N: {label}"
+                    $klasterLabels[] = "Klaster {$klaster['klaster']}: {$klaster['profil']}";
+                } else {
+                    // Dengan kode: "Klaster N · {kode}: {label}"
+                    $klasterLabels[] = "Klaster {$klaster['klaster']} · {$kode}: {$klaster['profil']}";
+                }
             }
         }
         $klasterResult['klaster_labels'] = $klasterLabels;
