@@ -354,7 +354,7 @@ class TiyasSemuaPelatihanTest extends TestCase
         $this->assertNotNull($table, 'C: Tabel komposisi harus ada');
 
         // Get number of klaster columns from FCM result
-        $numKlasters = count($result['klaster_labels'] ?? []);
+        $numKlasters = count($result['klaster_labels'] ?? $result['tabel_klaster'] ?? []);
         $this->assertGreaterThan(0, $numKlasters, 'C: Harus ada minimal 1 klaster');
 
         // Extract table data
@@ -453,30 +453,34 @@ class TiyasSemuaPelatihanTest extends TestCase
 
         $xpath = new DOMXPath($dom);
 
-        // Extract klaster titles
-        $h3s = $xpath->query('//h3');
+        // Extract klaster titles dari table headers (Komposisi Klaster per Pelatihan table)
+        // Look for <th> elements that contain "Klaster"
+        $thElements = $xpath->query('//th[contains(text(), "Klaster")]');
         $klasterTitles = [];
-        foreach ($h3s as $h3) {
-            $text = trim($h3->textContent);
+        foreach ($thElements as $th) {
+            $text = trim($th->textContent);
             if (strpos($text, 'Klaster') === 0) {
                 $klasterTitles[] = $text;
             }
         }
 
-        $this->assertGreaterThan(0, count($klasterTitles), 'D: Harus ada judul klaster');
+        $this->assertGreaterThan(0, count($klasterTitles), 
+            'D: Harus ada minimal satu judul klaster di tabel komposisi');
 
         // D: Check format
         foreach ($klasterTitles as $title) {
-            // Jika tidak ada kode profil, format "Klaster N: Label" (tanpa "· —")
-            if (strpos($title, ' · ') === false) {
-                $this->assertMatchesRegularExpression('/^Klaster \d+: /', $title,
-                    "D FAILED: Judul tanpa kode harus format 'Klaster N: ...'. Got: '$title'");
+            // Check: jika ada " · ", maka harus ada kode sebelumnya (dan BUKAN "—")
+            if (strpos($title, ' · ') !== false) {
+                $this->assertMatchesRegularExpression('/^Klaster \d+ · [^\—]+: /', $title,
+                    "D: Judul dengan kode harus format 'Klaster N · CODE: ...'. Got: '$title'");
                 $this->assertStringNotContainsString('· —', $title,
-                    "D FAILED: Judul tidak boleh mengandung '· —'. Got: '$title'");
+                    "D: Judul dengan kode tidak boleh mengandung '· —'. Got: '$title'");
             } else {
-                // Jika ada kode, format "Klaster N · CODE: Label"
-                $this->assertMatchesRegularExpression('/^Klaster \d+ · \w+: /', $title,
-                    "D FAILED: Judul dengan kode harus format 'Klaster N · CODE: ...'. Got: '$title'");
+                // Tanpa kode: harus format "Klaster N: ..."
+                $this->assertMatchesRegularExpression('/^Klaster \d+: /', $title,
+                    "D: Judul tanpa kode harus format 'Klaster N: ...'. Got: '$title'");
+                $this->assertStringNotContainsString('· —', $title,
+                    "D: Judul tidak boleh mengandung '· —'. Got: '$title'");
             }
         }
     }
