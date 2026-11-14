@@ -610,7 +610,7 @@
                                         // SVG dimensions
                                         $svgW = 700;
                                         $svgH = 500;
-                                        $margin = ['l' => 70, 'r' => 40, 't' => 40, 'b' => 50];
+                                        $margin = ['l' => 70, 'r' => 40, 't' => 80, 'b' => 50];
                                         $plotW = $svgW - $margin['l'] - $margin['r'];
                                         $plotH = $svgH - $margin['t'] - $margin['b'];
                                     @endphp
@@ -619,9 +619,11 @@
                                         <!-- Title -->
                                         <text x="{{$svgW / 2}}" y="25" text-anchor="middle" style="font-size: 16px; font-weight: 600; fill: var(--color-text);">
                                             @if ($cakupan === 'semua' && count($pelatihansForComparison) >= 2)
-                                                <tspan x="{{$svgW / 2}}" dy="0">Profil Klaster</tspan>
+                                                <!-- Comparison mode: keep "Sebaran Peserta" main title for consistency -->
+                                                <tspan x="{{$svgW / 2}}" dy="0">Sebaran Peserta: Klaster</tspan>
                                                 <tspan x="{{$svgW / 2}}" dy="1.2em" style="font-size: 12px; opacity: 0.7;">Semua Pelatihan</tspan>
                                             @else
+                                                <!-- Single training: "Sebaran Peserta: X vs Y" + training name -->
                                                 <tspan x="{{$svgW / 2}}" dy="0">Sebaran Peserta: {{ $kodeToLabel[$xAxis] }} vs {{ $kodeToLabel[$yAxis] }}</tspan>
                                                 <tspan x="{{$svgW / 2}}" dy="1.2em" style="font-size: 12px; opacity: 0.7;">{{ $pelatihan->nama }}</tspan>
                                             @endif

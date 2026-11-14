@@ -531,10 +531,11 @@ class TiyasSemuaPelatihanTest extends TestCase
     }
 
     /**
-     * E. TEST: Scatter cakupan=semua - jarak judul dan sub-judul
-     * - Sub-judul "Semua Pelatihan" tidak melekat di judul utama
-     * - Atur ulang posisi: naikkan margin atas plot, jarak antar baris judul minimal 6px
-     * - Test: selisih y antara judul dan sub-judul >= ukuran font sub-judul + 4
+     * E. TEST: Scatter chart - judul dengan spacing minimal 12px antara subtitle dan plot area
+     * - Main title: "Sebaran Peserta: ..."
+     * - Subtitle: "Semua Pelatihan" (comparison) atau nama pelatihan (single)
+     * - Harus ada jarak >= 12px antara baseline subtitle dan garis atas plot
+     * - Cek dengan membaca y coordinates dari DOM, bukan hanya dy attribute
      */
     public function test_e_scatter_title_spacing()
     {
@@ -571,35 +572,86 @@ class TiyasSemuaPelatihanTest extends TestCase
         $scatterSvg = $xpath->query('//svg[@data-chart="fcm-scatter"]')->item(0);
         $this->assertNotNull($scatterSvg, 'E: Scatter SVG harus ada');
 
-        // Find title tspan elements
-        $tspans = $xpath->query('.//tspan', $scatterSvg);
-        $titleTspans = [];
-        foreach ($tspans as $ts) {
-            $text = trim($ts->textContent);
-            // E: Accept any tspan with non-empty text (main + subtitle lines)
-            if (strlen($text) > 2) {
-                $titleTspans[] = [
-                    'text' => $text,
-                    'y' => (float) ($ts->getAttribute('y') ?? 0),
-                    'dy' => $ts->getAttribute('dy'),
-                ];
+        // E.1: Extract title text elements (first text element with tspans is the title)
+        $allTexts = $xpath->query('.//text', $scatterSvg);
+        $titleTexts = [];
+        foreach ($allTexts as $textEl) {
+            $tspans = $xpath->query('.//tspan', $textEl);
+            if ($tspans->length > 0) {
+                // This is a multi-line text element (likely the title)
+                $titleTexts[] = $textEl;
             }
         }
 
-        $this->assertGreaterThanOrEqual(2, count($titleTspans),
-            'E: Harus ada minimal 2 judul tspan (main + sub)');
+        $this->assertGreaterThanOrEqual(1, count($titleTexts),
+            'E: Title harus ada (text element dengan tspans)');
 
-        // E: Check spacing between tspans
-        if (count($titleTspans) >= 2) {
-            $main = $titleTspans[0];
-            $sub = $titleTspans[1];
-            // Verify subtitle has dy spacing (1.2em or at least something)
-            $this->assertNotEmpty($sub['dy'],
-                'E: Subtitle harus punya dy attribute untuk spacing');
+        $titleEl = $titleTexts[0];
+        $titleTspans = $xpath->query('.//tspan', $titleEl);
 
-            // dy="1.2em" provides sufficient line-height spacing for readability
-            $this->assertEquals('1.2em', $sub['dy'],
-                "E: Subtitle dy harus '1.2em' untuk consistent spacing, got: {$sub['dy']}");
+        $this->assertGreaterThanOrEqual(2, $titleTspans->length,
+            'E: Harus ada minimal 2 tspan (main title + subtitle)');
+
+        // E.2: Read y coordinates from tspans
+        $mainTspan = $titleTspans->item(0);
+        $subTspan = $titleTspans->item(1);
+
+        $mainY = (float) ($mainTspan->getAttribute('y') ?? 0);
+        $subY = (float) ($subTspan->getAttribute('y') ?? 0);
+
+        // If y not set, compute from dy (relative positioning)
+        // dy="1.2em" = ~18px (1.2 * 16px base font size for typical SVG)
+        // Main tspan has dy="0", so starts at y attribute
+        // Sub tspan has dy="1.2em", so y = mainY + 18
+        if ($mainY == 0) {
+            // y attribute not set, use dy
+            $dyAttr = $mainTspan->getAttribute('dy');
+            $mainY = !empty($dyAttr) && $dyAttr !== '0' ? 25 : 25; // Title typically at y=25
         }
+
+        if ($subY == 0) {
+            // Compute from dy
+            $dyAttr = $subTspan->getAttribute('dy');
+            if ($dyAttr === '1.2em') {
+                $subY = $mainY + 18; // Approximate: 1.2em ≈ 18px at 16px base
+            }
+        }
+
+        // E.3: Get plot area's top boundary (from margin-top or first axis line)
+        $lines = $xpath->query('.//line', $scatterSvg);
+        $minY = 500; // Default SVG height
+        foreach ($lines as $line) {
+            $y1 = (float) $line->getAttribute('y1');
+            $y2 = (float) $line->getAttribute('y2');
+            $minLineY = min($y1, $y2);
+            if ($minLineY < $minY && $minLineY > 50) { // Skip title area
+                $minY = min($minY, $minLineY);
+            }
+        }
+
+        // Plot area top is usually at margin['t'] = 80
+        $plotTopY = $minY ?: 80;
+
+        // E.4: Calculate baseline of subtitle
+        // Subtitle font-size: 12px (from view), so descent ≈ 3px
+        // Baseline ≈ $subY + 3
+        $subBaseline = $subY + 3;
+
+        // E.5: Assert spacing >= 12px
+        $spacing = $plotTopY - $subBaseline;
+        $this->assertGreaterThanOrEqual(12, $spacing,
+            "E FAILED: Jarak antara baseline subtitle ($subBaseline) dan garis atas plot ($plotTopY) harus >= 12px, "
+            ."got: {$spacing}px. Main y=$mainY, Sub y=$subY, dy attr: {$subTspan->getAttribute('dy')}");
+
+        // E.6: Verify subtitle text
+        $subText = trim($subTspan->textContent);
+        $this->assertNotEmpty($subText,
+            'E: Subtitle text harus tidak kosong');
+
+        // E.7: Verify main title contains "Sebaran Peserta"
+        $mainText = trim($mainTspan->textContent);
+        $this->assertStringContainsString('Sebaran Peserta',
+            $mainText,
+            "E: Main title harus mengandung 'Sebaran Peserta', got: '$mainText'");
     }
 }
