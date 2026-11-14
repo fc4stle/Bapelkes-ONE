@@ -291,8 +291,8 @@ class TiyasController extends Controller
                             $cy_svg = $transformY($ellipse['cy']);
 
                             // rx, ry adalah semi-axes scaled by stdDev; scale lagi untuk SVG pixel space
-                            $rx = max(6.0, $ellipse['a'] * $scale);
-                            $ry = max(6.0, $ellipse['b'] * $scale);
+                            $rx = max(6.0, min(90.0, $ellipse['a'] * $scale));
+                            $ry = max(6.0, min(90.0, $ellipse['b'] * $scale));
                             $angle = $ellipse['angle'];
 
                             // Penjaga numerik: pastikan tidak ada NaN/INF

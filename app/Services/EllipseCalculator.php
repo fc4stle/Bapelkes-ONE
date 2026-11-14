@@ -21,8 +21,8 @@ class EllipseCalculator
             return [
                 'cx' => $points[0][0] ?? 0,
                 'cy' => $points[0][1] ?? 0,
-                'a' => 5,
-                'b' => 5,
+                'a' => 0,
+                'b' => 0,
                 'angle' => 0,
             ];
         }

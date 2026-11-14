@@ -412,7 +412,7 @@ class TiyasHasilClusteringTest extends TestCase
     }
 
     /**
-     * NEW TEST 7: Halaman 12 respons—titik peserta ada <title> dengan nama peserta dan klaster.
+     * NEW TEST 8: Halaman 12 respons—titik peserta ada <title> dengan nama peserta dan klaster.
      */
     public function test_12_responses_point_tooltips(): void
     {
@@ -444,5 +444,119 @@ class TiyasHasilClusteringTest extends TestCase
         // Pattern: <title>nama peserta | Klaster ...
         $this->assertStringContainsString('<title>', $content, 'Titik peserta harus ada <title> untuk tooltip');
         $this->assertStringContainsString('Klaster', $content, 'Tooltip harus berisi informasi klaster');
+    }
+
+    /**
+     * NEW TEST 8: Halaman dengan data identical points—tidak ada NaN/INF di HTML output.
+     * Klaster dengan 1 peserta (identical point) harus a=0, b=0 (minimal 6px oleh controller).
+     */
+    public function test_identical_points_no_nan_inf_in_html(): void
+    {
+        TiyasResponse::truncate();
+
+        $panitia = User::factory()->create(['role' => 'panitia']);
+        $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
+
+        // Buat 1 peserta saja—jadi FCM clustering akan menghasilkan 1 klaster dengan 1 titik (identical)
+        // Atau: buat 8+ peserta tapi semua dengan profil identik sehingga FCM mungkin collapse ke 1 klaster
+        // Untuk safety, buat 8 peserta dengan profil yang bisa collapse, atau just 1 peserta
+        $peserta = User::factory()->create(['role' => 'peserta']);
+        $pendaftaran = Pendaftaran::factory()->hadir()->create([
+            'peserta_id' => $peserta->id,
+            'pelatihan_id' => $pelatihan->id,
+        ]);
+        TiyasResponse::factory()->withProfil('optimal')->create([
+            'pendaftaran_id' => $pendaftaran->id,
+        ]);
+
+        // Sebenarnya perlu minimal 8, tapi test ini fokus pada "jika ada identical points" scenario
+        // Mari buat 8 peserta identik (semua nilai profil sama) sehingga 1 klaster
+        for ($i = 0; $i < 7; $i++) {
+            $peserta_i = User::factory()->create(['role' => 'peserta']);
+            $pendaftaran_i = Pendaftaran::factory()->hadir()->create([
+                'peserta_id' => $peserta_i->id,
+                'pelatihan_id' => $pelatihan->id,
+            ]);
+            TiyasResponse::factory()->withProfil('optimal')->create([
+                'pendaftaran_id' => $pendaftaran_i->id,
+            ]);
+        }
+
+        $response = $this->actingAs($panitia)
+            ->get(route('tiyas.hasil', $pelatihan));
+
+        $response->assertOk();
+
+        $content = $response->getContent();
+
+        // Verifikasi tidak ada NaN atau INF di HTML
+        $this->assertStringNotContainsString('NaN', $content, 'HTML output harus tidak mengandung NaN');
+        $this->assertStringNotContainsString('INF', $content, 'HTML output harus tidak mengandung INF');
+    }
+
+    /**
+     * NEW TEST 9: Halaman 12 respons—semua elips (rx, ry) harus antara 6 dan 90 pixel.
+     * Verifikasi dengan regex pada <ellipse data-klaster-area> attributes.
+     */
+    public function test_ellipse_rx_ry_bounds_6_to_90(): void
+    {
+        TiyasResponse::truncate();
+
+        $panitia = User::factory()->create(['role' => 'panitia']);
+        $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
+
+        // Buat 6 peserta optimal + 6 peserta at_risk => c=2 klaster
+        for ($i = 0; $i < 6; $i++) {
+            $peserta = User::factory()->create(['role' => 'peserta']);
+            $pendaftaran = Pendaftaran::factory()->hadir()->create([
+                'peserta_id' => $peserta->id,
+                'pelatihan_id' => $pelatihan->id,
+            ]);
+            TiyasResponse::factory()->withProfil('optimal')->create([
+                'pendaftaran_id' => $pendaftaran->id,
+            ]);
+        }
+
+        for ($i = 0; $i < 6; $i++) {
+            $peserta = User::factory()->create(['role' => 'peserta']);
+            $pendaftaran = Pendaftaran::factory()->hadir()->create([
+                'peserta_id' => $peserta->id,
+                'pelatihan_id' => $pelatihan->id,
+            ]);
+            TiyasResponse::factory()->withProfil('at_risk')->create([
+                'pendaftaran_id' => $pendaftaran->id,
+            ]);
+        }
+
+        $response = $this->actingAs($panitia)
+            ->get(route('tiyas.hasil', $pelatihan));
+
+        $response->assertOk();
+
+        $content = $response->getContent();
+
+        // Extract all rx dan ry values dari <ellipse data-klaster-area>
+        // Pattern: rx="<number>" atau ry="<number>"
+        preg_match_all('/rx="([\d.]+)"/', $content, $rx_matches);
+        preg_match_all('/ry="([\d.]+)"/', $content, $ry_matches);
+
+        $rx_values = $rx_matches[1];
+        $ry_values = $ry_matches[1];
+
+        // Verifikasi semua rx dalam range [6, 90]
+        $this->assertNotEmpty($rx_values, 'Harus ada minimal 1 rx attribute di elips');
+        foreach ($rx_values as $rx) {
+            $rx_float = (float) $rx;
+            $this->assertGreaterThanOrEqual(6.0, $rx_float, "rx=$rx harus >= 6");
+            $this->assertLessThanOrEqual(90.0, $rx_float, "rx=$rx harus <= 90");
+        }
+
+        // Verifikasi semua ry dalam range [6, 90]
+        $this->assertNotEmpty($ry_values, 'Harus ada minimal 1 ry attribute di elips');
+        foreach ($ry_values as $ry) {
+            $ry_float = (float) $ry;
+            $this->assertGreaterThanOrEqual(6.0, $ry_float, "ry=$ry harus >= 6");
+            $this->assertLessThanOrEqual(90.0, $ry_float, "ry=$ry harus <= 90");
+        }
     }
 }
