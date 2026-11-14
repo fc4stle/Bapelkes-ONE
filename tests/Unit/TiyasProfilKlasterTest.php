@@ -2,99 +2,215 @@
 
 namespace Tests\Unit;
 
-use App\Services\FuzzyCMeans;
 use App\Services\TiyasProfilKlaster;
-use App\Services\TiyasScorer;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
+use PHPUnit\Framework\TestCase;
 
 class TiyasProfilKlasterTest extends TestCase
 {
-    use RefreshDatabase;
-
-    private TiyasProfilKlaster $service;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $scorer = app(TiyasScorer::class);
-        $fcm = app(FuzzyCMeans::class);
-        $this->service = new TiyasProfilKlaster($scorer, $fcm);
-    }
-
     /**
-     * Test deskriptif() method returns correct structure:
-     * mean, SD, min, max, count, dan kategori percentages
+     * Test posisiPelatihan dengan data kecil yang bisa dihitung tangan.
+     *
+     * Setup:
+     * - 2 pelatihan: ID 1 (nama "Pelatihan A"), ID 2 (nama "Pelatihan B")
+     * - 2 cluster
+     * - Pelatihan 1: 2 peserta
+     *   - Peserta 1A: skor_raw=[1.0, 2.0, 3.0, 4.0], memberships=[50%, 50%]
+     *   - Peserta 1B: skor_raw=[3.0, 4.0, 1.0, 2.0], memberships=[30%, 70%]
+     *   - Centroid: [(1+3)/2, (2+4)/2, (3+1)/2, (4+2)/2] = [2.0, 3.0, 2.0, 3.0]
+     *   - Rata keanggotaan: [(50+30)/2, (50+70)/2] = [40%, 60%]
+     *   - Klaster terdekat: 2 (argmax)
+     *
+     * - Pelatihan 2: 2 peserta
+     *   - Peserta 2A: skor_raw=[2.0, 1.0, 4.0, 3.0], memberships=[70%, 30%]
+     *   - Peserta 2B: skor_raw=[4.0, 3.0, 2.0, 1.0], memberships=[80%, 20%]
+     *   - Centroid: [(2+4)/2, (1+3)/2, (4+2)/2, (3+1)/2] = [3.0, 2.0, 3.0, 2.0]
+     *   - Rata keanggotaan: [(70+80)/2, (30+20)/2] = [75%, 25%]
+     *   - Klaster terdekat: 1 (argmax)
      */
-    public function test_deskriptif_returns_mean_sd_min_max_kategori()
+    public function test_posisi_pelatihan_dengan_dua_pelatihan()
     {
-        // Build mock responses dengan jawaban
-        $responses = [
-            (object) ['jawaban' => $this->buildJawabanTinggi()],
-            (object) ['jawaban' => $this->buildJawabanRendah()],
+        $scorer = $this->createMock(\App\Services\TiyasScorer::class);
+        $fcm = $this->createMock(\App\Services\FuzzyCMeans::class);
+        $service = new TiyasProfilKlaster($scorer, $fcm);
+
+        // Build test analisis data
+        $analisis = [
+            'tabel_peserta' => [
+                // Pelatihan 1
+                [
+                    'nama' => 'Peserta 1A',
+                    'skor_raw' => [1.0, 2.0, 3.0, 4.0],
+                    'pelatihan_id' => 1,
+                    'memberships' => [1 => 50.0, 2 => 50.0],
+                    'klaster_dominan' => 1,
+                ],
+                [
+                    'nama' => 'Peserta 1B',
+                    'skor_raw' => [3.0, 4.0, 1.0, 2.0],
+                    'pelatihan_id' => 1,
+                    'memberships' => [1 => 30.0, 2 => 70.0],
+                    'klaster_dominan' => 2,
+                ],
+                // Pelatihan 2
+                [
+                    'nama' => 'Peserta 2A',
+                    'skor_raw' => [2.0, 1.0, 4.0, 3.0],
+                    'pelatihan_id' => 2,
+                    'memberships' => [1 => 70.0, 2 => 30.0],
+                    'klaster_dominan' => 1,
+                ],
+                [
+                    'nama' => 'Peserta 2B',
+                    'skor_raw' => [4.0, 3.0, 2.0, 1.0],
+                    'pelatihan_id' => 2,
+                    'memberships' => [1 => 80.0, 2 => 20.0],
+                    'klaster_dominan' => 1,
+                ],
+            ],
         ];
 
-        $result = $this->service->deskriptif($responses);
+        $comparisonData = [
+            1 => ['id' => 1, 'nama' => 'Pelatihan A'],
+            2 => ['id' => 2, 'nama' => 'Pelatihan B'],
+        ];
 
-        // Verifikasi struktur hasil
-        $this->assertIsArray($result);
-        $this->assertArrayHasKey('TC', $result);
-        $this->assertArrayHasKey('TE', $result);
-        $this->assertArrayHasKey('ITT', $result);
-        $this->assertArrayHasKey('YB', $result);
+        $result = $service->posisiPelatihan($analisis, $comparisonData);
 
-        // Setiap konstruk harus punya: mean, stdev, min, max, kategori
-        foreach (['TC', 'TE', 'ITT', 'YB'] as $konstruk) {
-            $this->assertArrayHasKey('mean', $result[$konstruk], "Konstruk $konstruk harus punya mean");
-            $this->assertArrayHasKey('stdev', $result[$konstruk], "Konstruk $konstruk harus punya stdev");
-            $this->assertArrayHasKey('min', $result[$konstruk], "Konstruk $konstruk harus punya min");
-            $this->assertArrayHasKey('max', $result[$konstruk], "Konstruk $konstruk harus punya max");
-            $this->assertArrayHasKey('kategori', $result[$konstruk], "Konstruk $konstruk harus punya kategori");
+        // Assert result count
+        $this->assertCount(2, $result);
 
-            // Kategori harus punya Rendah, Sedang, Tinggi dengan count dan percent
-            $kategori = $result[$konstruk]['kategori'];
-            $this->assertArrayHasKey('Rendah', $kategori, "$konstruk harus punya Rendah");
-            $this->assertArrayHasKey('Sedang', $kategori, "$konstruk harus punya Sedang");
-            $this->assertArrayHasKey('Tinggi', $kategori, "$konstruk harus punya Tinggi");
+        // Pelatihan 1 (ID 1)
+        $p1 = $result[0];
+        $this->assertEquals(1, $p1['id']);
+        $this->assertEquals('Pelatihan A', $p1['nama']);
+        $this->assertEquals(2, $p1['n_peserta']);
 
-            foreach (['Rendah', 'Sedang', 'Tinggi'] as $label) {
-                $this->assertArrayHasKey('count', $kategori[$label], "$konstruk/$label harus punya count");
-                $this->assertArrayHasKey('percent', $kategori[$label], "$konstruk/$label harus punya percent");
-            }
+        // Centroid Pelatihan 1: [2.0, 3.0, 2.0, 3.0]
+        $this->assertEqualsWithDelta([2.0, 3.0, 2.0, 3.0], $p1['centroid_pelatihan'], 0.01);
 
-            // Total percent harus = 100
-            $totalPercent = $kategori['Rendah']['percent'] + $kategori['Sedang']['percent'] + $kategori['Tinggi']['percent'];
-            $this->assertEquals(100, $totalPercent, "$konstruk total persen harus 100, got $totalPercent");
-        }
+        // Rata keanggotaan: [40.0, 60.0]
+        $this->assertEqualsWithDelta([1 => 40.0, 2 => 60.0], $p1['rata_keanggotaan'], 0.1);
+
+        // Klaster terdekat: 2
+        $this->assertEquals(2, $p1['klaster_terdekat']);
+
+        // Pelatihan 2 (ID 2)
+        $p2 = $result[1];
+        $this->assertEquals(2, $p2['id']);
+        $this->assertEquals('Pelatihan B', $p2['nama']);
+        $this->assertEquals(2, $p2['n_peserta']);
+
+        // Centroid Pelatihan 2: [3.0, 2.0, 3.0, 2.0]
+        $this->assertEqualsWithDelta([3.0, 2.0, 3.0, 2.0], $p2['centroid_pelatihan'], 0.01);
+
+        // Rata keanggotaan: [75.0, 25.0]
+        $this->assertEqualsWithDelta([1 => 75.0, 2 => 25.0], $p2['rata_keanggotaan'], 0.1);
+
+        // Klaster terdekat: 1
+        $this->assertEquals(1, $p2['klaster_terdekat']);
     }
 
     /**
-     * Helper: Buat jawaban dengan semua skor tinggi (4).
+     * Test posisiPelatihan dengan single peserta (n=1)
      */
-    private function buildJawabanTinggi(): array
+    public function test_posisi_pelatihan_single_peserta()
     {
-        $jawaban = [];
-        for ($i = 1; $i <= 15; $i++) {
-            $jawaban["TC$i"] = 4;
-            $jawaban["TE$i"] = 4;
-            $jawaban["ITT$i"] = 4;
-            $jawaban["YB$i"] = 4;
-        }
-        return $jawaban;
+        $scorer = $this->createMock(\App\Services\TiyasScorer::class);
+        $fcm = $this->createMock(\App\Services\FuzzyCMeans::class);
+        $service = new TiyasProfilKlaster($scorer, $fcm);
+
+        $analisis = [
+            'tabel_peserta' => [
+                [
+                    'nama' => 'Peserta Solo',
+                    'skor_raw' => [2.5, 3.5, 1.5, 4.0],
+                    'pelatihan_id' => 5,
+                    'memberships' => [1 => 20.0, 2 => 35.0, 3 => 45.0],
+                    'klaster_dominan' => 3,
+                ],
+            ],
+        ];
+
+        $comparisonData = [
+            5 => ['id' => 5, 'nama' => 'Pelatihan Solo'],
+        ];
+
+        $result = $service->posisiPelatihan($analisis, $comparisonData);
+
+        $this->assertCount(1, $result);
+        $p = $result[0];
+
+        // Centroid should equal single peserta's skor_raw
+        $this->assertEqualsWithDelta([2.5, 3.5, 1.5, 4.0], $p['centroid_pelatihan'], 0.01);
+
+        // Rata keanggotaan should equal single peserta's memberships
+        $this->assertEqualsWithDelta([1 => 20.0, 2 => 35.0, 3 => 45.0], $p['rata_keanggotaan'], 0.1);
+
+        // Klaster terdekat should be 3 (max)
+        $this->assertEquals(3, $p['klaster_terdekat']);
     }
 
     /**
-     * Helper: Buat jawaban dengan semua skor rendah (1).
+     * Test posisiPelatihan dengan empty tabel_peserta
      */
-    private function buildJawabanRendah(): array
+    public function test_posisi_pelatihan_empty_data()
     {
-        $jawaban = [];
-        for ($i = 1; $i <= 15; $i++) {
-            $jawaban["TC$i"] = 1;
-            $jawaban["TE$i"] = 1;
-            $jawaban["ITT$i"] = 1;
-            $jawaban["YB$i"] = 1;
-        }
-        return $jawaban;
+        $scorer = $this->createMock(\App\Services\TiyasScorer::class);
+        $fcm = $this->createMock(\App\Services\FuzzyCMeans::class);
+        $service = new TiyasProfilKlaster($scorer, $fcm);
+
+        $analisis = ['tabel_peserta' => []];
+        $comparisonData = [];
+
+        $result = $service->posisiPelatihan($analisis, $comparisonData);
+
+        $this->assertEmpty($result);
+    }
+
+    /**
+     * Test posisiPelatihan dengan 3 cluster (1-based indexing)
+     */
+    public function test_posisi_pelatihan_tiga_cluster()
+    {
+        $scorer = $this->createMock(\App\Services\TiyasScorer::class);
+        $fcm = $this->createMock(\App\Services\FuzzyCMeans::class);
+        $service = new TiyasProfilKlaster($scorer, $fcm);
+
+        $analisis = [
+            'tabel_peserta' => [
+                [
+                    'nama' => 'P1',
+                    'skor_raw' => [1.0, 1.0, 1.0, 1.0],
+                    'pelatihan_id' => 10,
+                    'memberships' => [1 => 10.0, 2 => 20.0, 3 => 70.0],
+                    'klaster_dominan' => 3,
+                ],
+                [
+                    'nama' => 'P2',
+                    'skor_raw' => [2.0, 2.0, 2.0, 2.0],
+                    'pelatihan_id' => 10,
+                    'memberships' => [1 => 15.0, 2 => 25.0, 3 => 60.0],
+                    'klaster_dominan' => 3,
+                ],
+            ],
+        ];
+
+        $comparisonData = [
+            10 => ['id' => 10, 'nama' => 'Pelatihan X'],
+        ];
+
+        $result = $service->posisiPelatihan($analisis, $comparisonData);
+
+        $this->assertCount(1, $result);
+        $p = $result[0];
+
+        // Centroid
+        $this->assertEqualsWithDelta([1.5, 1.5, 1.5, 1.5], $p['centroid_pelatihan'], 0.01);
+
+        // Rata keanggotaan (1-based): (10+15)/2, (20+25)/2, (70+60)/2
+        $this->assertEqualsWithDelta([1 => 12.5, 2 => 22.5, 3 => 65.0], $p['rata_keanggotaan'], 0.1);
+
+        // Klaster terdekat: 3
+        $this->assertEquals(3, $p['klaster_terdekat']);
     }
 }
