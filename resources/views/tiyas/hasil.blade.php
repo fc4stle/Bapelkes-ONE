@@ -1097,7 +1097,7 @@
                                 @php $group_x = $chart_padding; @endphp
                                 @foreach ($comparisonData as $pel_idx => $pel_data)
                                     @php
-                                        $pel_name_short = substr($pel_data['name'], 0, 15);
+                                        $pel_name_short = substr($pel_data['nama'], 0, 15);
                                         $bar_x = $group_x;
                                     @endphp
                                     
@@ -1202,7 +1202,7 @@
                                             
                                             @foreach ($comparisonData as $pel_id => $pel_data)
                                                 <tr style="border-bottom: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent); {{ $pelatihan->id === $pel_id ? 'background-color: color-mix(in srgb, var(--color-primary) 10%, transparent);' : '' }}">
-                                                    <td style="padding: 0.75rem; color: var(--color-text); font-weight: 600;">{{ $pel_data['name'] }}</td>
+                                                    <td style="padding: 0.75rem; color: var(--color-text); font-weight: 600;">{{ $pel_data['nama'] }}</td>
                                                     @php $row_total = 0; @endphp
                                                     @foreach ($klasterResult['klaster_labels'] ?? [] as $klaster_idx => $label)
                                                         @php

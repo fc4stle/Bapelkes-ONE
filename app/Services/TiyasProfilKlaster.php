@@ -2,6 +2,10 @@
 
 namespace App\Services;
 
+use App\Models\Pelatihan;
+use App\Models\Pendaftaran;
+use App\Models\TiyasResponse;
+
 class TiyasProfilKlaster
 {
     private $scorer;
@@ -329,5 +333,81 @@ class TiyasProfilKlaster
         }
 
         return $explanations;
+    }
+
+    /**
+     * Calculate comparison data for multiple trainings (cakupan=semua).
+     * Efficient: ONE query for all responses with eager-loaded relationships.
+     *
+     * @return array ['comparisonData' => [...], 'pelatihansForComparison' => [...]]
+     */
+    public function perbandinganAntarPelatihan(): array
+    {
+        $comparisonData = [];
+        $pelatihansForComparison = [];
+
+        // Step 1: Get all trainings with verified attendees
+        $allPelatihans = Pelatihan::with('pendaftarans')->get();
+        $pelatihansWithResponses = [];
+
+        foreach ($allPelatihans as $pel) {
+            $verifiedHadirCount = $pel->pendaftarans()
+                ->where('status_verifikasi', 'diverifikasi')
+                ->whereNotNull('hadir_at')
+                ->count();
+
+            if ($verifiedHadirCount > 0) {
+                $pelatihansWithResponses[] = $pel;
+            }
+        }
+
+        // Step 2: Fetch ALL responses for all trainings in ONE query (with eager loading)
+        $pelatihansIds = array_map(fn ($p) => $p->id, $pelatihansWithResponses);
+        $allResponseIds = Pendaftaran::whereIn('pelatihan_id', $pelatihansIds)
+            ->where('status_verifikasi', 'diverifikasi')
+            ->whereNotNull('hadir_at')
+            ->pluck('id');
+
+        $allResponses = TiyasResponse::whereIn('pendaftaran_id', $allResponseIds)
+            ->with('pendaftaran') // Eager load to avoid N+1
+            ->get()
+            ->groupBy(fn ($r) => $r->pendaftaran->pelatihan_id);
+
+        // Step 3: Group and calculate per pelatihan
+        foreach ($pelatihansWithResponses as $pel) {
+            $respPel = $allResponses->get($pel->id) ?? collect([]);
+
+            if ($respPel->count() > 0) {
+                $skorPel = ['TC' => [], 'TE' => [], 'ITT' => [], 'YB' => []];
+                foreach ($respPel as $resp) {
+                    $skor = $this->scorer->hitungSkor($resp->jawaban);
+                    foreach ($skor as $konst => $data) {
+                        $skorPel[$konst][] = $data['skor'];
+                    }
+                }
+
+                $meanPel = [];
+                $catPel = [];
+                foreach ($skorPel as $konst => $vals) {
+                    $mean = count($vals) > 0 ? round(array_sum($vals) / count($vals), 2) : 0;
+                    $meanPel[$konst] = $mean;
+                    $catPel[$konst] = $this->scorer->kategori($mean);
+                }
+
+                $comparisonData[$pel->id] = [
+                    'id' => $pel->id,
+                    'nama' => $pel->nama,
+                    'count' => $respPel->count(),
+                    'mean' => $meanPel,
+                    'categories' => $catPel,
+                ];
+                $pelatihansForComparison[] = $pel->id;
+            }
+        }
+
+        return [
+            'comparisonData' => $comparisonData,
+            'pelatihansForComparison' => $pelatihansForComparison,
+        ];
     }
 }

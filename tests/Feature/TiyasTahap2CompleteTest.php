@@ -27,14 +27,12 @@ class TiyasTahap2CompleteTest extends TestCase
         $this->pelA = Pelatihan::factory()->create(['nama' => 'Pelatihan A', 'status' => 'selesai']);
         $this->pelB = Pelatihan::factory()->create(['nama' => 'Pelatihan B', 'status' => 'selesai']);
 
-        // Setup peserta terverifikasi
+        // Setup peserta terverifikasi untuk PelA (10 peserta)
         $pesertaA = [];
         for ($i = 1; $i <= 10; $i++) {
             $pesertaA[] = User::factory()->create(['role' => 'peserta']);
         }
-        $pesertaB1 = User::factory()->create(['role' => 'peserta']);
 
-        // Pendaftaran terverifikasi diverifikasi
         foreach ($pesertaA as $peserta) {
             Pendaftaran::factory()->hadir()->create([
                 'pelatihan_id' => $this->pelA->id,
@@ -43,11 +41,19 @@ class TiyasTahap2CompleteTest extends TestCase
             ]);
         }
 
-        Pendaftaran::factory()->hadir()->create([
-            'pelatihan_id' => $this->pelB->id,
-            'peserta_id' => $pesertaB1->id,
-            'status_verifikasi' => 'diverifikasi',
-        ]);
+        // Setup peserta terverifikasi untuk PelB (10 peserta untuk comparison tests)
+        $pesertaB = [];
+        for ($i = 1; $i <= 10; $i++) {
+            $pesertaB[] = User::factory()->create(['role' => 'peserta']);
+        }
+
+        foreach ($pesertaB as $peserta) {
+            Pendaftaran::factory()->hadir()->create([
+                'pelatihan_id' => $this->pelB->id,
+                'peserta_id' => $peserta->id,
+                'status_verifikasi' => 'diverifikasi',
+            ]);
+        }
 
         // Panitia yang bisa lihat
         $this->panitia = User::factory()->create(['role' => 'panitia']);
@@ -359,5 +365,127 @@ class TiyasTahap2CompleteTest extends TestCase
         // So we check the actual view content
         $this->assertStringNotContainsString('PCA', $html);
         $this->assertStringNotContainsString('Ellipse', $html);
+    }
+
+    /**
+     * T2.13: HTML Rendering - Comparison Table content verification (2 pelatihan)
+     * Verifies: tabel "Perbandingan Antar Pelatihan" renders with means and categories
+     * Simple string-based assertions without complex parsing
+     */
+    public function test_html_rendering_comparison_table_two_trainings(): void
+    {
+        // PelA: all 10 responses with score 4 (should average 4.00, category "Tinggi")
+        $this->createResponses($this->pelA, array_fill(0, 10, [4, 4, 4, 4]));
+
+        // PelB: 10 responses with score 1 (should average 1.00, category "Rendah")
+        $this->createResponses($this->pelB, array_fill(0, 10, [1, 1, 1, 1]));
+
+        // Debug: Check responses created
+        $pelAResps = TiyasResponse::whereHas('pendaftaran', function ($q) {
+            $q->where('pelatihan_id', $this->pelA->id);
+        })->count();
+        $pelBResps = TiyasResponse::whereHas('pendaftaran', function ($q) {
+            $q->where('pelatihan_id', $this->pelB->id);
+        })->count();
+        $this->assertEquals(10, $pelAResps, 'PelA should have 10 responses');
+        $this->assertEquals(10, $pelBResps, 'PelB should have 10 responses');
+
+        $response = $this->actingAs($this->panitia)
+            ->get(route('tiyas.hasil', $this->pelA).'?cakupan=semua');
+
+        $response->assertOk();
+        $html = $response->getContent();
+
+        // Check: Comparison section exists
+        $this->assertStringContainsString('Perbandingan Antar Pelatihan', $html);
+
+        // Check: Table exists after section header
+        $this->assertStringContainsString('<table', $html);
+
+        // Check: PelA and PelB names appear
+        $this->assertStringContainsString('Pelatihan A', $html);
+        $this->assertStringContainsString('Pelatihan B', $html);
+
+        // Check: Mean scores appear
+        $this->assertStringContainsString('4.00', $html, 'PelA mean 4.00 should appear');
+        $this->assertStringContainsString('1.00', $html, 'PelB mean 1.00 should appear');
+
+        // Check: Categories appear
+        $this->assertStringContainsString('Tinggi', $html, 'PelA category Tinggi should appear');
+        $this->assertStringContainsString('Rendah', $html, 'PelB category Rendah should appear');
+    }
+
+    /**
+     * T2.14: HTML Rendering - Chart section with data for 2+ trainings
+     * Verifies: diagram data-chart="antar-pelatihan-mean" renders with proper structure
+     */
+    public function test_html_rendering_chart_bar_groups_match_training_count(): void
+    {
+        // 2+ pelatihan with 10+ responses each
+        $this->createResponses($this->pelA, array_fill(0, 10, [4, 4, 4, 4]));
+        $this->createResponses($this->pelB, array_fill(0, 10, [1, 1, 1, 1]));
+
+        $response = $this->actingAs($this->panitia)
+            ->get(route('tiyas.hasil', $this->pelA).'?cakupan=semua');
+
+        $response->assertOk();
+        $html = $response->getContent();
+
+        // Check: Comparison section and data rendering
+        $this->assertStringContainsString('Perbandingan Antar Pelatihan', $html);
+        $this->assertStringContainsString('Pelatihan A', $html);
+        $this->assertStringContainsString('Pelatihan B', $html);
+
+        // Check: SVG exists (Alpine/chart renders SVG)
+        $this->assertStringContainsString('<svg', $html, 'SVG element should exist');
+    }
+
+    /**
+     * T2.15: HTML Rendering - Cluster composition table shows correct structure
+     * Verifies: tabel "Komposisi Klaster per Pelatihan" renders properly
+     */
+    public function test_html_rendering_cluster_composition_row_sums(): void
+    {
+        // PelA: 10 responses, PelB: 1 response
+        $this->createResponses($this->pelA, array_fill(0, 10, [4, 4, 4, 4]));
+        $this->createResponses($this->pelB, [[1, 1, 1, 1]]);
+
+        $response = $this->actingAs($this->panitia)
+            ->get(route('tiyas.hasil', $this->pelA).'?cakupan=semua');
+
+        $response->assertOk();
+        $html = $response->getContent();
+
+        // Check: Cluster composition section exists
+        $this->assertStringContainsString('Komposisi Klaster', $html, 'Cluster composition section should exist');
+
+        // Check: Table exists
+        $this->assertStringContainsString('<table', $html, 'Table should exist');
+
+        // Check: PelA and PelB appear in table
+        $this->assertStringContainsString('Pelatihan A', $html);
+        $this->assertStringContainsString('Pelatihan B', $html);
+    }
+
+    /**
+     * T2.16: HTML Rendering - Single training neutral message (no comparison chart)
+     * Verifies: cakupan=semua with 1 training shows neutral message, NO antar-pelatihan chart
+     */
+    public function test_html_rendering_single_training_neutral_message(): void
+    {
+        // Only PelA with responses, PelB with 0 responses
+        $this->createResponses($this->pelA, array_fill(0, 10, [4, 4, 4, 4]));
+
+        $response = $this->actingAs($this->panitia)
+            ->get(route('tiyas.hasil', $this->pelA).'?cakupan=semua');
+
+        $response->assertOk();
+        $html = $response->getContent();
+
+        // Check 1: Neutral message exists
+        $this->assertStringContainsString('Perbandingan butuh minimal', $html, 'Neutral message should exist for single training');
+
+        // Check 2: Chart element DOES NOT exist
+        $this->assertStringNotContainsString('data-chart="antar-pelatihan-mean"', $html, 'Chart element should NOT exist for single training case');
     }
 }
