@@ -377,48 +377,25 @@
                                         @endphp
                                         
                                         <svg width="100%" viewBox="0 0 {{ $svgW }} {{ $svgH }}" style="max-height: 420px; border: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent); background: white; border-radius: var(--radius-card);" role="img" aria-label="Grafik PCA sebaran peserta dengan elips keyakinan per klaster, grid axis, dan tooltip">
-                                            <!-- Elips keyakinan per klaster: area transparan dengan garis tepi -->
-                                            @foreach ($pointsByCluster as $clusterK => $clusterPeserta)
+                                            <!-- Elips keyakinan per klaster dari Controller (render saja, komputasi sudah di Controller) -->
+                                            @foreach ($pcaEllipses as $clusterK => $ellipse)
                                                 @php
-                                                    $clusterPoints = array_map(fn($p) => [$p['x'], $p['y']], $clusterPeserta);
                                                     $kNum = $clusterK;
                                                     $cColor = $clusterColors[($kNum - 1) % count($clusterColors)] ?? 'var(--color-primary)';
-                                                    
-                                                    if (count($clusterPoints) >= 3) {
-                                                        // Hitung pusat (mean) dan matriks kovarians
-                                                        $meanX = array_sum(array_map(fn($p) => $p[0], $clusterPoints)) / count($clusterPoints);
-                                                        $meanY = array_sum(array_map(fn($p) => $p[1], $clusterPoints)) / count($clusterPoints);
-                                                        
-                                                        $cov_xx = array_sum(array_map(fn($p) => ($p[0] - $meanX) ** 2, $clusterPoints)) / count($clusterPoints);
-                                                        $cov_yy = array_sum(array_map(fn($p) => ($p[1] - $meanY) ** 2, $clusterPoints)) / count($clusterPoints);
-                                                        $cov_xy = array_sum(array_map(fn($p) => ($p[0] - $meanX) * ($p[1] - $meanY), $clusterPoints)) / count($clusterPoints);
-                                                        
-                                                        // Eigen: untuk ellipse 2D
-                                                        $trace = $cov_xx + $cov_yy;
-                                                        $det = $cov_xx * $cov_yy - $cov_xy ** 2;
-                                                        $lambda1 = $trace / 2 + sqrt(($trace / 2) ** 2 - $det);
-                                                        $lambda2 = $trace / 2 - sqrt(($trace / 2) ** 2 - $det);
-                                                        
-                                                        // Standard deviasi ~ sqrt(eigenvalue) * 1.5
-                                                        $a = 1.5 * sqrt($lambda1) * $scale;
-                                                        $b = 1.5 * sqrt($lambda2) * $scale;
-                                                        $angle = atan2($cov_xy, $cov_xx - $lambda1) * (180 / M_PI);
-                                                        
-                                                        $cx = $transformX($meanX);
-                                                        $cy = $transformY($meanY);
-                                                        
-                                                        // SVG ellipse
-                                                        $ellipseHtml = '<ellipse cx="' . $cx . '" cy="' . $cy . '" rx="' . $a . '" ry="' . $b . '" fill="' . $cColor . '" fill-opacity="0.12" stroke="' . $cColor . '" stroke-width="1" stroke-opacity="0.5" transform="rotate(' . $angle . ' ' . $cx . ' ' . $cy . ')" data-klaster-area="' . $kNum . '" />';
-                                                    } else {
-                                                        // Untuk <3 titik, buat lingkaran kecil di sekitar centroid
-                                                        $meanX = array_sum(array_map(fn($p) => $p[0], $clusterPoints)) / count($clusterPoints);
-                                                        $meanY = array_sum(array_map(fn($p) => $p[1], $clusterPoints)) / count($clusterPoints);
-                                                        $cx = $transformX($meanX);
-                                                        $cy = $transformY($meanY);
-                                                        $ellipseHtml = '<circle cx="' . $cx . '" cy="' . $cy . '" r="15" fill="' . $cColor . '" fill-opacity="0.12" stroke="' . $cColor . '" stroke-width="1" stroke-opacity="0.5" data-klaster-area="' . $kNum . '" />';
-                                                    }
                                                 @endphp
-                                                {!! $ellipseHtml !!}
+                                                <ellipse 
+                                                    cx="{{ $ellipse['cx'] }}" 
+                                                    cy="{{ $ellipse['cy'] }}" 
+                                                    rx="{{ $ellipse['rx'] }}" 
+                                                    ry="{{ $ellipse['ry'] }}" 
+                                                    fill="{{ $cColor }}" 
+                                                    fill-opacity="0.12" 
+                                                    stroke="{{ $cColor }}" 
+                                                    stroke-width="1" 
+                                                    stroke-opacity="0.5" 
+                                                    transform="rotate({{ $ellipse['angle'] }} {{ $ellipse['cx'] }} {{ $ellipse['cy'] }})" 
+                                                    data-klaster-area="{{ $kNum }}" 
+                                                />
                                             @endforeach
                                             
                                             <!-- Grid lines tipis & axis -->
