@@ -322,7 +322,7 @@
                             @if ($pcaData)
                                 <div class="mb-6">
                                     <h3 class="font-semibold mb-3 text-sm" style="color: var(--color-text);">3. Grafik Sebaran Peserta (PCA)</h3>
-                                    <div class="bg-gray-50 dark:bg-gray-900 rounded p-4" style="background-color: color-mix(in srgb, var(--color-bg) 50%, var(--color-text) 5%); border: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent);">
+                                    <div class="rounded p-4" style="background-color: color-mix(in srgb, var(--color-bg) 50%, var(--color-text) 5%); border: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent);">
                                         @php
                                             $points = $pcaData['points'];
                                             $variance = $pcaData['variance'];
@@ -353,11 +353,11 @@
                                             
                                             // Warna per klaster dari config (CSS variables)
                                             $clusterColors = [
-                                                'var(--color-primary)',
-                                                'var(--color-success)',
-                                                'var(--color-danger)',
-                                                'var(--color-warning)',
-                                                'var(--color-info)',
+                                            'var(--color-primary)',
+                                            'var(--color-success)',
+                                            'var(--color-danger)',
+                                            'var(--color-warning)',
+                                            'var(--color-accent)',
                                             ];
                                         @endphp
                                         

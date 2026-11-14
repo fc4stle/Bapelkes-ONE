@@ -338,6 +338,47 @@ class TiyasProfilKlasterTest extends TestCase
     }
 
     /**
+     * NEW TEST 8: Unit test determineProfil dengan 5 synthetic centroids (A/B/C/D/Unmatched)
+     * Menggunakan Reflection untuk test private method dengan centroid scores yang diketahui
+     */
+    public function test_determine_profil_with_synthetic_centroids()
+    {
+        // Inisialisasi service
+        $service = new TiyasProfilKlaster(new TiyasScorer, new FuzzyCMeans);
+
+        // Gunakan Reflection untuk akses private determineProfil method
+        $reflection = new \ReflectionMethod($service, 'determineProfil');
+        $reflection->setAccessible(true);
+
+        // Test Case 1: Centroid A — [3.8, 3.8, 3.8, 3.8] => Optimal Transfer
+        // TC, TE, ITT, YB semuanya Tinggi (> 3.0)
+        $result_a = $reflection->invoke($service, [3.8, 3.8, 3.8, 3.8]);
+        $this->assertIsArray($result_a);
+        $this->assertArrayHasKey('label', $result_a);
+        $this->assertEquals('A: Optimal Transfer', $result_a['label']);
+
+        // Test Case 2: Centroid B — [3.5, 3.5, 3.5, 2.0] => Developing Transfer
+        // TC, TE, ITT Tinggi; YB Sedang (2.0-3.0)
+        $result_b = $reflection->invoke($service, [3.5, 3.5, 3.5, 2.0]);
+        $this->assertEquals('B: Developing Transfer', $result_b['label']);
+
+        // Test Case 3: Centroid C — [2.0, 2.0, 3.8, 2.0] => Constrained Transfer
+        // TC, TE Rendah/Sedang; ITT Tinggi; YB Rendah/Sedang
+        $result_c = $reflection->invoke($service, [2.0, 2.0, 3.8, 2.0]);
+        $this->assertEquals('C: Constrained Transfer', $result_c['label']);
+
+        // Test Case 4: Centroid D — [1.2, 1.2, 1.2, 1.2] => At-Risk Transfer
+        // Semuanya Rendah (< 2.0)
+        $result_d = $reflection->invoke($service, [1.2, 1.2, 1.2, 1.2]);
+        $this->assertEquals('D: At-Risk Transfer', $result_d['label']);
+
+        // Test Case 5: Unmatched — [2.5, 3.5, 2.5, 2.5] => Belum cocok dengan 4 profil konseptual
+        // TC Sedang, TE Tinggi, ITT Sedang, YB Sedang — tidak match profil manapun
+        $result_unmatched = $reflection->invoke($service, [2.5, 3.5, 2.5, 2.5]);
+        $this->assertEquals('Belum cocok dengan 4 profil konseptual', $result_unmatched['label']);
+    }
+
+    /**
      * Helper: Generate jawaban respons (mapping ke 4 skor: TC, TE, ITT, YB)
      * Input: skor dalam skala 1.0-4.0
      * Output: jawaban array dengan butir bernilai 1-4 (sesuai skala)
