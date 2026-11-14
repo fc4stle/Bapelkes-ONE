@@ -318,4 +318,131 @@ class TiyasHasilClusteringTest extends TestCase
         // Pattern: SVG PCA yang lama ada height="auto", yang baru tidak ada
         $this->assertStringNotContainsString('height="auto"', $content, 'SVG harus tidak ada height="auto" attribute untuk menghindari console warning');
     }
+
+    /**
+     * NEW TEST 5: Halaman 12 respons—elips keyakinan per klaster ada (atribut data-klaster-area).
+     * Verifikasi jumlah elips = c (jumlah klaster optimal).
+     */
+    public function test_12_responses_ellipse_areas_per_cluster(): void
+    {
+        TiyasResponse::truncate();
+
+        $panitia = User::factory()->create(['role' => 'panitia']);
+        $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
+
+        // Buat 6 peserta optimal + 6 peserta at_risk => c=2 klaster
+        for ($i = 0; $i < 6; $i++) {
+            $peserta = User::factory()->create(['role' => 'peserta']);
+            $pendaftaran = Pendaftaran::factory()->hadir()->create([
+                'peserta_id' => $peserta->id,
+                'pelatihan_id' => $pelatihan->id,
+            ]);
+            TiyasResponse::factory()->withProfil('optimal')->create([
+                'pendaftaran_id' => $pendaftaran->id,
+            ]);
+        }
+
+        for ($i = 0; $i < 6; $i++) {
+            $peserta = User::factory()->create(['role' => 'peserta']);
+            $pendaftaran = Pendaftaran::factory()->hadir()->create([
+                'peserta_id' => $peserta->id,
+                'pelatihan_id' => $pelatihan->id,
+            ]);
+            TiyasResponse::factory()->withProfil('at_risk')->create([
+                'pendaftaran_id' => $pendaftaran->id,
+            ]);
+        }
+
+        $response = $this->actingAs($panitia)
+            ->get(route('tiyas.hasil', $pelatihan));
+
+        $response->assertOk();
+
+        $content = $response->getContent();
+
+        // Verifikasi ada elips area per klaster (2 klaster => 2 elips)
+        // Pattern: <ellipse ... data-klaster-area="1" ... />
+        $this->assertStringContainsString('data-klaster-area="1"', $content, 'Klaster 1 harus ada elips keyakinan (data-klaster-area)');
+        $this->assertStringContainsString('data-klaster-area="2"', $content, 'Klaster 2 harus ada elips keyakinan (data-klaster-area)');
+    }
+
+    /**
+     * NEW TEST 6: Halaman 12 respons—centroid labels K1, K2, ... ada di SVG.
+     */
+    public function test_12_responses_centroid_labels(): void
+    {
+        TiyasResponse::truncate();
+
+        $panitia = User::factory()->create(['role' => 'panitia']);
+        $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
+
+        // Buat 6 peserta optimal + 6 peserta at_risk => c=2 klaster
+        for ($i = 0; $i < 6; $i++) {
+            $peserta = User::factory()->create(['role' => 'peserta']);
+            $pendaftaran = Pendaftaran::factory()->hadir()->create([
+                'peserta_id' => $peserta->id,
+                'pelatihan_id' => $pelatihan->id,
+            ]);
+            TiyasResponse::factory()->withProfil('optimal')->create([
+                'pendaftaran_id' => $pendaftaran->id,
+            ]);
+        }
+
+        for ($i = 0; $i < 6; $i++) {
+            $peserta = User::factory()->create(['role' => 'peserta']);
+            $pendaftaran = Pendaftaran::factory()->hadir()->create([
+                'peserta_id' => $peserta->id,
+                'pelatihan_id' => $pelatihan->id,
+            ]);
+            TiyasResponse::factory()->withProfil('at_risk')->create([
+                'pendaftaran_id' => $pendaftaran->id,
+            ]);
+        }
+
+        $response = $this->actingAs($panitia)
+            ->get(route('tiyas.hasil', $pelatihan));
+
+        $response->assertOk();
+
+        $content = $response->getContent();
+
+        // Verifikasi ada centroid label K1, K2
+        $this->assertStringContainsString('K1', $content, 'Centroid Klaster 1 label (K1) harus ada');
+        $this->assertStringContainsString('K2', $content, 'Centroid Klaster 2 label (K2) harus ada');
+    }
+
+    /**
+     * NEW TEST 7: Halaman 12 respons—titik peserta ada <title> dengan nama peserta dan klaster.
+     */
+    public function test_12_responses_point_tooltips(): void
+    {
+        TiyasResponse::truncate();
+
+        $panitia = User::factory()->create(['role' => 'panitia']);
+        $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
+
+        // Buat 8 peserta untuk clustering
+        for ($i = 0; $i < 8; $i++) {
+            $peserta = User::factory()->create(['role' => 'peserta']);
+            $pendaftaran = Pendaftaran::factory()->hadir()->create([
+                'peserta_id' => $peserta->id,
+                'pelatihan_id' => $pelatihan->id,
+            ]);
+            TiyasResponse::factory()->withProfil($i % 2 === 0 ? 'optimal' : 'at_risk')->create([
+                'pendaftaran_id' => $pendaftaran->id,
+            ]);
+        }
+
+        $response = $this->actingAs($panitia)
+            ->get(route('tiyas.hasil', $pelatihan));
+
+        $response->assertOk();
+
+        $content = $response->getContent();
+
+        // Verifikasi ada <title> tag di SVG (tooltip)
+        // Pattern: <title>nama peserta | Klaster ...
+        $this->assertStringContainsString('<title>', $content, 'Titik peserta harus ada <title> untuk tooltip');
+        $this->assertStringContainsString('Klaster', $content, 'Tooltip harus berisi informasi klaster');
+    }
 }

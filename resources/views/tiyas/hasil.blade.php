@@ -359,12 +359,95 @@
                                             'var(--color-warning)',
                                             'var(--color-accent)',
                                             ];
+                                            
+                                            // Kelompokkan titik per klaster untuk elips
+                                            $pointsByCluster = [];
+                                            foreach ($tabelPeserta as $idx => $peserta) {
+                                                $k = $peserta['klaster_dominan'];
+                                                if (!isset($pointsByCluster[$k])) {
+                                                    $pointsByCluster[$k] = [];
+                                                }
+                                                $pointsByCluster[$k][] = [
+                                                    'idx' => $idx,
+                                                    'x' => $points[$idx][0] ?? 0,
+                                                    'y' => $points[$idx][1] ?? 0,
+                                                ];
+                                            }
+                                            ksort($pointsByCluster);
                                         @endphp
                                         
-                                        <svg width="100%" viewBox="0 0 {{ $svgW }} {{ $svgH }}" style="max-height: 420px; border: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent); background: white; border-radius: var(--radius-card);" role="img" aria-label="Grafik sebaran peserta berdasarkan PCA skor TC, TE, ITT, YB dengan warna menunjukkan klaster dominan">
-                                            <!-- Grid lines -->
-                                            <line x1="40" y1="40" x2="40" y2="{{ $svgH - 30 }}" stroke="color-mix(in srgb, var(--color-text) 20%, transparent)" stroke-width="1" />
-                                            <line x1="40" y1="{{ $svgH - 30 }}" x2="{{ $svgW - 20 }}" y2="{{ $svgH - 30 }}" stroke="color-mix(in srgb, var(--color-text) 20%, transparent)" stroke-width="1" />
+                                        <svg width="100%" viewBox="0 0 {{ $svgW }} {{ $svgH }}" style="max-height: 420px; border: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent); background: white; border-radius: var(--radius-card);" role="img" aria-label="Grafik PCA sebaran peserta dengan elips keyakinan per klaster, grid axis, dan tooltip">
+                                            <!-- Elips keyakinan per klaster: area transparan dengan garis tepi -->
+                                            @foreach ($pointsByCluster as $clusterK => $clusterPeserta)
+                                                @php
+                                                    $clusterPoints = array_map(fn($p) => [$p['x'], $p['y']], $clusterPeserta);
+                                                    $kNum = $clusterK;
+                                                    $cColor = $clusterColors[($kNum - 1) % count($clusterColors)] ?? 'var(--color-primary)';
+                                                    
+                                                    if (count($clusterPoints) >= 3) {
+                                                        // Hitung pusat (mean) dan matriks kovarians
+                                                        $meanX = array_sum(array_map(fn($p) => $p[0], $clusterPoints)) / count($clusterPoints);
+                                                        $meanY = array_sum(array_map(fn($p) => $p[1], $clusterPoints)) / count($clusterPoints);
+                                                        
+                                                        $cov_xx = array_sum(array_map(fn($p) => ($p[0] - $meanX) ** 2, $clusterPoints)) / count($clusterPoints);
+                                                        $cov_yy = array_sum(array_map(fn($p) => ($p[1] - $meanY) ** 2, $clusterPoints)) / count($clusterPoints);
+                                                        $cov_xy = array_sum(array_map(fn($p) => ($p[0] - $meanX) * ($p[1] - $meanY), $clusterPoints)) / count($clusterPoints);
+                                                        
+                                                        // Eigen: untuk ellipse 2D
+                                                        $trace = $cov_xx + $cov_yy;
+                                                        $det = $cov_xx * $cov_yy - $cov_xy ** 2;
+                                                        $lambda1 = $trace / 2 + sqrt(($trace / 2) ** 2 - $det);
+                                                        $lambda2 = $trace / 2 - sqrt(($trace / 2) ** 2 - $det);
+                                                        
+                                                        // Standard deviasi ~ sqrt(eigenvalue) * 1.5
+                                                        $a = 1.5 * sqrt($lambda1) * $scale;
+                                                        $b = 1.5 * sqrt($lambda2) * $scale;
+                                                        $angle = atan2($cov_xy, $cov_xx - $lambda1) * (180 / M_PI);
+                                                        
+                                                        $cx = $transformX($meanX);
+                                                        $cy = $transformY($meanY);
+                                                        
+                                                        // SVG ellipse
+                                                        $ellipseHtml = '<ellipse cx="' . $cx . '" cy="' . $cy . '" rx="' . $a . '" ry="' . $b . '" fill="' . $cColor . '" fill-opacity="0.12" stroke="' . $cColor . '" stroke-width="1" stroke-opacity="0.5" transform="rotate(' . $angle . ' ' . $cx . ' ' . $cy . ')" data-klaster-area="' . $kNum . '" />';
+                                                    } else {
+                                                        // Untuk <3 titik, buat lingkaran kecil di sekitar centroid
+                                                        $meanX = array_sum(array_map(fn($p) => $p[0], $clusterPoints)) / count($clusterPoints);
+                                                        $meanY = array_sum(array_map(fn($p) => $p[1], $clusterPoints)) / count($clusterPoints);
+                                                        $cx = $transformX($meanX);
+                                                        $cy = $transformY($meanY);
+                                                        $ellipseHtml = '<circle cx="' . $cx . '" cy="' . $cy . '" r="15" fill="' . $cColor . '" fill-opacity="0.12" stroke="' . $cColor . '" stroke-width="1" stroke-opacity="0.5" data-klaster-area="' . $kNum . '" />';
+                                                    }
+                                                @endphp
+                                                {!! $ellipseHtml !!}
+                                            @endforeach
+                                            
+                                            <!-- Grid lines tipis & axis -->
+                                            <line x1="40" y1="40" x2="40" y2="{{ $svgH - 30 }}" stroke="color-mix(in srgb, var(--color-text) 20%, transparent)" stroke-width="1.5" />
+                                            <line x1="40" y1="{{ $svgH - 30 }}" x2="{{ $svgW - 20 }}" y2="{{ $svgH - 30 }}" stroke="color-mix(in srgb, var(--color-text) 20%, transparent)" stroke-width="1.5" />
+                                            
+                                            <!-- Grid garis vertikal dengan tick label X -->
+                                            @for ($i = 0; $i <= 5; $i++)
+                                                @php
+                                                    $xPos = 40 + ($i * ($svgW - 60) / 5);
+                                                    $xVal = $xMin + ($i * $xRange / 5);
+                                                @endphp
+                                                @if ($i > 0)
+                                                    <line x1="{{ $xPos }}" y1="40" x2="{{ $xPos }}" y2="{{ $svgH - 30 }}" stroke="color-mix(in srgb, var(--color-text) 8%, transparent)" stroke-width="0.5" stroke-dasharray="2,2" />
+                                                @endif
+                                                <text x="{{ $xPos }}" y="{{ $svgH - 15 }}" font-size="10" fill="var(--color-text)" text-anchor="middle" opacity="0.5">{{ round($xVal, 1) }}</text>
+                                            @endfor
+                                            
+                                            <!-- Grid garis horisontal dengan tick label Y -->
+                                            @for ($i = 0; $i <= 4; $i++)
+                                                @php
+                                                    $yPos = 40 + ($i * ($svgH - 70) / 4);
+                                                    $yVal = $yMax - ($i * $yRange / 4);
+                                                @endphp
+                                                @if ($i > 0)
+                                                    <line x1="40" y1="{{ $yPos }}" x2="{{ $svgW - 20 }}" y2="{{ $yPos }}" stroke="color-mix(in srgb, var(--color-text) 8%, transparent)" stroke-width="0.5" stroke-dasharray="2,2" />
+                                                @endif
+                                                <text x="30" y="{{ $yPos + 3 }}" font-size="10" fill="var(--color-text)" text-anchor="end" opacity="0.5">{{ round($yVal, 1) }}</text>
+                                            @endfor
                                             
                                             <!-- Axis labels -->
                                             <text x="{{ $svgW / 2 }}" y="{{ $svgH - 5 }}" font-size="12" fill="var(--color-text)" text-anchor="middle" opacity="0.7">
@@ -374,7 +457,7 @@
                                                 Komponen 2 ({{ $variance[1] }}% varians)
                                             </text>
                                             
-                                            <!-- Titik peserta -->
+                                            <!-- Titik peserta dengan tooltip -->
                                             @foreach ($tabelPeserta as $idx => $peserta)
                                                 @php
                                                     $x = $transformX($points[$idx][0]);
@@ -386,22 +469,29 @@
                                                     // Shape berbeda per klaster
                                                     $shapes = ['circle', 'rect', 'triangle', 'diamond', 'star'];
                                                     $shape = $shapes[$klasterIdx % count($shapes)];
+                                                    
+                                                    // Tooltip
+                                                    $dominantMembership = max($peserta['memberships']);
+                                                    $tooltipText = "{$peserta['nama']} | Klaster {$peserta['klaster_dominan']}: {$dominantMembership}%";
                                                 @endphp
                                                 
-                                                @if ($shape === 'circle')
-                                                    <circle cx="{{ $x }}" cy="{{ $y }}" r="5" fill="{{ $color }}" opacity="{{ $opacity }}" stroke="var(--color-text)" stroke-width="1" />
-                                                @elseif ($shape === 'rect')
-                                                    <rect x="{{ $x - 4 }}" y="{{ $y - 4 }}" width="8" height="8" fill="{{ $color }}" opacity="{{ $opacity }}" stroke="var(--color-text)" stroke-width="1" />
-                                                @elseif ($shape === 'triangle')
-                                                    <polygon points="{{ $x }},{{ $y - 5 }} {{ $x + 5 }},{{ $y + 4 }} {{ $x - 5 }},{{ $y + 4 }}" fill="{{ $color }}" opacity="{{ $opacity }}" stroke="var(--color-text)" stroke-width="1" />
-                                                @elseif ($shape === 'diamond')
-                                                    <polygon points="{{ $x }},{{ $y - 5 }} {{ $x + 5 }},{{ $y }} {{ $x }},{{ $y + 5 }} {{ $x - 5 }},{{ $y }}" fill="{{ $color }}" opacity="{{ $opacity }}" stroke="var(--color-text)" stroke-width="1" />
-                                                @else
-                                                    <circle cx="{{ $x }}" cy="{{ $y }}" r="5" fill="{{ $color }}" opacity="{{ $opacity }}" stroke="var(--color-text)" stroke-width="1" />
-                                                @endif
+                                                <g>
+                                                    <title>{{ $tooltipText }}</title>
+                                                    @if ($shape === 'circle')
+                                                        <circle cx="{{ $x }}" cy="{{ $y }}" r="4" fill="{{ $color }}" opacity="{{ $opacity }}" stroke="var(--color-text)" stroke-width="1" />
+                                                    @elseif ($shape === 'rect')
+                                                        <rect x="{{ $x - 3 }}" y="{{ $y - 3 }}" width="6" height="6" fill="{{ $color }}" opacity="{{ $opacity }}" stroke="var(--color-text)" stroke-width="1" />
+                                                    @elseif ($shape === 'triangle')
+                                                        <polygon points="{{ $x }},{{ $y - 4 }} {{ $x + 4 }},{{ $y + 3 }} {{ $x - 4 }},{{ $y + 3 }}" fill="{{ $color }}" opacity="{{ $opacity }}" stroke="var(--color-text)" stroke-width="1" />
+                                                    @elseif ($shape === 'diamond')
+                                                        <polygon points="{{ $x }},{{ $y - 4 }} {{ $x + 4 }},{{ $y }} {{ $x }},{{ $y + 4 }} {{ $x - 4 }},{{ $y }}" fill="{{ $color }}" opacity="{{ $opacity }}" stroke="var(--color-text)" stroke-width="1" />
+                                                    @else
+                                                        <circle cx="{{ $x }}" cy="{{ $y }}" r="4" fill="{{ $color }}" opacity="{{ $opacity }}" stroke="var(--color-text)" stroke-width="1" />
+                                                    @endif
+                                                </g>
                                             @endforeach
                                             
-                                            <!-- Centroid per klaster -->
+                                            <!-- Centroid per klaster dengan label K1, K2, ... -->
                                             @foreach ($klasterResult['tabel_klaster'] as $klasterItem)
                                                 @php
                                                     $cData = [
@@ -422,8 +512,11 @@
                                                     $klasterNum = $klasterItem['klaster'];
                                                     $cColor = $clusterColors[($klasterNum - 1) % count($clusterColors)] ?? 'var(--color-primary)';
                                                 @endphp
-                                                <circle cx="{{ $cx }}" cy="{{ $cy }}" r="8" fill="none" stroke="{{ $cColor }}" stroke-width="2" opacity="0.8" />
-                                                <circle cx="{{ $cx }}" cy="{{ $cy }}" r="6" fill="{{ $cColor }}" opacity="0.3" />
+                                                <!-- Centroid lingkaran besar -->
+                                                <circle cx="{{ $cx }}" cy="{{ $cy }}" r="7" fill="none" stroke="{{ $cColor }}" stroke-width="2" opacity="0.8" data-centroid-klaster="{{ $klasterNum }}" />
+                                                <circle cx="{{ $cx }}" cy="{{ $cy }}" r="5" fill="{{ $cColor }}" opacity="0.2" />
+                                                <!-- Label K1, K2, ... -->
+                                                <text x="{{ $cx }}" y="{{ $cy + 2 }}" font-size="9" font-weight="bold" fill="{{ $cColor }}" text-anchor="middle" opacity="0.9">K{{ $klasterNum }}</text>
                                             @endforeach
                                         </svg>
                                     </div>
@@ -442,6 +535,11 @@
                                                     $cColor = $clusterColors[($klasterNum - 1) % count($clusterColors)] ?? 'var(--color-primary)';
                                                     $shapes = ['circle', 'rect', 'triangle', 'diamond', 'star'];
                                                     $shape = $shapes[($klasterNum - 1) % count($shapes)];
+                                                    
+                                                    // Count peserta di klaster ini
+                                                    $pesertaCount = collect($tabelPeserta)->filter(
+                                                        fn($p) => $p['klaster_dominan'] === $klasterNum
+                                                    )->count();
                                                 @endphp
                                                 <div class="flex items-center gap-3" style="border: 1px solid color-mix(in srgb, var(--color-text) 8%, transparent); border-radius: calc(var(--radius-card) - 2px); padding: 0.75rem;">
                                                     <!-- Simbol klaster (SVG kecil) -->
@@ -458,9 +556,9 @@
                                                             <circle cx="16" cy="16" r="6" fill="{{ $cColor }}" opacity="0.7" stroke="var(--color-text)" stroke-width="1" />
                                                         @endif
                                                     </svg>
-                                                    <!-- Label klaster -->
+                                                    <!-- Label klaster dengan peserta count -->
                                                     <div class="flex-1 min-w-0">
-                                                        <p style="color: var(--color-text);" class="font-semibold text-sm">Klaster {{ $klasterNum }}: {{ $profil }}</p>
+                                                        <p style="color: var(--color-text);" class="font-semibold text-sm">Klaster {{ $klasterNum }}: {{ $profil }} <span style="opacity: 0.7;" class="text-xs">({{ $pesertaCount }} peserta)</span></p>
                                                     </div>
                                                 </div>
                                             @endforeach
