@@ -151,20 +151,48 @@ class TiyasController extends Controller
     /**
      * Tampilkan hasil TIYAS untuk panitia (per pelatihan).
      */
-    public function hasil(Pelatihan $pelatihan): View
+    public function hasil(Pelatihan $pelatihan, Request $request): View
     {
         // Middleware 'role:panitia' sudah mengecek akses
         $config = config('tiyas');
         $scorer = new TiyasScorer;
 
-        // Ambil semua TiyasResponse untuk pelatihan ini
-        $responses = TiyasResponse::whereHas('pendaftaran', function ($q) use ($pelatihan) {
-            $q->where('pelatihan_id', $pelatihan->id);
-        })->with('pendaftaran.peserta')->get();
+        // Tentukan cakupan analisis (whitelist; default = pelatihan)
+        $cakupan = $request->query('cakupan', 'pelatihan');
+        $cakupanValid = in_array($cakupan, ['pelatihan', 'semua'], true);
+        if (! $cakupanValid) {
+            $cakupan = 'pelatihan';
+        }
+
+        // Ambil semua TiyasResponse sesuai cakupan
+        if ($cakupan === 'semua') {
+            // Kumpulkan responses dari SEMUA pelatihan (minimal verified & hadir)
+            $responses = TiyasResponse::whereHas('pendaftaran', function ($q) {
+                $q->where('status_verifikasi', 'diverifikasi')
+                    ->whereNotNull('hadir_at');
+            })->with('pendaftaran.peserta', 'pendaftaran.pelatihan')->get();
+        } else {
+            // Hanya dari pelatihan ini
+            $responses = TiyasResponse::whereHas('pendaftaran', function ($q) use ($pelatihan) {
+                $q->where('pelatihan_id', $pelatihan->id)
+                    ->where('status_verifikasi', 'diverifikasi')
+                    ->whereNotNull('hadir_at');
+            })->with('pendaftaran.peserta', 'pendaftaran.pelatihan')->get();
+        }
 
         // Hitung profil klaster (FCM)
         $klasterService = new TiyasProfilKlaster($scorer, new FuzzyCMeans);
         $klasterResult = $klasterService->analisis($responses);
+
+        // Generate klaster_labels untuk view (dari tabel_klaster atau kosong jika kurang_data)
+        $klasterLabels = [];
+        if ($klasterResult['status'] === 'sukses' && ! empty($klasterResult['tabel_klaster'])) {
+            foreach ($klasterResult['tabel_klaster'] as $klaster) {
+                // Format: "Klaster N · {kode}: {label}"
+                $klasterLabels[] = "Klaster {$klaster['klaster']} · {$klaster['kode_profil']}: {$klaster['profil']}";
+            }
+        }
+        $klasterResult['klaster_labels'] = $klasterLabels;
 
         // Hitung statistik deskriptif (tampil untuk semua, termasuk kurang_data)
         $deskriptif = $klasterResult['deskriptif'] ?? [];
@@ -190,21 +218,29 @@ class TiyasController extends Controller
             // Kumpulkan skor dimensi
             $skorDimensiSemuaPeserta[] = $skorDim;
 
-            // Data per peserta
-            $dataPerPeserta[] = [
+            // Data per peserta (tambah nama_pelatihan untuk cakupan=semua)
+            $pesertaData = [
                 'id' => $response->id,
                 'nama' => $response->pendaftaran->peserta->name,
                 'skor' => $skor,
             ];
+            if ($cakupan === 'semua') {
+                $pesertaData['nama_pelatihan'] = $response->pendaftaran->pelatihan->nama ?? 'N/A';
+            }
+            $dataPerPeserta[] = $pesertaData;
 
             // Skor raw (TC, TE, ITT, YB) untuk scatter plot
-            $skorKonstrukRaw[] = [
+            $skorKonstrukRawEntry = [
                 'nama' => $response->pendaftaran->peserta->name,
                 'TC' => $skor['TC']['skor'] ?? 0,
                 'TE' => $skor['TE']['skor'] ?? 0,
                 'ITT' => $skor['ITT']['skor'] ?? 0,
                 'YB' => $skor['YB']['skor'] ?? 0,
             ];
+            if ($cakupan === 'semua') {
+                $skorKonstrukRawEntry['nama_pelatihan'] = $response->pendaftaran->pelatihan->nama ?? 'N/A';
+            }
+            $skorKonstrukRaw[] = $skorKonstrukRawEntry;
         }
 
         // Hitung rata-rata skor
@@ -248,13 +284,27 @@ class TiyasController extends Controller
             }
         }
 
+        // Persiapan data untuk perbandingan antar pelatihan (B. section)
+        // Hanya jika cakupan=semua, kumpulkan response count per pelatihan
+        $comparisonData = [];
+        $pelatihansForComparison = [];
+
+        if ($cakupan === 'semua') {
+            $comparison = $klasterService->perbandinganAntarPelatihan();
+            $comparisonData = $comparison['comparisonData'];
+            $pelatihansForComparison = $comparison['pelatihansForComparison'];
+        }
+
         return view('tiyas.hasil', [
             'pelatihan' => $pelatihan,
             'totalResponses' => count($responses),
-            'totalDiverifikasi' => $pelatihan->pendaftarans()
-                ->where('status_verifikasi', 'diverifikasi')
-                ->whereNotNull('hadir_at')
-                ->count(),
+            'cakupan' => $cakupan,
+            'totalDiverifikasi' => $cakupan === 'semua'
+                ? Pendaftaran::where('status_verifikasi', 'diverifikasi')->whereNotNull('hadir_at')->count()
+                : $pelatihan->pendaftarans()
+                    ->where('status_verifikasi', 'diverifikasi')
+                    ->whereNotNull('hadir_at')
+                    ->count(),
             'skorRataRata' => $skorRataRataKategori,
             'dataPerPeserta' => $dataPerPeserta,
             'rataRataDimensi' => $rataRataDimensi,
@@ -263,6 +313,8 @@ class TiyasController extends Controller
             'clusterExplanations' => $clusterExplanations,
             'config' => $config,
             'skorKonstrukRaw' => $skorKonstrukRaw ?? [], // Untuk scatter plot FCM
+            'comparisonData' => $comparisonData,
+            'pelatihansForComparison' => $pelatihansForComparison,
         ]);
     }
 

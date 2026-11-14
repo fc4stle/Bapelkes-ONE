@@ -34,6 +34,7 @@ class TiyasHasilTahap1ValidationTest extends TestCase
             $peserta = User::factory()->create(['role' => 'peserta']);
             $peserta_array[] = $peserta;
             $pendaftaran = Pendaftaran::factory()->hadir()->create([
+                'status_verifikasi' => 'diverifikasi',
                 'peserta_id' => $peserta->id,
                 'pelatihan_id' => $pelatihan->id,
             ]);
@@ -46,6 +47,7 @@ class TiyasHasilTahap1ValidationTest extends TestCase
             $peserta = User::factory()->create(['role' => 'peserta']);
             $peserta_array[] = $peserta;
             $pendaftaran = Pendaftaran::factory()->hadir()->create([
+                'status_verifikasi' => 'diverifikasi',
                 'peserta_id' => $peserta->id,
                 'pelatihan_id' => $pelatihan->id,
             ]);
@@ -58,6 +60,7 @@ class TiyasHasilTahap1ValidationTest extends TestCase
             $peserta = User::factory()->create(['role' => 'peserta']);
             $peserta_array[] = $peserta;
             $pendaftaran = Pendaftaran::factory()->hadir()->create([
+                'status_verifikasi' => 'diverifikasi',
                 'peserta_id' => $peserta->id,
                 'pelatihan_id' => $pelatihan->id,
             ]);
@@ -70,6 +73,7 @@ class TiyasHasilTahap1ValidationTest extends TestCase
             $peserta = User::factory()->create(['role' => 'peserta']);
             $peserta_array[] = $peserta;
             $pendaftaran = Pendaftaran::factory()->hadir()->create([
+                'status_verifikasi' => 'diverifikasi',
                 'peserta_id' => $peserta->id,
                 'pelatihan_id' => $pelatihan->id,
             ]);
@@ -128,6 +132,7 @@ class TiyasHasilTahap1ValidationTest extends TestCase
         for ($i = 0; $i < 8; $i++) {
             $peserta = User::factory()->create(['role' => 'peserta']);
             $pendaftaran = Pendaftaran::factory()->hadir()->create([
+                'status_verifikasi' => 'diverifikasi',
                 'peserta_id' => $peserta->id,
                 'pelatihan_id' => $pelatihan->id,
             ]);
@@ -181,6 +186,7 @@ class TiyasHasilTahap1ValidationTest extends TestCase
         for ($i = 0; $i < 5; $i++) {
             $peserta = User::factory()->create(['role' => 'peserta']);
             $pendaftaran = Pendaftaran::factory()->hadir()->create([
+                'status_verifikasi' => 'diverifikasi',
                 'peserta_id' => $peserta->id,
                 'pelatihan_id' => $pelatihan->id,
             ]);
@@ -192,6 +198,7 @@ class TiyasHasilTahap1ValidationTest extends TestCase
         for ($i = 0; $i < 5; $i++) {
             $peserta = User::factory()->create(['role' => 'peserta']);
             $pendaftaran = Pendaftaran::factory()->hadir()->create([
+                'status_verifikasi' => 'diverifikasi',
                 'peserta_id' => $peserta->id,
                 'pelatihan_id' => $pelatihan->id,
             ]);
@@ -225,6 +232,7 @@ class TiyasHasilTahap1ValidationTest extends TestCase
         for ($i = 0; $i < 10; $i++) {
             $peserta = User::factory()->create(['role' => 'peserta']);
             $pendaftaran = Pendaftaran::factory()->hadir()->create([
+                'status_verifikasi' => 'diverifikasi',
                 'peserta_id' => $peserta->id,
                 'pelatihan_id' => $pelatihan->id,
             ]);
@@ -272,6 +280,7 @@ class TiyasHasilTahap1ValidationTest extends TestCase
         for ($i = 0; $i < 10; $i++) {
             $peserta = User::factory()->create(['role' => 'peserta']);
             $pendaftaran = Pendaftaran::factory()->hadir()->create([
+                'status_verifikasi' => 'diverifikasi',
                 'peserta_id' => $peserta->id,
                 'pelatihan_id' => $pelatihan->id,
             ]);
@@ -314,6 +323,7 @@ class TiyasHasilTahap1ValidationTest extends TestCase
         for ($i = 0; $i < 10; $i++) {
             $peserta = User::factory()->create(['role' => 'peserta']);
             $pendaftaran = Pendaftaran::factory()->hadir()->create([
+                'status_verifikasi' => 'diverifikasi',
                 'peserta_id' => $peserta->id,
                 'pelatihan_id' => $pelatihan->id,
             ]);
@@ -360,6 +370,7 @@ class TiyasHasilTahap1ValidationTest extends TestCase
         for ($i = 0; $i < 10; $i++) {
             $peserta = User::factory()->create(['role' => 'peserta']);
             $pendaftaran = Pendaftaran::factory()->hadir()->create([
+                'status_verifikasi' => 'diverifikasi',
                 'peserta_id' => $peserta->id,
                 'pelatihan_id' => $pelatihan->id,
             ]);
@@ -429,6 +440,7 @@ class TiyasHasilTahap1ValidationTest extends TestCase
         for ($i = 0; $i < $pesertaCount; $i++) {
             $peserta = User::factory()->create(['role' => 'peserta']);
             $pendaftaran = Pendaftaran::factory()->hadir()->create([
+                'status_verifikasi' => 'diverifikasi',
                 'peserta_id' => $peserta->id,
                 'pelatihan_id' => $pelatihan->id,
             ]);
@@ -470,6 +482,7 @@ class TiyasHasilTahap1ValidationTest extends TestCase
         for ($i = 0; $i < 10; $i++) {
             $peserta = User::factory()->create(['role' => 'peserta']);
             $pendaftaran = Pendaftaran::factory()->hadir()->create([
+                'status_verifikasi' => 'diverifikasi',
                 'peserta_id' => $peserta->id,
                 'pelatihan_id' => $pelatihan->id,
             ]);
@@ -503,6 +516,7 @@ class TiyasHasilTahap1ValidationTest extends TestCase
         for ($i = 0; $i < 5; $i++) {
             $peserta = User::factory()->create(['role' => 'peserta']);
             $pendaftaran = Pendaftaran::factory()->hadir()->create([
+                'status_verifikasi' => 'diverifikasi',
                 'peserta_id' => $peserta->id,
                 'pelatihan_id' => $pelatihan->id,
             ]);
@@ -537,6 +551,7 @@ class TiyasHasilTahap1ValidationTest extends TestCase
         for ($i = 0; $i < 10; $i++) {
             $peserta = User::factory()->create(['role' => 'peserta']);
             $pendaftaran = Pendaftaran::factory()->hadir()->create([
+                'status_verifikasi' => 'diverifikasi',
                 'peserta_id' => $peserta->id,
                 'pelatihan_id' => $pelatihan->id,
             ]);
@@ -576,6 +591,7 @@ class TiyasHasilTahap1ValidationTest extends TestCase
         for ($i = 0; $i < 10; $i++) {
             $peserta = User::factory()->create(['role' => 'peserta']);
             $pendaftaran = Pendaftaran::factory()->hadir()->create([
+                'status_verifikasi' => 'diverifikasi',
                 'peserta_id' => $peserta->id,
                 'pelatihan_id' => $pelatihan->id,
             ]);
@@ -626,6 +642,7 @@ class TiyasHasilTahap1ValidationTest extends TestCase
         // Buat 1 peserta
         $peserta = User::factory()->create(['role' => 'peserta']);
         $pendaftaran = Pendaftaran::factory()->hadir()->create([
+            'status_verifikasi' => 'diverifikasi',
             'peserta_id' => $peserta->id,
             'pelatihan_id' => $pelatihan->id,
         ]);
@@ -663,6 +680,7 @@ class TiyasHasilTahap1ValidationTest extends TestCase
         // Buat 1 peserta
         $peserta = User::factory()->create(['role' => 'peserta']);
         $pendaftaran = Pendaftaran::factory()->hadir()->create([
+            'status_verifikasi' => 'diverifikasi',
             'peserta_id' => $peserta->id,
             'pelatihan_id' => $pelatihan->id,
         ]);
