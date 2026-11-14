@@ -1184,13 +1184,14 @@
                                                 foreach ($pelatihansForComparison as $pel_id) {
                                                     $clusterComposition[$pel_id] = [];
                                                     foreach ($klasterResult['klaster_labels'] ?? [] as $idx => $label) {
-                                                        $clusterComposition[$pel_id][$idx] = 0;
+                                                        $klaster_num = $idx + 1; // 1-based key for lookup
+                                                        $clusterComposition[$pel_id][$klaster_num] = 0;
                                                     }
                                                 }
                                                 
                                                 // Count peserta per klaster per pelatihan
-                                                if (isset($klasterResult['data']) && is_array($klasterResult['data'])) {
-                                                    foreach ($klasterResult['data'] as $resp_id => $peserta) {
+                                                if (isset($klasterResult['tabel_peserta']) && is_array($klasterResult['tabel_peserta'])) {
+                                                    foreach ($klasterResult['tabel_peserta'] as $resp_id => $peserta) {
                                                         if (isset($peserta['pelatihan_id']) && isset($peserta['klaster_dominan'])) {
                                                             $pel_id = $peserta['pelatihan_id'];
                                                             $klaster_idx = $peserta['klaster_dominan'];
@@ -1208,7 +1209,8 @@
                                                     @php $row_total = 0; @endphp
                                                     @foreach ($klasterResult['klaster_labels'] ?? [] as $klaster_idx => $label)
                                                         @php
-                                                            $count = $clusterComposition[$pel_id][$klaster_idx] ?? 0;
+                                                            $klaster_num = $klaster_idx + 1; // Convert 0-based to 1-based for lookup
+                                                            $count = $clusterComposition[$pel_id][$klaster_num] ?? 0;
                                                             $row_total += $count;
                                                         @endphp
                                                         <td style="padding: 0.75rem; text-align: center; color: var(--color-text);">{{ $count }}</td>
