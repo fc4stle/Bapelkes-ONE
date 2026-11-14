@@ -375,19 +375,20 @@ class TiyasSemuaPelatihanTest extends TestCase
             }
 
             $pelName = trim($cells->item(0)->textContent);
-            // Match pelatihan dari nama
+            // Match pelatihan dari nama PERSIS dari data tes
             $matchedPel = null;
             foreach ([$pel1, $pel2] as $p) {
-                if (strpos($p->nama, str_replace('[TEST] ', '', $pelName)) !== false ||
-                    strpos($pelName, $p->nama) !== false) {
+                // Strict match: pelatihan nama harus cocok persis atau substring lengkap
+                if ($pelName === $p->nama || strpos($pelName, $p->nama) === 0) {
                     $matchedPel = $p;
                     break;
                 }
             }
 
-            if (! $matchedPel) {
-                continue; // Skip if tidak match
-            }
+            // C: GAGAL jika baris tidak cocok dengan data tes (JANGAN skip dengan continue)
+            $this->assertNotNull($matchedPel,
+                "C FAILED: Baris tabel dengan nama '$pelName' tidak cocok dengan pelatihan tes ($pel1->nama atau $pel2->nama). "
+                ."Ini indikasi data tidak cocok atau ada baris berlebih.");
 
             $actualComposition[$matchedPel->id] = [];
             for ($colIdx = 1; $colIdx <= $numKlasters; $colIdx++) {
@@ -396,6 +397,12 @@ class TiyasSemuaPelatihanTest extends TestCase
                 $actualComposition[$matchedPel->id][$klasterNum] = $cellVal;
             }
         }
+
+        // C: Jumlah baris tabel HARUS SAMA dengan jumlah pelatihan (2)
+        $this->assertEquals(2, count($actualComposition),
+            'C FAILED: Jumlah baris tabel harus = 2 (2 pelatihan). '
+            .'Ditemukan ' . count($actualComposition) . ' baris. '
+            .'Tandanya ada baris berlebih atau data tidak cocok.');
 
         // C: STRICT VALIDATION - Cell demi cell
         foreach ($expected as $pelId => $expectedRow) {
