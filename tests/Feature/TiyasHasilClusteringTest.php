@@ -16,8 +16,8 @@ class TiyasHasilClusteringTest extends TestCase
     /**
      * Test: halaman hasil clustering merender dengan 12 respons (>= 2 kelompok).
      * Panitia dapat melihat:
-     * - \"Profil Klaster Peserta\"
-     * - \"Jumlah klaster terpilih\"
+     * - "Profil Klaster Peserta"
+     * - "Jumlah klaster terpilih"
      * - nama salah satu peserta (dari relasi pendaftaran->peserta->name, bukan 'nama dummy')
      * - judul profil dari config (mis. 'Optimal Transfer')
      */
@@ -225,5 +225,97 @@ class TiyasHasilClusteringTest extends TestCase
 
         // 3. Verifikasi pesan 'minimal 8 peserta' tampil
         $response->assertSee('minimal 8 peserta');
+    }
+
+    /**
+     * NEW TEST 3: 12 respons halaman—tabel derajat keanggotaan judul kolom adalah 'Klaster 1', 'Klaster 2', dll (1-based, konsisten dengan kolom Dominan).
+     * Verifikasi TIDAK ada 'Klaster 0'.
+     */
+    public function test_12_responses_membership_table_cluster_headers_1_based_not_0()
+    {
+        TiyasResponse::truncate();
+
+        $panitia = User::factory()->create(['role' => 'panitia']);
+        $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
+
+        // Buat 6 peserta optimal + 6 peserta at_risk => 2 kelompok
+        for ($i = 0; $i < 6; $i++) {
+            $peserta = User::factory()->create(['role' => 'peserta']);
+            $pendaftaran = Pendaftaran::factory()->hadir()->create([
+                'peserta_id' => $peserta->id,
+                'pelatihan_id' => $pelatihan->id,
+            ]);
+            TiyasResponse::factory()->withProfil('optimal')->create([
+                'pendaftaran_id' => $pendaftaran->id,
+            ]);
+        }
+
+        for ($i = 0; $i < 6; $i++) {
+            $peserta = User::factory()->create(['role' => 'peserta']);
+            $pendaftaran = Pendaftaran::factory()->hadir()->create([
+                'peserta_id' => $peserta->id,
+                'pelatihan_id' => $pelatihan->id,
+            ]);
+            TiyasResponse::factory()->withProfil('at_risk')->create([
+                'pendaftaran_id' => $pendaftaran->id,
+            ]);
+        }
+
+        $response = $this->actingAs($panitia)
+            ->get(route('tiyas.hasil', $pelatihan));
+
+        $response->assertOk();
+
+        // Verifikasi ada judul 'Klaster 1'
+        $response->assertSee('Klaster 1');
+        // Verifikasi TIDAK ada judul 'Klaster 0'
+        $content = $response->getContent();
+        // Pattern untuk judul tabel: '>Klaster 0<' atau 'Klaster 0</th>'
+        $this->assertStringNotContainsString('Klaster 0', $content, 'Tabel derajat keanggotaan harus 1-based, jangan 0-based');
+    }
+
+    /**
+     * NEW TEST 4: SVG PCA tidak ada warning 'height="auto"' di attribute (bukan di style).
+     */
+    public function test_12_responses_svg_no_height_auto_attribute()
+    {
+        TiyasResponse::truncate();
+
+        $panitia = User::factory()->create(['role' => 'panitia']);
+        $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
+
+        // Buat 6 peserta optimal + 6 peserta at_risk => 2 kelompok
+        for ($i = 0; $i < 6; $i++) {
+            $peserta = User::factory()->create(['role' => 'peserta']);
+            $pendaftaran = Pendaftaran::factory()->hadir()->create([
+                'peserta_id' => $peserta->id,
+                'pelatihan_id' => $pelatihan->id,
+            ]);
+            TiyasResponse::factory()->withProfil('optimal')->create([
+                'pendaftaran_id' => $pendaftaran->id,
+            ]);
+        }
+
+        for ($i = 0; $i < 6; $i++) {
+            $peserta = User::factory()->create(['role' => 'peserta']);
+            $pendaftaran = Pendaftaran::factory()->hadir()->create([
+                'peserta_id' => $peserta->id,
+                'pelatihan_id' => $pelatihan->id,
+            ]);
+            TiyasResponse::factory()->withProfil('at_risk')->create([
+                'pendaftaran_id' => $pendaftaran->id,
+            ]);
+        }
+
+        $response = $this->actingAs($panitia)
+            ->get(route('tiyas.hasil', $pelatihan));
+
+        $response->assertOk();
+
+        $content = $response->getContent();
+
+        // Cek bahwa TIDAK ada pattern 'height="auto"' di SVG (memicu console warning)
+        // Pattern: SVG PCA yang lama ada height="auto", yang baru tidak ada
+        $this->assertStringNotContainsString('height="auto"', $content, 'SVG harus tidak ada height="auto" attribute untuk menghindari console warning');
     }
 }
