@@ -327,10 +327,18 @@
                                             $points = $pcaData['points'];
                                             $variance = $pcaData['variance'];
                                             $tabelPeserta = $klasterResult['tabel_peserta'];
-                                            
-                                            // Cari scale untuk SVG (padding)
+                                            $centroidScores = $pcaData['centroid_scores'] ?? [];
+                            
+                                            // Cari scale untuk SVG (padding): include centroid ke dalam domain
                                             $xVals = array_map(fn($p) => $p[0], $points);
                                             $yVals = array_map(fn($p) => $p[1], $points);
+                            
+                                            // Tambahkan centroid_scores ke domain calculation
+                                            foreach ($centroidScores as $c) {
+                                                $xVals[] = $c[0];
+                                                $yVals[] = $c[1];
+                                            }
+                            
                                             $xMin = min($xVals);
                                             $xMax = max($xVals);
                                             $yMin = min($yVals);
@@ -452,7 +460,7 @@
                                                     $tooltipText = "{$peserta['nama']} | Klaster {$peserta['klaster_dominan']}: {$dominantMembership}%";
                                                 @endphp
                                                 
-                                                <g>
+                                                <g data-klaster="{{ $peserta['klaster_dominan'] }}">
                                                     <title>{{ $tooltipText }}</title>
                                                     @if ($shape === 'circle')
                                                         <circle cx="{{ $x }}" cy="{{ $y }}" r="4" fill="{{ $color }}" opacity="{{ $opacity }}" stroke="var(--color-text)" stroke-width="1" />
@@ -469,24 +477,25 @@
                                             @endforeach
                                             
                                             <!-- Centroid per klaster dengan label K1, K2, ... -->
-                                            @foreach ($klasterResult['tabel_klaster'] as $klasterItem)
+                                            <!-- Gunakan centroid_scores yang sudah di-center dan di-project di Controller -->
+                                            @foreach ($klasterResult['tabel_klaster'] as $klasterNum => $klasterItem)
                                                 @php
-                                                    $cData = [
-                                                        $klasterItem['centroid']['TC'],
-                                                        $klasterItem['centroid']['TE'],
-                                                        $klasterItem['centroid']['ITT'],
-                                                        $klasterItem['centroid']['YB'],
-                                                    ];
-                                                    // Proyeksikan centroid dengan transformasi PCA yang sama
-                                                    $pc1 = 0;
-                                                    $pc2 = 0;
-                                                    for ($d = 0; $d < 4; $d++) {
-                                                        $pc1 += $cData[$d] * $pcaData['loadings'][0][$d];
-                                                        $pc2 += $cData[$d] * $pcaData['loadings'][1][$d];
+                                                    // Gunakan centroid_scores yang sudah correct (di-center + di-project)
+                                                    $klasterNum = $klasterItem['klaster'];
+                                                    $clusterIndex = $klasterNum - 1;
+                                                    
+                                                    // centroid_scores diindeks mulai dari 0, sesuai urutan tabel_klaster
+                                                    if (isset($centroidScores[$clusterIndex])) {
+                                                        $pc1 = $centroidScores[$clusterIndex][0];
+                                                        $pc2 = $centroidScores[$clusterIndex][1];
+                                                    } else {
+                                                        // Fallback jika tidak ada
+                                                        $pc1 = 0;
+                                                        $pc2 = 0;
                                                     }
+                                                    
                                                     $cx = $transformX($pc1);
                                                     $cy = $transformY($pc2);
-                                                    $klasterNum = $klasterItem['klaster'];
                                                     $cColor = $clusterColors[($klasterNum - 1) % count($clusterColors)] ?? 'var(--color-primary)';
                                                 @endphp
                                                 <!-- Centroid lingkaran besar -->
