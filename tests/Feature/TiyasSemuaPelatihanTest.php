@@ -607,48 +607,75 @@ class TiyasSemuaPelatihanTest extends TestCase
         $subY = (float) ($subTspan->getAttribute('y') ?? 0);
 
         // If y not set, compute from dy (relative positioning)
-        // dy="1.2em" = ~18px (1.2 * 16px base font size for typical SVG)
+        // dy="1.5em" = ~24px (1.5 * 16px base font size for typical SVG)
         // Main tspan has dy="0", so starts at y attribute
-        // Sub tspan has dy="1.2em", so y = mainY + 18
+        // Sub tspan has dy="1.5em", so y = mainY + 24
         if ($mainY == 0) {
             // y attribute not set, use dy
-            $dyAttr = $mainTspan->getAttribute('dy');
-            $mainY = !empty($dyAttr) && $dyAttr !== '0' ? 25 : 25; // Title typically at y=25
+            $mainY = 25; // Title typically at y=25
         }
 
         if ($subY == 0) {
-            // Compute from dy
+            // Compute from dy attribute of subtitle
             $dyAttr = $subTspan->getAttribute('dy');
-            if ($dyAttr === '1.2em') {
-                $subY = $mainY + 18; // Approximate: 1.2em ≈ 18px at 16px base
+            $baseFontSize = 16; // Standard SVG font size
+            if (preg_match('/^(\d+(?:\.\d+)?)em$/', $dyAttr, $matches)) {
+                $emValue = (float) $matches[1];
+                $pxValue = $emValue * $baseFontSize;
+                $subY = $mainY + $pxValue;
+            } else {
+                // Fallback: assume standard 1.5em
+                $subY = $mainY + 24;
             }
         }
 
-        // E.3: Get plot area's top boundary (from margin-top or first axis line)
+        // E.3: Get plot area's top boundary
+        // The most reliable way: find the Y-axis line (vertical line on left) which starts at plot top
+        // OR find grid lines which also start at plot top
         $lines = $xpath->query('.//line', $scatterSvg);
-        $minY = 500; // Default SVG height
+        $plotTopY = 68; // Default based on current margin setting
+        
         foreach ($lines as $line) {
+            $x1 = (float) $line->getAttribute('x1');
+            $x2 = (float) $line->getAttribute('x2');
             $y1 = (float) $line->getAttribute('y1');
             $y2 = (float) $line->getAttribute('y2');
-            $minLineY = min($y1, $y2);
-            if ($minLineY < $minY && $minLineY > 50) { // Skip title area
-                $minY = min($minY, $minLineY);
+            
+            // Y-axis is a vertical line on the left (x values are equal)
+            if (abs($x1 - $x2) < 1) { // Vertical line
+                $minLineY = min($y1, $y2);
+                $maxLineY = max($y1, $y2);
+                // Y-axis should span from plot top to plot bottom
+                // The top Y coordinate is the plot top
+                if ($minLineY > 50 && $minLineY < 100) { // Likely the Y-axis
+                    $plotTopY = $minLineY;
+                    break;
+                }
             }
         }
 
-        // Plot area top is usually at margin['t'] = 80
-        $plotTopY = $minY ?: 80;
-
-        // E.4: Calculate baseline of subtitle
+        // E.4: Calculate baselines
+        // Main title font-size: typical (inherited) ≈ 14-16px, descent ≈ 3-4px
         // Subtitle font-size: 12px (from view), so descent ≈ 3px
-        // Baseline ≈ $subY + 3
-        $subBaseline = $subY + 3;
+        $mainFontSize = 14; // Approximate
+        $subFontSize = 12; // From view style
+        $mainBaseline = $mainY + ($mainFontSize * 0.3); // Approximate descent
+        $subBaseline = $subY + 3; // 12px * 0.25 for descent
 
-        // E.5: Assert spacing >= 12px
-        $spacing = $plotTopY - $subBaseline;
-        $this->assertGreaterThanOrEqual(12, $spacing,
-            "E FAILED: Jarak antara baseline subtitle ($subBaseline) dan garis atas plot ($plotTopY) harus >= 12px, "
-            ."got: {$spacing}px. Main y=$mainY, Sub y=$subY, dy attr: {$subTspan->getAttribute('dy')}");
+        // E.5: Assert spacing (a) between main and subtitle baselines
+        // Spacing between baselines should be >= (subtitle font-size + 4px)
+        $spacingMainSub = $subBaseline - $mainBaseline;
+        $minSpacingMainSub = $subFontSize + 4; // 12px + 4px = 16px
+        $this->assertGreaterThanOrEqual($minSpacingMainSub, $spacingMainSub,
+            "E.5a: Jarak baseline main - baseline sub harus >= {$minSpacingMainSub}px (font {$subFontSize}px + 4px), "
+            ."got: {$spacingMainSub}px. Main y=$mainY (baseline ~$mainBaseline), Sub y=$subY (baseline ~$subBaseline)");
+
+        // E.5b: Assert spacing (b) between subtitle baseline and plot top
+        // Spacing should be >= 12px
+        $spacingPlotSub = $plotTopY - $subBaseline;
+        $this->assertGreaterThanOrEqual(12, $spacingPlotSub,
+            "E.5b: Jarak baseline subtitle ($subBaseline) - garis atas plot ($plotTopY) harus >= 12px, "
+            ."got: {$spacingPlotSub}px. Sub y=$subY, dy attr: {$subTspan->getAttribute('dy')}");
 
         // E.6: Verify subtitle text
         $subText = trim($subTspan->textContent);
