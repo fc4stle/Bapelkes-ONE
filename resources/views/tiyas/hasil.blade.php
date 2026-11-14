@@ -268,7 +268,7 @@
                         <!-- Chart 1: Rerata & Deviasi Standar per Konstruk (Bars dengan band SD) -->
                         <div class="mb-6">
                             <h3 class="font-semibold mb-3" style="color: var(--color-text);">Rata-rata Skor dan Kisaran Variabilitas per Konstruk</h3>
-                            <svg viewBox="0 0 800 400" class="w-full rounded" style="border: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent); background-color: white;" data-chart="deskriptif-mean-sd">
+                            <svg viewBox="0 0 800 400" class="w-full rounded" style="border: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent); background-color: var(--color-surface);" data-chart="deskriptif-mean-sd">
                                 <!-- Title -->
                                 <text x="400" y="25" text-anchor="middle" style="font-size: 16px; font-weight: 600; fill: var(--color-text);">Rata-rata ± SD per Konstruk</text>
                                 
@@ -335,7 +335,7 @@
                         <!-- Chart 2: Distribusi Kategori (Stacked Bar %) -->
                         <div class="mb-6">
                             <h3 class="font-semibold mb-3" style="color: var(--color-text);">Distribusi Kategori per Konstruk</h3>
-                            <svg viewBox="0 0 800 400" class="w-full rounded" style="border: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent); background-color: white;" data-chart="deskriptif-kategori-stacked">
+                            <svg viewBox="0 0 800 400" class="w-full rounded" style="border: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent); background-color: var(--color-surface);" data-chart="deskriptif-kategori-stacked">
                                 <!-- Title -->
                                 <text x="400" y="25" text-anchor="middle" style="font-size: 16px; font-weight: 600; fill: var(--color-text);">Proporsi Kategori (%)</text>
                                 
@@ -509,7 +509,7 @@
                             <!-- 3a. Centroid Klaster (Grouped Bars) -->
                             <div class="mb-6">
                                 <h3 class="font-semibold mb-3" style="color: var(--color-text);">a) Centroid per Klaster dan Konstruk</h3>
-                                <svg viewBox="0 0 1000 500" class="w-full rounded" style="border: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent); background-color: white;" data-chart="centroid-grouped-bars">
+                                <svg viewBox="0 0 1000 500" class="w-full rounded" style="border: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent); background-color: var(--color-surface);" data-chart="centroid-grouped-bars">
                                     <!-- Title -->
                                     <text x="500" y="25" text-anchor="middle" style="font-size: 16px; font-weight: 600; fill: var(--color-text);">Centroid Setiap Klaster</text>
                                     
@@ -583,7 +583,7 @@
                             <div class="mb-6">
                                 <h3 class="font-semibold mb-3" style="color: var(--color-text);">b) Derajat Keanggotaan Peserta per Klaster (Horizontal Stacked Bar)</h3>
                                 <div class="overflow-y-auto" style="max-height: 500px;">
-                                    <svg viewBox="0 0 1000 {{ count($klasterResult['tabel_peserta']) * 40 + 60 }}" class="w-full rounded" style="border: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent); background-color: white;" data-chart="membership-horizontal-stacked">
+                                    <svg viewBox="0 0 1000 {{ count($klasterResult['tabel_peserta']) * 40 + 60 }}" class="w-full rounded" style="border: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent); background-color: var(--color-surface);" data-chart="membership-horizontal-stacked">
                                         <!-- Title -->
                                         <text x="500" y="25" text-anchor="middle" style="font-size: 16px; font-weight: 600; fill: var(--color-text);">Derajat Keanggotaan (%)</text>
                                         

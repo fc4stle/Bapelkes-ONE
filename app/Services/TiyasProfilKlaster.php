@@ -82,7 +82,7 @@ class TiyasProfilKlaster
             ];
         }
 
-        // Bangun tabel klaster dengan raw centroid untuk PCA
+        // Bangun tabel klaster dengan centroid nilai
         $tabelKlaster = [];
         $centroids_raw = [];
         for ($k = 0; $k < $bestC; $k++) {
