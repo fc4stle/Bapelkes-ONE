@@ -674,21 +674,8 @@
                                                 $plotX = $margin['l'] + (($skorX - 1) / 3) * $plotW;
                                                 $plotY = $margin['t'] + (1 - ($skorY - 1) / 3) * $plotH;
                                                 
-                                                // Hitung warna campuran dari derajat keanggotaan
-                                                $memberships = [];
-                                                foreach ($peserta['memberships'] as $idx => $m) {
-                                                    $memberships[$idx + 1] = $m / 100.0; // Konversi % ke ratio
-                                                }
-                                                
-                                                // Cari klaster DOMINAN (highest membership)
-                                                $dominantKlaster = 1;
-                                                $maxMembership = 0;
-                                                foreach ($memberships as $klasterIdx => $weight) {
-                                                    if ($weight > $maxMembership) {
-                                                        $maxMembership = $weight;
-                                                        $dominantKlaster = $klasterIdx;
-                                                    }
-                                                }
+                                                // PERBAIKAN: Gunakan klaster_dominan yang sudah benar, tanpa recalculate
+                                                $dominantKlaster = $peserta['klaster_dominan'];
                                                 
                                                 // Warna titik = warna klaster dominan (SOLID, bukan color-mix)
                                                 $pointColor = isset($klasterColors['K' . $dominantKlaster]) 
@@ -696,18 +683,20 @@
                                                     : 'var(--color-primary)';
                                                 
                                                 // Opacity = 0.35 + 0.65 * (derajat keanggotaan dominan)
-                                                // Range: 0.35 (lemah) to 1.0 (sangat kuat)
+                                                // $peserta['memberships'] adalah 1-based: [1 => 70.5, 2 => 20.2, 3 => 9.3, ...]
+                                                // Konversi % ke ratio (0.0 - 1.0)
+                                                $dominantMembership = $peserta['memberships'][$dominantKlaster] ?? 0;
+                                                $maxMembership = $dominantMembership / 100.0;
                                                 $pointOpacity = 0.35 + (0.65 * max(0, min(1, $maxMembership)));
                                                 
-                                                // Buat membership title (e.g., "Peserta Name | K1: 70% | K2: 30%")
-                                                $membershipStr = $peserta['nama'];
-                                                foreach ($peserta['memberships'] as $idx => $m) {
-                                                    $membershipStr .= " | K" . ($idx + 1) . ": " . $m . "%";
-                                                }
+                                                // Buat membership title (e.g., "K1: 70%")
+                                                // Hanya klaster dominan yang ditampilkan sebagai deskripsi poin
+                                                $dominantPercent = (int)round($peserta['memberships'][$dominantKlaster]);
+                                                $pointTitle = "K" . $dominantKlaster . ": " . $dominantPercent . "%";
                                             @endphp
                                             
                                             <circle cx="{{$plotX}}" cy="{{$plotY}}" r="4" fill="{{$pointColor}}" opacity="{{$pointOpacity}}" stroke="{{$pointColor}}" stroke-width="0.5">
-                                                <title>{{$membershipStr}}</title>
+                                                <title>{{$pointTitle}}</title>
                                             </circle>
                                         @endforeach
                                         
@@ -872,8 +861,9 @@
                                             @foreach ($peserta['memberships'] as $kIdx => $membership)
                                                 @php
                                                     $segWidth = ($membership / 100) * $barWidth;
-                                                    $klasterNum = $kIdx + 1;
-                                                    $klasterColor = $klasterColors[$klasterNum] ?? 'var(--color-text)';
+                                                    // PERBAIKAN: $kIdx sudah 1-based (key dari memberships), jangan +1
+                                                    $klasterNum = $kIdx;
+                                                    $klasterColor = $klasterColors['K' . $klasterNum] ?? 'var(--color-text)';
                                                 @endphp
                                                 
                                                 <rect x="{{$xPos}}" y="{{$rowY - $barHeight/2}}" width="{{$segWidth}}" height="{{$barHeight}}" 
@@ -958,7 +948,7 @@
                                         <div class="space-y-1">
                                             @foreach ($peserta['memberships'] as $k => $m)
                                                 <div class="flex justify-between text-xs">
-                                                    <span style="color: var(--color-text);">Klaster {{ $k + 1 }}</span>
+                                                    <span style="color: var(--color-text);">Klaster {{ $k }}</span>
                                                     <span style="color: var(--color-text); font-medium;">{{ $m }}%</span>
                                                 </div>
                                             @endforeach

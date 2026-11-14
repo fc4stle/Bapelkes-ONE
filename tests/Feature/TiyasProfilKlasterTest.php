@@ -293,6 +293,121 @@ class TiyasProfilKlasterTest extends TestCase
     }
 
     /**
+     * NEW TEST 9: Scatter plot memberships keys are 1-based, dominant cluster exists in memberships
+     * Validates that TiyasProfilKlaster creates 1-based memberships keys [1 => %, 2 => %, ...]
+     */
+    public function test_scatter_plot_memberships_are_one_based_with_dominant_cluster()
+    {
+        $pelatihan = Pelatihan::factory()->create();
+
+        // Create data that results in 4 clusters with clear separation
+        $jawaban_profiles = [
+            // K1 (Optimal): all high TC, TE, ITT, YB
+            ['TC' => 3.8, 'TE' => 3.8, 'ITT' => 3.8, 'YB' => 3.8],
+            ['TC' => 3.8, 'TE' => 3.8, 'ITT' => 3.8, 'YB' => 3.8],
+
+            // K2 (Developing): high TC, TE, ITT but low YB
+            ['TC' => 3.8, 'TE' => 3.8, 'ITT' => 3.8, 'YB' => 1.5],
+            ['TC' => 3.8, 'TE' => 3.8, 'ITT' => 3.8, 'YB' => 1.5],
+
+            // K3 (Constrained): high ITT only
+            ['TC' => 1.5, 'TE' => 1.5, 'ITT' => 3.8, 'YB' => 1.5],
+            ['TC' => 1.5, 'TE' => 1.5, 'ITT' => 3.8, 'YB' => 1.5],
+
+            // K4 (At-Risk): all low
+            ['TC' => 1.2, 'TE' => 1.2, 'ITT' => 1.2, 'YB' => 1.2],
+            ['TC' => 1.2, 'TE' => 1.2, 'ITT' => 1.2, 'YB' => 1.2],
+        ];
+
+        $responses = collect();
+        foreach ($jawaban_profiles as $idx => $profile) {
+            $pendaftaran = Pendaftaran::factory()->create(['pelatihan_id' => $pelatihan->id]);
+            $responses->push(TiyasResponse::factory()->create([
+                'pendaftaran_id' => $pendaftaran->id,
+                'submitted_at' => now(),
+                'jawaban' => $this->generateJawaban($profile),
+                'identitas' => ['nama' => 'Peserta '.$idx],
+            ]));
+        }
+
+        $result = $this->service->analisis($responses);
+
+        $this->assertEquals('sukses', $result['status']);
+        $this->assertEquals(4, $result['c_optimal'], 'Should have 4 optimal clusters');
+
+        // Verify each peserta's memberships are 1-based and dominant cluster exists
+        $tabel_peserta = $result['tabel_peserta'];
+
+        foreach ($tabel_peserta as $idx => $peserta) {
+            // klaster_dominan is 1-based (1, 2, 3, or 4)
+            $this->assertGreaterThanOrEqual(1, $peserta['klaster_dominan'],
+                "Peserta $idx klaster_dominan should be >= 1");
+            $this->assertLessThanOrEqual($result['c_optimal'], $peserta['klaster_dominan'],
+                "Peserta $idx klaster_dominan should be <= c_optimal");
+
+            // memberships keys are 1-based (1, 2, 3, 4)
+            $this->assertCount($result['c_optimal'], $peserta['memberships'],
+                "Peserta $idx memberships should have c_optimal entries");
+
+            // The dominant cluster (1-based) must exist in memberships keys
+            $dominantCluster = $peserta['klaster_dominan'];
+            $this->assertArrayHasKey($dominantCluster, $peserta['memberships'],
+                "Peserta $idx: Dominant cluster K{$dominantCluster} should exist in memberships keys. Keys: ".implode(', ', array_keys($peserta['memberships'])));
+
+            // Dominant membership should be highest
+            $membershipValues = array_values($peserta['memberships']);
+            $maxMembership = max($membershipValues);
+            $this->assertEquals($maxMembership, $peserta['memberships'][$dominantCluster],
+                "Peserta $idx: Cluster K{$dominantCluster} should have highest membership percentage ({$peserta['memberships'][$dominantCluster]}% vs max {$maxMembership}%)");
+        }
+    }
+
+    /**
+     * NEW TEST 10: Scatter plot title format uses dominant cluster key from memberships
+     */
+    public function test_scatter_plot_title_format_with_dominant_cluster()
+    {
+        $pelatihan = Pelatihan::factory()->create();
+
+        $responses = collect();
+        for ($i = 0; $i < 8; $i++) {
+            $pendaftaran = Pendaftaran::factory()->create(['pelatihan_id' => $pelatihan->id]);
+            $responses->push(TiyasResponse::factory()->create([
+                'pendaftaran_id' => $pendaftaran->id,
+                'submitted_at' => now(),
+                'jawaban' => $this->generateJawaban(),
+                'identitas' => ['nama' => 'Peserta '.$i],
+            ]));
+        }
+
+        $result = $this->service->analisis($responses);
+
+        $this->assertEquals('sukses', $result['status']);
+
+        // Each peserta should have memberships with 1-based keys (1, 2, 3, ...)
+        foreach ($result['tabel_peserta'] as $peserta) {
+            // Check that klaster_dominan is valid
+            $this->assertGreaterThanOrEqual(1, $peserta['klaster_dominan']);
+            $this->assertLessThanOrEqual($result['c_optimal'], $peserta['klaster_dominan']);
+
+            // Check that memberships has all clusters (1-based keys)
+            $this->assertCount($result['c_optimal'], $peserta['memberships'],
+                'Memberships array should have c_optimal entries with 1-based keys');
+
+            // The dominant cluster (1-based) should be among memberships keys
+            $dominantCluster = $peserta['klaster_dominan'];
+            $this->assertArrayHasKey($dominantCluster, $peserta['memberships'],
+                "Dominant cluster K{$dominantCluster} should exist in memberships keys");
+
+            // Dominant membership should be highest
+            $membershipValues = array_values($peserta['memberships']);
+            $maxMembership = max($membershipValues);
+            $this->assertEquals($maxMembership, $peserta['memberships'][$dominantCluster],
+                "Cluster K{$dominantCluster} should have highest membership percentage");
+        }
+    }
+
+    /**
      * Helper: Generate jawaban respons (mapping ke 4 skor: TC, TE, ITT, YB)
      * Input: skor dalam skala 1.0-4.0
      * Output: jawaban array dengan butir bernilai 1-4 (sesuai skala)
