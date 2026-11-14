@@ -36,7 +36,6 @@ class TiyasProfilKlaster
                 'fuzzy_partition_coefficient' => 0,
                 'normalized_classification_entropy' => 0,
                 'deskriptif' => $this->deskriptif($tiyasResponses),
-                'pcaData' => null,
                 'clusterExplanations' => [],
             ];
         }
@@ -83,7 +82,7 @@ class TiyasProfilKlaster
             ];
         }
 
-        // Bangun tabel klaster dengan raw centroid untuk PCA
+        // Bangun tabel klaster dengan centroid nilai
         $tabelKlaster = [];
         $centroids_raw = [];
         for ($k = 0; $k < $bestC; $k++) {
@@ -148,7 +147,6 @@ class TiyasProfilKlaster
             'normalized_classification_entropy' => $result_best['pe'],
             'centroids_raw' => $centroids_raw,
             'deskriptif' => $this->deskriptif($tiyasResponses),
-            'pcaData' => $this->pcaProjection($data, $centroids_raw),
             'clusterExplanations' => $this->generateClusterExplanations($tabelKlaster, $tabelPeserta, $n),
         ];
     }
@@ -286,150 +284,6 @@ class TiyasProfilKlaster
         }
 
         return $result;
-    }
-
-    /**
-     * PCA projection of data to 2D.
-     *
-     * @param  array  $data  nx4 matrix of scores
-     * @param  array  $centroids  cx4 matrix of centroid
-     * @return array ['loadings', 'variance', 'points', 'centroid_scores']
-     */
-    public function pcaProjection($data, $centroids)
-    {
-        if (empty($data)) {
-            return ['loadings' => [], 'variance' => [0, 0], 'points' => [], 'centroid_scores' => []];
-        }
-
-        // Normalisasi dan center data
-        $n = count($data);
-        $d = count($data[0] ?? []);
-
-        // Centroid data
-        $mean = [];
-        for ($j = 0; $j < $d; $j++) {
-            $sum = 0;
-            foreach ($data as $x) {
-                $sum += $x[$j];
-            }
-            $mean[$j] = $sum / $n;
-        }
-
-        // Center data
-        $X = [];
-        for ($i = 0; $i < $n; $i++) {
-            $X[$i] = [];
-            for ($j = 0; $j < $d; $j++) {
-                $X[$i][$j] = $data[$i][$j] - $mean[$j];
-            }
-        }
-
-        // Covariance matrix
-        $cov = array_fill(0, $d, array_fill(0, $d, 0));
-        for ($i = 0; $i < $d; $i++) {
-            for ($j = 0; $j < $d; $j++) {
-                $sum = 0;
-                foreach ($X as $x) {
-                    $sum += $x[$i] * $x[$j];
-                }
-                $cov[$i][$j] = $sum / ($n - 1);
-            }
-        }
-
-        // Eigen decomposition (simplified: power iteration for 2 largest)
-        $eigenvalues = [];
-        $eigenvectors = [];
-
-        // First eigenvector: power iteration
-        $v = array_fill(0, $d, 1.0 / sqrt($d));
-        for ($iter = 0; $iter < 20; $iter++) {
-            $Av = array_fill(0, $d, 0);
-            for ($i = 0; $i < $d; $i++) {
-                for ($j = 0; $j < $d; $j++) {
-                    $Av[$i] += $cov[$i][$j] * $v[$j];
-                }
-            }
-            $norm = sqrt(array_sum(array_map(fn ($x) => $x ** 2, $Av)));
-            if ($norm > 0.0001) {
-                $v = array_map(fn ($x) => $x / $norm, $Av);
-            }
-        }
-        $eigenvectors[] = $v;
-        $lambda1 = 0;
-        foreach ($v as $vi) {
-            for ($j = 0; $j < $d; $j++) {
-                $lambda1 += $v[$j] * $cov[$j][$j];
-            }
-        }
-        $lambda1 /= $d;
-        $eigenvalues[] = max($lambda1, 0.01);
-
-        // Second eigenvector: deflation
-        $cov2 = [];
-        for ($i = 0; $i < $d; $i++) {
-            $cov2[$i] = [];
-            for ($j = 0; $j < $d; $j++) {
-                $cov2[$i][$j] = $cov[$i][$j] - $eigenvalues[0] * $v[$i] * $v[$j];
-            }
-        }
-        $v2 = array_fill(0, $d, 1.0 / sqrt($d));
-        for ($iter = 0; $iter < 20; $iter++) {
-            $Av = array_fill(0, $d, 0);
-            for ($i = 0; $i < $d; $i++) {
-                for ($j = 0; $j < $d; $j++) {
-                    $Av[$i] += $cov2[$i][$j] * $v2[$j];
-                }
-            }
-            $norm = sqrt(array_sum(array_map(fn ($x) => $x ** 2, $Av)));
-            if ($norm > 0.0001) {
-                $v2 = array_map(fn ($x) => $x / $norm, $Av);
-            }
-        }
-        $eigenvectors[] = $v2;
-        $lambda2 = max(array_sum(array_map(fn ($x) => $x ** 2, $Av)), 0.01);
-        $eigenvalues[] = $lambda2;
-
-        // Loadings (first 2 eigenvectors)
-        $loadings = [
-            'PC1' => $eigenvectors[0],
-            'PC2' => count($eigenvectors) > 1 ? $eigenvectors[1] : array_fill(0, $d, 0),
-        ];
-
-        // Variance explained
-        $totalVar = array_sum($eigenvalues);
-        $var1 = $totalVar > 0 ? round($eigenvalues[0] / $totalVar * 100) : 50;
-        $var2 = $totalVar > 0 ? round($eigenvalues[1] / $totalVar * 100) : 50;
-
-        // Project data
-        $scores = [];
-        foreach ($X as $x) {
-            $pc1 = 0;
-            $pc2 = 0;
-            for ($j = 0; $j < $d; $j++) {
-                $pc1 += $x[$j] * $loadings['PC1'][$j];
-                $pc2 += $x[$j] * $loadings['PC2'][$j];
-            }
-            $scores[] = [$pc1, $pc2];
-        }
-
-        // Project centroids
-        $centroid_scores = [];
-        foreach ($centroids as $c) {
-            $pc1 = 0;
-            $pc2 = 0;
-            for ($j = 0; $j < $d; $j++) {
-                $pc1 += ($c[$j] - $mean[$j]) * $loadings['PC1'][$j];
-                $pc2 += ($c[$j] - $mean[$j]) * $loadings['PC2'][$j];
-            }
-            $centroid_scores[] = [$pc1, $pc2];
-        }
-
-        return [
-            'loadings' => [$eigenvectors[0], count($eigenvectors) > 1 ? $eigenvectors[1] : array_fill(0, $d, 0)],
-            'variance' => [$var1, $var2],
-            'points' => $scores,
-            'centroid_scores' => $centroid_scores,
-        ];
     }
 
     /**
