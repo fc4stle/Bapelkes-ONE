@@ -1070,13 +1070,7 @@
                                     'YB' => 'var(--color-danger)',
                                 ];
                                 
-                                // Konversi CSS var ke hex (fallback)
-                                $colorFallback = [
-                                    'TC' => '#0ea5e9',
-                                    'TE' => '#10b981',
-                                    'ITT' => '#f59e0b',
-                                    'YB' => '#ef4444',
-                                ];
+
                             @endphp
                             
                             <svg style="width: 100%; max-width: 100%; height: auto; min-height: 300px; border: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent); border-radius: 0.5rem; background-color: var(--color-surface);" viewBox="0 0 {{ $svg_width }} {{ $chart_height }}" data-chart="antar-pelatihan-mean">
@@ -1115,15 +1109,17 @@
                                     <!-- 4 bars per pelatihan (TC, TE, ITT, YB) -->
                                     @foreach (['TC', 'TE', 'ITT', 'YB'] as $kod)
                                         @php
-                                            $value = $pel_data['means'][$kod] ?? 0;
+                                            $value = $pel_data['mean'][$kod] ?? 0;
                                             $bar_height = ($value - $scale_bottom) / ($scale_top - $scale_bottom) * $plot_height;
                                             $bar_y = $chart_height - $chart_padding - $bar_height;
-                                            $color = $colorFallback[$kod];
+                                            $color = $colors[$kod];
                                         @endphp
-                                        <rect x="{{ $bar_x }}" y="{{ $bar_y }}" width="{{ $bar_width - 4 }}" height="{{ $bar_height }}" 
-                                              style="fill: {{ $color }}; opacity: 0.8;" />
-                                        <text x="{{ $bar_x + ($bar_width - 4) / 2 }}" y="{{ $bar_y - 3 }}" 
-                                              style="font-size: 9px; text-anchor: middle; fill: var(--color-text); font-weight: 500;">{{ number_format($value, 2) }}</text>
+                                        @if ($bar_height > 0)
+                                            <rect x="{{ $bar_x }}" y="{{ $bar_y }}" width="{{ $bar_width - 4 }}" height="{{ $bar_height }}" 
+                                                  style="fill: {{ $color }};" />
+                                            <text x="{{ $bar_x + ($bar_width - 4) / 2 }}" y="{{ $bar_y - 3 }}" 
+                                                  style="font-size: 9px; text-anchor: middle; fill: var(--color-text); font-weight: 500;">{{ number_format($value, 2) }}</text>
+                                        @endif
                                         @php $bar_x += $bar_width; @endphp
                                     @endforeach
                                     
@@ -1157,10 +1153,9 @@
                             @foreach (['TC', 'TE', 'ITT', 'YB'] as $kod)
                                 @php
                                     $konstruk = config('tiyas.konstruk')[$kod];
-                                    $color = $colorFallback[$kod];
                                 @endphp
                                 <div class="flex items-center gap-2">
-                                    <div style="width: 12px; height: 12px; background-color: {{ $color }}; border-radius: 2px;"></div>
+                                    <div style="width: 12px; height: 12px; background-color: {{ $colors[$kod] }}; border-radius: 2px;"></div>
                                     <span style="color: var(--color-text);">{{ $konstruk['nama'] }} ({{ $kod }})</span>
                                 </div>
                             @endforeach
