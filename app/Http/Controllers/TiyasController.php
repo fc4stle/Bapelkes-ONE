@@ -246,8 +246,8 @@ class TiyasController extends Controller
             // Hitung scale untuk SVG
             $points = $pcaData['points'] ?? [];
             if (! empty($points)) {
-                $xVals = array_map(fn($p) => $p[0], $points);
-                $yVals = array_map(fn($p) => $p[1], $points);
+                $xVals = array_map(fn ($p) => $p[0], $points);
+                $yVals = array_map(fn ($p) => $p[1], $points);
                 $xMin = min($xVals);
                 $xMax = max($xVals);
                 $yMin = min($yVals);
@@ -258,10 +258,10 @@ class TiyasController extends Controller
                 $scale = 250 / max($xRange, $yRange);
 
                 // Fungsi transform: dari koordinat data ke SVG
-                $transformX = function($x) use ($xMin, $scale) {
+                $transformX = function ($x) use ($xMin, $scale) {
                     return ($x - $xMin) * $scale + 40;
                 };
-                $transformY = function($y) use ($yMin, $yMax, $yRange, $scale) {
+                $transformY = function ($y) use ($yMin, $scale) {
                     return 400 - (($y - $yMin) * $scale + 40);
                 };
 
@@ -283,28 +283,32 @@ class TiyasController extends Controller
                 foreach ($pointsByCluster as $clusterK => $clusterPoints) {
                     if (count($clusterPoints) >= 1) {
                         try {
-                            $ellipseParams = EllipseCalculator::calculate(
-                                $clusterPoints,
-                                sigmaFactor: 1.5,
-                                svgScale: $scale
-                            );
+                            // Compute ellipse dari EllipseCalculator (return a, b, cx, cy, angle)
+                            $ellipse = EllipseCalculator::computeEllipse($clusterPoints, stdDev: 1.5);
 
                             // Transform cx, cy dari data coordinates ke SVG coordinates
-                            $ellipseParams['cx'] = $transformX($ellipseParams['cx']);
-                            $ellipseParams['cy'] = $transformY($ellipseParams['cy']);
+                            $cx_svg = $transformX($ellipse['cx']);
+                            $cy_svg = $transformY($ellipse['cy']);
+
+                            // rx, ry adalah semi-axes scaled by stdDev; scale lagi untuk SVG pixel space
+                            $rx = max(6.0, $ellipse['a'] * $scale);
+                            $ry = max(6.0, $ellipse['b'] * $scale);
+                            $angle = $ellipse['angle'];
 
                             // Penjaga numerik: pastikan tidak ada NaN/INF
-                            foreach (['cx', 'cy', 'rx', 'ry', 'angle'] as $key) {
-                                if (! is_finite($ellipseParams[$key])) {
-                                    $ellipseParams[$key] = 0.0;
+                            foreach (['cx_svg' => $cx_svg, 'cy_svg' => $cy_svg, 'rx' => $rx, 'ry' => $ry, 'angle' => $angle] as $key => $val) {
+                                if (! is_finite($val)) {
+                                    $$key = 0.0;
                                 }
                             }
 
-                            // Minimal 6px untuk rx/ry sudah ditangani di EllipseCalculator
-                            $ellipseParams['rx'] = max(6.0, $ellipseParams['rx']);
-                            $ellipseParams['ry'] = max(6.0, $ellipseParams['ry']);
-
-                            $pcaEllipses[$clusterK] = $ellipseParams;
+                            $pcaEllipses[$clusterK] = [
+                                'cx' => $cx_svg,
+                                'cy' => $cy_svg,
+                                'rx' => $rx,
+                                'ry' => $ry,
+                                'angle' => $angle,
+                            ];
                         } catch (\Exception $e) {
                             // Fallback jika EllipseCalculator error
                             $pcaEllipses[$clusterK] = [
