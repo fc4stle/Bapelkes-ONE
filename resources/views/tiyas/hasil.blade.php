@@ -674,21 +674,8 @@
                                                 $plotX = $margin['l'] + (($skorX - 1) / 3) * $plotW;
                                                 $plotY = $margin['t'] + (1 - ($skorY - 1) / 3) * $plotH;
                                                 
-                                                // Hitung warna campuran dari derajat keanggotaan
-                                                $memberships = [];
-                                                foreach ($peserta['memberships'] as $idx => $m) {
-                                                    $memberships[$idx + 1] = $m / 100.0; // Konversi % ke ratio
-                                                }
-                                                
-                                                // Cari klaster DOMINAN (highest membership)
-                                                $dominantKlaster = 1;
-                                                $maxMembership = 0;
-                                                foreach ($memberships as $klasterIdx => $weight) {
-                                                    if ($weight > $maxMembership) {
-                                                        $maxMembership = $weight;
-                                                        $dominantKlaster = $klasterIdx;
-                                                    }
-                                                }
+                                                // PERBAIKAN: Gunakan klaster_dominan yang sudah benar, tanpa recalculate
+                                                $dominantKlaster = $peserta['klaster_dominan'];
                                                 
                                                 // Warna titik = warna klaster dominan (SOLID, bukan color-mix)
                                                 $pointColor = isset($klasterColors['K' . $dominantKlaster]) 
@@ -696,18 +683,22 @@
                                                     : 'var(--color-primary)';
                                                 
                                                 // Opacity = 0.35 + 0.65 * (derajat keanggotaan dominan)
-                                                // Range: 0.35 (lemah) to 1.0 (sangat kuat)
+                                                // $peserta['memberships'] adalah 1-based: [1 => 70.5, 2 => 20.2, 3 => 9.3, ...]
+                                                // Konversi % ke ratio (0.0 - 1.0)
+                                                $dominantMembership = $peserta['memberships'][$dominantKlaster] ?? 0;
+                                                $maxMembership = $dominantMembership / 100.0;
                                                 $pointOpacity = 0.35 + (0.65 * max(0, min(1, $maxMembership)));
                                                 
-                                                // Buat membership title (e.g., "Peserta Name | K1: 70% | K2: 30%")
-                                                $membershipStr = $peserta['nama'];
-                                                foreach ($peserta['memberships'] as $idx => $m) {
-                                                    $membershipStr .= " | K" . ($idx + 1) . ": " . $m . "%";
+                                                // Buat tooltip: nama + semua keanggotaan klaster (1-based keys: K1, K2, K3, ...)
+                                                $tooltipParts = [$peserta['nama']];
+                                                foreach ($peserta['memberships'] as $k => $m) {
+                                                    $tooltipParts[] = "K" . $k . ": " . number_format($m, 1) . "%";
                                                 }
+                                                $pointTitle = implode(" | ", $tooltipParts);
                                             @endphp
                                             
                                             <circle cx="{{$plotX}}" cy="{{$plotY}}" r="4" fill="{{$pointColor}}" opacity="{{$pointOpacity}}" stroke="{{$pointColor}}" stroke-width="0.5">
-                                                <title>{{$membershipStr}}</title>
+                                                <title>{{$pointTitle}}</title>
                                             </circle>
                                         @endforeach
                                         
@@ -845,15 +836,6 @@
                                         <text x="500" y="25" text-anchor="middle" style="font-size: 16px; font-weight: 600; fill: var(--color-text);">Derajat Keanggotaan (%)</text>
                                         
                                         <!-- Peserta rows -->
-                                        @php
-                                            $klasterColors = [
-                                                1 => 'var(--color-danger)',
-                                                2 => 'var(--color-primary)',
-                                                3 => 'var(--color-success)',
-                                                4 => 'var(--color-accent)'
-                                            ];
-                                        @endphp
-                                        
                                         @foreach ($klasterResult['tabel_peserta'] as $pIdx => $peserta)
                                             @php
                                                 $rowY = 60 + ($pIdx * 40);
@@ -867,17 +849,26 @@
                                                 $xPos = 200;
                                                 $barHeight = 30;
                                                 $barWidth = 700;
+                                                $klasterColors = config('tiyas.warna_klaster', [
+                                                    'K1' => 'var(--color-danger)',
+                                                    'K2' => 'var(--color-primary)',
+                                                    'K3' => 'var(--color-success)',
+                                                    'K4' => 'var(--color-accent)',
+                                                ]);
                                             @endphp
                                             
                                             @foreach ($peserta['memberships'] as $kIdx => $membership)
                                                 @php
                                                     $segWidth = ($membership / 100) * $barWidth;
-                                                    $klasterNum = $kIdx + 1;
-                                                    $klasterColor = $klasterColors[$klasterNum] ?? 'var(--color-text)';
+                                                    // $kIdx sudah 1-based (key dari memberships)
+                                                    $klasterNum = $kIdx;
+                                                    $klasterColor = $klasterColors['K' . $klasterNum] ?? 'var(--color-text)';
                                                 @endphp
                                                 
                                                 <rect x="{{$xPos}}" y="{{$rowY - $barHeight/2}}" width="{{$segWidth}}" height="{{$barHeight}}" 
-                                                    fill="{{ $klasterColor }}" stroke="white" stroke-width="1"/>
+                                                    fill="{{ $klasterColor }}" stroke="white" stroke-width="1">
+                                                    <title>{{ $peserta['nama'] }} | Klaster {{ $klasterNum }}: {{ $membership }}%</title>
+                                                </rect>
                                                 
                                                 @if ($membership >= 15)
                                                     <text x="{{$xPos + $segWidth/2}}" y="{{$rowY + 5}}" text-anchor="middle" 
@@ -899,7 +890,13 @@
                                         
                                         @foreach (range(1, $klasterResult['c_optimal']) as $k)
                                             @php
-                                                $legColor = $klasterColors[$k] ?? 'var(--color-text)';
+                                                $klasterColorLegend = config('tiyas.warna_klaster', [
+                                                    'K1' => 'var(--color-danger)',
+                                                    'K2' => 'var(--color-primary)',
+                                                    'K3' => 'var(--color-success)',
+                                                    'K4' => 'var(--color-accent)',
+                                                ]);
+                                                $legColor = $klasterColorLegend['K' . $k] ?? 'var(--color-text)';
                                                 $legX = 200 + (($k - 1) * 150);
                                             @endphp
                                             
@@ -958,7 +955,7 @@
                                         <div class="space-y-1">
                                             @foreach ($peserta['memberships'] as $k => $m)
                                                 <div class="flex justify-between text-xs">
-                                                    <span style="color: var(--color-text);">Klaster {{ $k + 1 }}</span>
+                                                    <span style="color: var(--color-text);">Klaster {{ $k }}</span>
                                                     <span style="color: var(--color-text); font-medium;">{{ $m }}%</span>
                                                 </div>
                                             @endforeach

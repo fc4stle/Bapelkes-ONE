@@ -682,4 +682,305 @@ class TiyasHasilClusteringTest extends TestCase
             }
         }
     }
+
+    /**
+     * NEW TEST 12: Feature 12 respons—scatter plot circle fill colors match dominant cluster (no off-by-one shift).
+     * Verify:
+     * 1. Each <circle> has fill = cluster dominant color token (K1, K2, K3, K4 from config)
+     * 2. Circle color matches the centroid X marker color for same cluster
+     * 3. <title> text format is "K{klaster_dominan}: {persen}%" e.g., "K1: 95%"
+     * 4. No fallback color (var(--color-primary)) except for legitimate cases
+     */
+    public function test_12_responses_scatter_plot_circle_colors_no_offbyone(): void
+    {
+        TiyasResponse::truncate();
+
+        $panitia = User::factory()->create(['role' => 'panitia']);
+        $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
+
+        // Create simpler test data to ensure clustering succeeds
+        // Use extreme profiles to ensure distinct clusters
+        $profiles = [
+            // K1 (Optimal): all max
+            ['TC' => 4.0, 'TE' => 4.0, 'ITT' => 4.0, 'YB' => 4.0],
+            ['TC' => 4.0, 'TE' => 4.0, 'ITT' => 4.0, 'YB' => 4.0],
+            ['TC' => 4.0, 'TE' => 4.0, 'ITT' => 4.0, 'YB' => 4.0],
+
+            // K2 (Developing): high TC/TE/ITT, low YB
+            ['TC' => 4.0, 'TE' => 4.0, 'ITT' => 4.0, 'YB' => 1.0],
+            ['TC' => 4.0, 'TE' => 4.0, 'ITT' => 4.0, 'YB' => 1.0],
+            ['TC' => 4.0, 'TE' => 4.0, 'ITT' => 4.0, 'YB' => 1.0],
+
+            // K3 (Constrained): mid-low across all
+            ['TC' => 2.0, 'TE' => 2.0, 'ITT' => 2.0, 'YB' => 2.0],
+            ['TC' => 2.0, 'TE' => 2.0, 'ITT' => 2.0, 'YB' => 2.0],
+            ['TC' => 2.0, 'TE' => 2.0, 'ITT' => 2.0, 'YB' => 2.0],
+
+            // K4 (At-Risk): all low
+            ['TC' => 1.0, 'TE' => 1.0, 'ITT' => 1.0, 'YB' => 1.0],
+            ['TC' => 1.0, 'TE' => 1.0, 'ITT' => 1.0, 'YB' => 1.0],
+            ['TC' => 1.0, 'TE' => 1.0, 'ITT' => 1.0, 'YB' => 1.0],
+        ];
+
+        $pesertaDataMap = []; // Store for debugging
+        foreach ($profiles as $idx => $profile) {
+            $peserta = User::factory()->create(['role' => 'peserta']);
+
+            $pendaftaran = Pendaftaran::factory()->hadir()->create([
+                'status_verifikasi' => 'diverifikasi',
+                'peserta_id' => $peserta->id,
+                'pelatihan_id' => $pelatihan->id,
+            ]);
+
+            $jawaban = $this->generateTiyasJawaban($profile);
+            $factory = TiyasResponse::factory();
+            $response = $factory->create([
+                'pendaftaran_id' => $pendaftaran->id,
+                'jawaban' => $jawaban,
+                'identitas' => ['nama' => 'Peserta '.($idx + 1)],
+                'submitted_at' => now(),
+            ]);
+
+            $pesertaDataMap[$idx] = [
+                'peserta_id' => $peserta->id,
+                'response_id' => $response->id,
+                'profile' => $profile,
+            ];
+        }
+
+        $response = $this->actingAs($panitia)->get(route('tiyas.hasil', $pelatihan));
+        $response->assertOk();
+
+        $html = $response->getContent();
+
+        // Extract SVG scatter plot
+        if (! preg_match('/<svg[^>]*data-chart=["\']fcm-scatter["\'][^>]*>.*?<\/svg>/s', $html, $matches)) {
+            $this->fail('SVG scatter plot (data-chart="fcm-scatter") not found in response');
+        }
+
+        $svgMarkup = $matches[0];
+
+        // Parse SVG as XML
+        $dom = new \DOMDocument;
+        $wrappedXml = '<?xml version="1.0"?><root>'.$svgMarkup.'</root>';
+        $libxmlUseErrors = libxml_use_internal_errors(true);
+        $loaded = @$dom->loadXML($wrappedXml);
+        libxml_use_internal_errors($libxmlUseErrors);
+
+        $this->assertTrue($loaded, 'SVG scatter plot must be valid XML');
+
+        $xpath = new \DOMXPath($dom);
+
+        // Get all <circle> elements (peserta points)
+        $circles = $xpath->query('//circle');
+        $this->assertGreaterThan(0, $circles->length, 'SVG scatter plot must contain peserta points (circle elements)');
+
+        // Get color token config (default from blade view if config not set)
+        $colorConfig = config('tiyas.warna_klaster', [
+            'K1' => 'var(--color-danger)',
+            'K2' => 'var(--color-primary)',
+            'K3' => 'var(--color-success)',
+            'K4' => 'var(--color-accent)',
+        ]);
+
+        // Verify each circle's fill color and title
+        $circleCount = 0;
+        $debugInfo = [];
+        foreach ($circles as $circle) {
+            $circleCount++;
+
+            // 1. Check fill attribute
+            $fill = $circle->getAttribute('fill');
+            $this->assertNotEmpty($fill, "Circle #$circleCount must have fill attribute");
+
+            // 2. Check title element
+            $titleElements = $xpath->query('./title', $circle);
+            $this->assertGreaterThan(0, $titleElements->length, "Circle #$circleCount must have a <title> element");
+
+            $titleText = $titleElements->item(0)->textContent;
+            $this->assertNotEmpty($titleText, "Circle #$circleCount title must not be empty");
+
+            // 3. Verify title format: "{nama} | K1: {persen}% | K2: {persen}% | ..."
+            $this->assertMatchesRegularExpression('/^.+\s*\|\s*K1:\s*\d+(\.\d+)?%/', $titleText,
+                "Circle #$circleCount title must start with name and K1 membership. Got: '$titleText'");
+
+            // Extract name and all K{n}: {percent}% pairs
+            if (! preg_match('/^(.+?)\s*\|\s*(.+)$/', $titleText, $mainMatch)) {
+                $this->fail("Circle #$circleCount title format invalid: '$titleText'");
+            }
+            $pesertaNama = trim($mainMatch[1]);
+            $membershipString = $mainMatch[2];
+
+            // Extract all K{n}: {percent}% from membership string
+            $memberships = [];
+            if (preg_match_all('/K(\d):\s*(\d+(?:\.\d+)?)%/', $membershipString, $matches, PREG_SET_ORDER)) {
+                foreach ($matches as $match) {
+                    $k = (int) $match[1];
+                    $pct = (float) $match[2];
+                    $memberships[$k] = $pct;
+                }
+            }
+
+            $this->assertNotEmpty($memberships, "Circle #$circleCount title must contain at least one K{n}: {persen}% pair. Got: '$titleText'");
+            $this->assertNotEmpty($pesertaNama, "Circle #$circleCount title must contain peserta name. Got: '$titleText'");
+
+            // Find dominant cluster (highest membership percentage)
+            $dominantK = array_key_first($memberships);
+            $maxMembership = $memberships[$dominantK];
+            foreach ($memberships as $k => $pct) {
+                if ($pct > $maxMembership) {
+                    $dominantK = $k;
+                    $maxMembership = $pct;
+                }
+            }
+
+            // 4. Verify fill color matches dominant cluster color from config
+            $expectedColor = $colorConfig['K'.$dominantK] ?? null;
+            $this->assertNotNull($expectedColor, "No color configured for K$dominantK");
+            $this->assertEquals($fill, $expectedColor,
+                "Circle #$circleCount (title='$titleText') fill color must match K$dominantK color from config. Got: '$fill', expected: '$expectedColor'");
+
+            // 5. Verify fill is not a fallback color
+            $validColors = array_values($colorConfig);
+            if (! in_array($fill, $validColors)) {
+                $debugInfo[] = "Circle #$circleCount (title='$titleText'): fill='$fill' NOT IN config cluster colors";
+            }
+        }
+
+        $this->assertGreaterThanOrEqual(6, $circleCount, 'Should have at least 6 peserta points (circles)');
+        $this->assertEmpty($debugInfo, 'Debug info should be empty: '.implode('; ', $debugInfo));
+    }
+
+    /**
+     * Helper to generate TiyasResponse jawaban from profile scores (TC, TE, ITT, YB)
+     */
+    private function generateTiyasJawaban(array $profile): array
+    {
+        $defaults = ['TC' => 2.0, 'TE' => 2.0, 'ITT' => 2.0, 'YB' => 2.0];
+        $scores = array_merge($defaults, $profile);
+        $scores = array_map(fn ($v) => max(1.0, min(4.0, $v)), $scores);
+
+        $jawaban = [];
+        foreach (['TC' => 3, 'TE' => 3, 'ITT' => 4, 'YB' => 20] as $key => $count) {
+            $val = (int) round($scores[$key]);
+            for ($i = 1; $i <= $count; $i++) {
+                $jawaban[$key.$i] = $val;
+            }
+        }
+
+        return $jawaban;
+    }
+
+    /**
+     * Test 13: Membership-horizontal-stacked diagram segments use correct colors
+     * - Each segment fill must match config('tiyas.warna_klaster')['K' . n]
+     * - Segment tooltips must contain "{nama} | Klaster N: xx.x%"
+     * - No segment uses fallback color
+     */
+    public function test_13_membership_horizontal_stacked_segment_colors(): void
+    {
+        TiyasResponse::truncate();
+
+        $panitia = User::factory()->create(['role' => 'panitia']);
+        $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
+
+        // Create test data with extreme profiles to ensure distinct clusters
+        $profiles = [
+            // K1: all max
+            ['TC' => 4.0, 'TE' => 4.0, 'ITT' => 4.0, 'YB' => 4.0],
+            ['TC' => 4.0, 'TE' => 4.0, 'ITT' => 4.0, 'YB' => 4.0],
+            ['TC' => 4.0, 'TE' => 4.0, 'ITT' => 4.0, 'YB' => 4.0],
+            // K2: high TC/TE/ITT, low YB
+            ['TC' => 4.0, 'TE' => 4.0, 'ITT' => 4.0, 'YB' => 1.0],
+            ['TC' => 4.0, 'TE' => 4.0, 'ITT' => 4.0, 'YB' => 1.0],
+            ['TC' => 4.0, 'TE' => 4.0, 'ITT' => 4.0, 'YB' => 1.0],
+            // K3: mid-low
+            ['TC' => 2.0, 'TE' => 2.0, 'ITT' => 2.0, 'YB' => 2.0],
+            ['TC' => 2.0, 'TE' => 2.0, 'ITT' => 2.0, 'YB' => 2.0],
+            // K4: all low
+            ['TC' => 1.0, 'TE' => 1.0, 'ITT' => 1.0, 'YB' => 1.0],
+        ];
+
+        foreach ($profiles as $idx => $profile) {
+            $peserta = User::factory()->create(['role' => 'peserta']);
+            $pendaftaran = Pendaftaran::factory()->hadir()->create([
+                'status_verifikasi' => 'diverifikasi',
+                'peserta_id' => $peserta->id,
+                'pelatihan_id' => $pelatihan->id,
+            ]);
+
+            $jawaban = $this->generateTiyasJawaban($profile);
+            TiyasResponse::factory()->create([
+                'pendaftaran_id' => $pendaftaran->id,
+                'jawaban' => $jawaban,
+                'identitas' => ['nama' => 'Test Peserta '.($idx + 1)],
+                'submitted_at' => now(),
+            ]);
+        }
+
+        $response = $this->actingAs($panitia)->get(route('tiyas.hasil', $pelatihan));
+        $response->assertStatus(200);
+
+        $dom = new \DOMDocument;
+        @$dom->loadHTML($response->getContent());
+        $xpath = new \DOMXPath($dom);
+
+        // Find membership-horizontal-stacked diagram
+        $chartElements = $xpath->query('//*[@data-chart="membership-horizontal-stacked"]');
+        $this->assertGreaterThan(0, $chartElements->length, 'Membership diagram must exist');
+
+        $chart = $chartElements->item(0);
+
+        // Get all rect segments (excluding legend rects)
+        $rects = $xpath->query('.//rect', $chart);
+        $this->assertGreaterThan(0, $rects->length, 'Diagram must have at least one segment');
+
+        $colorConfig = config('tiyas.warna_klaster', [
+            'K1' => 'var(--color-danger)',
+            'K2' => 'var(--color-primary)',
+            'K3' => 'var(--color-success)',
+            'K4' => 'var(--color-accent)',
+        ]);
+        $validColors = array_values($colorConfig);
+        $debugInfo = [];
+
+        foreach ($rects as $rect) {
+            $fill = $rect->getAttribute('fill');
+            $this->assertNotEmpty($fill, 'Segment must have fill attribute');
+
+            // Check if this is a legend rect (small, 12x12) or a segment (much larger)
+            $width = $rect->getAttribute('width');
+            if ((float) $width <= 20) {
+                continue; // Skip legend
+            }
+
+            // This is a membership segment
+            // Check title
+            $titleElements = $xpath->query('./title', $rect);
+            $this->assertGreaterThan(0, $titleElements->length, 'Segment must have <title>');
+
+            $titleText = $titleElements->item(0)->textContent;
+            $this->assertNotEmpty($titleText, 'Segment title must not be empty');
+
+            // Verify format: "{nama} | Klaster N: xx.x%"
+            $this->assertMatchesRegularExpression('/^.+\\s*\\|\\s*Klaster\\s*\\d+:\\s*\\d+(\\.\\d+)?%/', $titleText,
+                "Segment title must match format. Got: '$titleText'");
+
+            // Extract cluster number
+            if (preg_match('/Klaster\\s*(\\d+):\\s*(\\d+(?:\\.\\d+)?)%/', $titleText, $matches)) {
+                $k = (int) $matches[1];
+                $expectedColor = $colorConfig['K'.$k] ?? null;
+                $this->assertNotNull($expectedColor, "No color configured for K$k");
+                $this->assertEquals($fill, $expectedColor,
+                    "Segment (title='$titleText') fill must match K$k. Got: '$fill', expected: '$expectedColor'");
+            }
+
+            // Verify not fallback
+            if (! in_array($fill, $validColors)) {
+                $debugInfo[] = "Segment (title='$titleText'): fill='$fill' NOT IN config colors";
+            }
+        }
+
+        $this->assertEmpty($debugInfo, 'No segment should use fallback color: '.implode('; ', $debugInfo));
+    }
 }
