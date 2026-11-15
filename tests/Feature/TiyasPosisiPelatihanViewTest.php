@@ -524,6 +524,150 @@ class TiyasPosisiPelatihanViewTest extends TestCase
     }
 
     /**
+     * Test 4 (E): Tabel Kedekatan: tiap sel persen = rata_keanggotaan service per (pelatihan, klaster);
+     * kolom "Klaster Terdekat" = label argmax baris itu; jumlah baris = jumlah pelatihan.
+     *
+     * Setup: 2 pelatihan, berbagai profil.
+     * Assert: Tabel memiliki 2 baris (1 header + 2 data), kolom sesuai jumlah klaster,
+     * sel persen cocok dengan service, kolom "Klaster Terdekat" = label argmax.
+     */
+    public function test_proximity_table_values_match_service()
+    {
+        $pelatihan1 = Pelatihan::factory()->create([
+            'status' => 'selesai',
+            'tanggal_selesai' => now()->subDay(),
+            'nama' => 'Pelatihan Alpha'
+        ]);
+        $pelatihan2 = Pelatihan::factory()->create([
+            'status' => 'selesai',
+            'tanggal_selesai' => now()->subDay(),
+            'nama' => 'Pelatihan Beta'
+        ]);
+
+        // 5 respons pelatihan 1
+        for ($i = 0; $i < 5; $i++) {
+            $peserta = User::factory()->create(['role' => 'peserta']);
+            $pendaftaran = Pendaftaran::factory()->hadir()->create([
+                'status_verifikasi' => 'diverifikasi',
+                'peserta_id' => $peserta->id,
+                'pelatihan_id' => $pelatihan1->id,
+            ]);
+            TiyasResponse::factory()->withProfil('optimal')->create([
+                'pendaftaran_id' => $pendaftaran->id,
+            ]);
+        }
+
+        // 5 respons pelatihan 2
+        for ($i = 0; $i < 5; $i++) {
+            $peserta = User::factory()->create(['role' => 'peserta']);
+            $pendaftaran = Pendaftaran::factory()->hadir()->create([
+                'status_verifikasi' => 'diverifikasi',
+                'peserta_id' => $peserta->id,
+                'pelatihan_id' => $pelatihan2->id,
+            ]);
+            TiyasResponse::factory()->withProfil('at_risk')->create([
+                'pendaftaran_id' => $pendaftaran->id,
+            ]);
+        }
+
+        // Get service result
+        $scorer = new \App\Services\TiyasScorer();
+        $fcm = new \App\Services\FuzzyCMeans();
+        $klasterService = new \App\Services\TiyasProfilKlaster($scorer, $fcm);
+        
+        $responses = \App\Models\TiyasResponse::whereHas('pendaftaran', function ($q) {
+            $q->where('status_verifikasi', 'diverifikasi')->whereNotNull('hadir_at');
+        })->with('pendaftaran.peserta', 'pendaftaran.pelatihan')->get();
+        
+        $klasterResult = $klasterService->analisis($responses);
+        $comparisonData = $klasterService->perbandinganAntarPelatihan();
+        $posisiPelatihan = $klasterService->posisiPelatihan($klasterResult, $comparisonData['comparisonData']);
+        
+        $response = $this->actingAs($this->panitia)
+            ->get(route('tiyas.hasil', [$pelatihan1->id]) . '?cakupan=semua');
+
+        $response->assertStatus(200);
+        $html = $response->getContent();
+
+        // Parse dengan DOMDocument
+        $dom = new \DOMDocument;
+        @$dom->loadHTML('<?xml encoding="UTF-8">'.$html);
+        $xpath = new \DOMXPath($dom);
+
+        // Cari tabel Kedekatan (h3 "Kedekatan Pelatihan ke Klaster")
+        $h3List = $xpath->query("//h3[contains(text(), 'Kedekatan Pelatihan ke Klaster')]");
+        $this->assertGreaterThan(0, $h3List->length, "H3 heading 'Kedekatan Pelatihan ke Klaster' harus ada");
+
+        // Cari tabel setelah h3 (gunakan following-sibling atau telusuri hingga table)
+        $tables = $xpath->query(".//table", $h3List->item(0)->parentNode);
+        $this->assertGreaterThan(0, $tables->length, "Tabel Kedekatan harus ada");
+
+        $table = $tables->item(0);
+
+        // Validasi header: Pelatihan, Klaster 1, Klaster 2, ..., Klaster Terdekat
+        $thead = $xpath->query(".//thead//th", $table);
+        $expectedClusterCount = count($klasterResult['klaster_labels'] ?? []);
+        $expectedHeaderCount = 2 + $expectedClusterCount; // Pelatihan + N klaster + Klaster Terdekat
+        $this->assertGreaterThanOrEqual(2, $thead->length, "Header harus memiliki minimal Pelatihan dan Klaster Terdekat");
+
+        // Validasi baris data: harus = jumlah pelatihan
+        $tbodyRows = $xpath->query(".//tbody//tr", $table);
+        $this->assertCount(count($posisiPelatihan), $tbodyRows, 
+            "Tabel harus memiliki " . count($posisiPelatihan) . " baris data (1 per pelatihan)");
+
+        // Validasi tiap baris
+        foreach ($tbodyRows as $rowIdx => $row) {
+            if ($rowIdx >= count($posisiPelatihan)) break;
+
+            $cells = $xpath->query(".//td", $row);
+            $this->assertGreaterThanOrEqual(2, $cells->length, "Baris harus punya minimal 2 cells");
+
+            // Cell 0 = nama pelatihan
+            $namaCellText = trim($cells->item(0)->textContent);
+            $expectedPelatihan = $posisiPelatihan[$rowIdx];
+            $this->assertStringContainsString($expectedPelatihan['nama'], $namaCellText,
+                "Baris {$rowIdx}: nama pelatihan harus cocok");
+
+            // Cell 1..N = membership % per klaster
+            $membershipCells = [];
+            for ($i = 1; $i < $cells->length - 1; $i++) { // Skip kolom nama, skip kolom "Klaster Terdekat"
+                $cellText = trim($cells->item($i)->textContent);
+                // Format: "45.2%" atau "45.2 %"
+                if (preg_match('/^([\d.]+)\s*%$/', $cellText, $m)) {
+                    $membershipCells[] = floatval($m[1]);
+                } else {
+                    $membershipCells[] = 0; // fallback
+                }
+            }
+
+            // Validasi membership values cocok dengan service
+            $expectedMembership = $expectedPelatihan['rata_keanggotaan'];
+            $membershipCount = count($membershipCells);
+            $this->assertGreaterThanOrEqual(count($expectedMembership), $membershipCount,
+                "Baris {$rowIdx}: harus ada kolom membership untuk tiap klaster");
+
+            foreach ($expectedMembership as $klasterNum => $expectedValue) {
+                $cellIdx = $klasterNum - 1; // Klaster 1 -> cell 0, Klaster 2 -> cell 1, etc
+                if (isset($membershipCells[$cellIdx])) {
+                    $this->assertEqualsWithDelta($expectedValue, $membershipCells[$cellIdx], 0.15,
+                        "Baris {$rowIdx}: Klaster {$klasterNum} membership harus cocok (expected {$expectedValue}%, got {$membershipCells[$cellIdx]}%)");
+                }
+            }
+
+            // Cell terakhir = "Klaster Terdekat" label
+            $lastCell = $cells->item($cells->length - 1);
+            $klasterLabel = trim($lastCell->textContent);
+            // Label bisa berupa "Klaster 2 · A: Optimal Transfer" atau "K2" tergantung format view
+            $expectedKlasterNum = $expectedPelatihan['klaster_terdekat'];
+            $this->assertTrue(
+                strpos($klasterLabel, 'Klaster ' . $expectedKlasterNum) !== false || 
+                strpos($klasterLabel, 'K' . $expectedKlasterNum) !== false,
+                "Baris {$rowIdx}: 'Klaster Terdekat' harus berisi klaster #{$expectedKlasterNum}, got '{$klasterLabel}'"
+            );
+        }
+    }
+
+    /**
      * Test D: Label text P1, P2, ... exists, distinct, dan dalam viewBox bounds [0, 700].
      */
     public function test_marker_labels_p1_p2_exist_distinct_in_bounds()
