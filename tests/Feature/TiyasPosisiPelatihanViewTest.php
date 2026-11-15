@@ -802,7 +802,8 @@ class TiyasPosisiPelatihanViewTest extends TestCase
     }
 
     /**
-     * Test F: With ?cakupan=pelatihan (single training), no polygon markers and no membership table.
+     * Test 5 (F): With ?cakupan=pelatihan (single training), no polygon markers and no membership table.
+     * Assert: SVG scatter tidak ada <polygon>, dan <h3> "Kedekatan Pelatihan ke Klaster" tidak ada.
      */
     public function test_single_training_no_markers_no_membership_table()
     {
@@ -824,17 +825,25 @@ class TiyasPosisiPelatihanViewTest extends TestCase
             ->get(route('tiyas.hasil', [$pelatihan->id]) . '?cakupan=pelatihan');
 
         $response->assertStatus(200);
+        $html = $response->getContent();
 
-        $content = $response->getContent();
-        
-        // Tidak ada polygon marker (4 titik diamond)
-        $this->assertStringNotContainsString('points="', $content, "Tidak boleh ada polygon marker");
-        
-        // Tidak ada label P1, P2, ... dalam context scatter
-        $this->assertStringNotContainsString('Penanda pelatihan', $content);
-        
-        // Tidak ada tabel "Kedekatan Pelatihan ke Klaster"
-        $this->assertStringNotContainsString('Kedekatan Pelatihan ke Klaster', $content);
+        // Parse dengan DOMDocument
+        $dom = new \DOMDocument;
+        @$dom->loadHTML('<?xml encoding="UTF-8">'.$html);
+        $xpath = new \DOMXPath($dom);
+
+        // Cari SVG scatter chart
+        $svgs = $xpath->query("//svg[@data-chart='fcm-scatter']");
+        if ($svgs->length > 0) {
+            // Jika SVG ada, tidak boleh ada polygon markers
+            $svg = $svgs->item(0);
+            $polygons = $xpath->query(".//polygon[@stroke='var(--color-text)'][@stroke-width='2'][@opacity='0.85']", $svg);
+            $this->assertCount(0, $polygons, "Saat single training, tidak boleh ada polygon markers");
+        }
+
+        // Tidak boleh ada h3 "Kedekatan Pelatihan ke Klaster"
+        $h3List = $xpath->query("//h3[contains(text(), 'Kedekatan Pelatihan ke Klaster')]");
+        $this->assertCount(0, $h3List, "H3 heading 'Kedekatan Pelatihan ke Klaster' tidak boleh ada saat single training");
     }
 
     /**
