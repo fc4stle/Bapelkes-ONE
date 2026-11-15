@@ -738,7 +738,19 @@
                                         
                                         <!-- Plot penanda pelatihan (kotak belah ketupat per pelatihan) -->
                                         @if ($cakupan === 'semua' && count($pelatihansForComparison) >= 2 && !empty($posisiPelatihan))
-                                            @foreach ($posisiPelatihan as $pelatihan_pos)
+                                            @php
+                                                // Hitung posisi label yang valid (hanya yang lolos validasi)
+                                                $validMarkers = [];
+                                                foreach ($posisiPelatihan as $idx => $pelatihan_pos) {
+                                                    $centroidX = $pelatihan_pos['centroid_pelatihan'][$xIdx] ?? null;
+                                                    $centroidY = $pelatihan_pos['centroid_pelatihan'][$yIdx] ?? null;
+                                                    
+                                                    if (is_finite($centroidX) && is_finite($centroidY) && $centroidX >= 1 && $centroidX <= 4 && $centroidY >= 1 && $centroidY <= 4) {
+                                                        $validMarkers[] = $idx;
+                                                    }
+                                                }
+                                            @endphp
+                                            @foreach ($posisiPelatihan as $idx => $pelatihan_pos)
                                                 @php
                                                     $centroidX = $pelatihan_pos['centroid_pelatihan'][$xIdx] ?? null;
                                                     $centroidY = $pelatihan_pos['centroid_pelatihan'][$yIdx] ?? null;
@@ -767,8 +779,24 @@
                                                     }
                                                     $penandaTitle = implode(' | ', $tooltipLines);
                                                     
-                                                    // Ukuran penanda (kotak belah ketupat)
-                                                    $markerSize = 6;
+                                                    // Ukuran penanda (kotak belah ketupat) - diperbesar menjadi 9
+                                                    $markerSize = 9;
+                                                    
+                                                    // Label pendek: P1, P2, ... berdasarkan urutan di validMarkers
+                                                    $labelIndex = array_search($idx, $validMarkers) + 1;
+                                                    $shortLabel = 'P' . $labelIndex;
+                                                    
+                                                    // Hitung text width (estimasi: ~6px per karakter untuk font-size 11px)
+                                                    $textWidth = strlen($shortLabel) * 6 + 2; // padding
+                                                    $labelX = $px + 12;
+                                                    $labelY = $py + 12;
+                                                    $textAnchor = 'start';
+                                                    
+                                                    // Cek apakah label akan keluar dari viewBox (700 adalah viewBox width)
+                                                    if ($labelX + $textWidth > 700) {
+                                                        $labelX = $px - 12;
+                                                        $textAnchor = 'end';
+                                                    }
                                                 @endphp
                                                 
                                                 <!-- Kotak belah ketupat (diamond) untuk penanda pelatihan -->
@@ -780,9 +808,9 @@
                                                     <title>{{$penandaTitle}}</title>
                                                 </polygon>
                                                 
-                                                <!-- Label nama pelatihan di dekat marker -->
-                                                <text x="{{$px + 12}}" y="{{$py + 12}}" style="font-size: 11px; font-weight: 600; fill: {{$penandaColor}};">
-                                                    {{ substr($pelatihan_pos['nama'], 0, 15) }}{{ strlen($pelatihan_pos['nama']) > 15 ? '...' : '' }}
+                                                <!-- Label pendek P1, P2, ... di dekat marker -->
+                                                <text x="{{$labelX}}" y="{{$labelY}}" text-anchor="{{$textAnchor}}" style="font-size: 11px; font-weight: 600; fill: {{$penandaColor}};">
+                                                    {{ $shortLabel }}
                                                 </text>
                                             @endforeach
                                         @endif
@@ -810,6 +838,24 @@
                                                 </svg>
                                                 <span>Penanda pelatihan (posisi rata-rata skor di plot)</span>
                                             </div>
+                                            
+                                            <!-- Legenda label pelatihan P1, P2, ... -->
+                                            @php
+                                                $validMarkers = [];
+                                                foreach ($posisiPelatihan as $idx => $pelatihan_pos) {
+                                                    $centroidX = $pelatihan_pos['centroid_pelatihan'][$xIdx] ?? null;
+                                                    $centroidY = $pelatihan_pos['centroid_pelatihan'][$yIdx] ?? null;
+                                                    
+                                                    if (is_finite($centroidX) && is_finite($centroidY) && $centroidX >= 1 && $centroidX <= 4 && $centroidY >= 1 && $centroidY <= 4) {
+                                                        $validMarkers[] = $idx;
+                                                    }
+                                                }
+                                            @endphp
+                                            @foreach ($validMarkers as $markerIdx => $idx)
+                                                <div style="color: var(--color-text); font-size: 11px;">
+                                                    P{{ $markerIdx + 1 }} = {{ $posisiPelatihan[$idx]['nama'] }}
+                                                </div>
+                                            @endforeach
                                         @endif
                                     </div>
                                     
@@ -1355,9 +1401,29 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach ($posisiPelatihan as $pel_pos)
+                                        @php
+                                            // Hitung label P1, P2, ... untuk tabel (dengan validasi yang sama seperti scatter)
+                                            $tableLabelMap = [];
+                                            $labelCounter = 1;
+                                            foreach ($posisiPelatihan as $idx => $pelatihan_pos) {
+                                                $centroidX = $pelatihan_pos['centroid_pelatihan'][$xIdx] ?? null;
+                                                $centroidY = $pelatihan_pos['centroid_pelatihan'][$yIdx] ?? null;
+                                                
+                                                if (is_finite($centroidX) && is_finite($centroidY) && $centroidX >= 1 && $centroidX <= 4 && $centroidY >= 1 && $centroidY <= 4) {
+                                                    $tableLabelMap[$idx] = 'P' . $labelCounter;
+                                                    $labelCounter++;
+                                                }
+                                            }
+                                        @endphp
+                                        @foreach ($posisiPelatihan as $idx => $pel_pos)
                                             <tr style="border-bottom: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);">
-                                                <td style="padding: 0.75rem; color: var(--color-text); font-weight: 500;">{{ $pel_pos['nama'] }}</td>
+                                                <td style="padding: 0.75rem; color: var(--color-text); font-weight: 500;">
+                                                    @if (isset($tableLabelMap[$idx]))
+                                                        {{ $tableLabelMap[$idx] }} · {{ $pel_pos['nama'] }}
+                                                    @else
+                                                        {{ $pel_pos['nama'] }}
+                                                    @endif
+                                                </td>
                                                 
                                                 @foreach ($klasterResult['klaster_labels'] ?? [] as $klaster_idx => $label)
                                                     @php
