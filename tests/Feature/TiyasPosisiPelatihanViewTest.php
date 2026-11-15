@@ -954,40 +954,4 @@ class TiyasPosisiPelatihanViewTest extends TestCase
         $this->assertStringContainsString('Implementasi Teknologi Blockchain', $legendText);
         $this->assertStringContainsString('Cyber Security', $legendText);
     }
-
-    /**
-     * Test 6 (I): Proof-of-failure untuk test 1 (posisi) dan test 2 (warna).
-     *
-     * Demonstrasi bahwa test kami dapat mendeteksi bug:
-     *
-     * STEP 1: Ubah formula y pada resources/views/tiyas/hasil.blade.php line ~793:
-     *   OLD: cy = {{ margin_t + (1-(centroidY-1)/3)*plotH }}
-     *   NEW: cy = {{ margin_t + (1-(centroidY-1)/3)*plotH + 1 }}  // +1 offset
-     *
-     * Jalankan:  ./vendor/bin/phpunit --filter test_marker_position_matches_service_centroid
-     * Expected:  FAIL - assertion "cy should match" akan jatuh karena y off-by-1
-     * Pesan:     "Failed asserting that X equals Y within 0.5px"
-     *
-     * STEP 2: Ubah config warna pada resources/views/tiyas/hasil.blade.php line ~823:
-     *   OLD: 'fill' => $colors['K' . $pelatihan['klaster_terdekat']]
-     *   NEW: 'fill' => $colors['K' . ($pelatihan['klaster_terdekat'] + 1)]  // +1 cluster id
-     *
-     * Jalankan:  ./vendor/bin/phpunit --filter test_marker_fill_color_matches_cluster
-     * Expected:  FAIL - assertion "fill color should match cluster" akan jatuh
-     * Pesan:     "Failed asserting that #XXXXX equals #YYYYY"
-     *
-     * STEP 3: Revert kedua perubahan, jalankan kedua test lagi.
-     * Expected:  PASS untuk keduanya.
-     *
-     * Bukti: Test kami robust dan dapat mendeteksi bug spesifik pada positioning dan coloring.
-     */
-    public function test_proof_of_failure_demonstrates_test_detection()
-    {
-        // This test is a documented proof-of-concept (manual steps outlined above).
-        // Automated version would require temporarily modifying source files,
-        // which violates test isolation principles. Therefore, this test documents
-        // the procedure for manual verification of test robustness.
-        
-        $this->assertTrue(true, 'Proof-of-failure steps documented above in docblock');
-    }
 }
