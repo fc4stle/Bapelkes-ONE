@@ -53,17 +53,27 @@ class TiyasPosisiPelatihanViewTest extends TestCase
     }
 
     /**
-     * Test A: SVG scatter polygon markers count matches training count (2 pelatihan).
+     * Test 1 (A): Posisi penanda pelatihan: centroid polygon = margin + scaled centroid dari service.
      *
-     * Setup: 2 pelatihan, 10 respons total (5 per training), skor berbeda antar training.
-     * Assert: Ada 2 <polygon> marker di SVG scatter (data-chart="fcm-scatter").
+     * Setup: 2 pelatihan, 10 respons (5 per training), skor berbeda.
+     * Assert: Tiap <polygon> di SVG scatter (data-chart="fcm-scatter") punya centroid yang match
+     *         rumus: x = margin_l + ((centroidX-1)/3)*plotW, y = margin_t + (1-(centroidY-1)/3)*plotH
+     *         Toleransi 0.5px. Cocokkan via <title> polygon ke pelatihan, bukan urutan.
      */
-    public function test_scatter_markers_polygon_count_matches_training_count()
+    public function test_marker_position_matches_service_centroid()
     {
-        $pelatihan1 = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
-        $pelatihan2 = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
+        $pelatihan1 = Pelatihan::factory()->create([
+            'status' => 'selesai', 
+            'tanggal_selesai' => now()->subDay(),
+            'nama' => 'Pelatihan Alpha'
+        ]);
+        $pelatihan2 = Pelatihan::factory()->create([
+            'status' => 'selesai',
+            'tanggal_selesai' => now()->subDay(),
+            'nama' => 'Pelatihan Beta'
+        ]);
 
-        // 5 respons untuk pelatihan 1 dengan skor tinggi
+        // 5 respons pelatihan 1 dengan skor tinggi
         for ($i = 0; $i < 5; $i++) {
             $peserta = User::factory()->create(['role' => 'peserta']);
             $pendaftaran = Pendaftaran::factory()->hadir()->create([
@@ -76,7 +86,7 @@ class TiyasPosisiPelatihanViewTest extends TestCase
             ]);
         }
 
-        // 5 respons untuk pelatihan 2 dengan skor rendah
+        // 5 respons pelatihan 2 dengan skor rendah
         for ($i = 0; $i < 5; $i++) {
             $peserta = User::factory()->create(['role' => 'peserta']);
             $pendaftaran = Pendaftaran::factory()->hadir()->create([
@@ -89,15 +99,103 @@ class TiyasPosisiPelatihanViewTest extends TestCase
             ]);
         }
 
+        // Get service result
+        $scorer = new \App\Services\TiyasScorer();
+        $fcm = new \App\Services\FuzzyCMeans();
+        $klasterService = new \App\Services\TiyasProfilKlaster($scorer, $fcm);
+        
+        $responses = \App\Models\TiyasResponse::whereHas('pendaftaran', function ($q) {
+            $q->where('status_verifikasi', 'diverifikasi')->whereNotNull('hadir_at');
+        })->with('pendaftaran.peserta', 'pendaftaran.pelatihan')->get();
+        
+        $klasterResult = $klasterService->analisis($responses);
+        
         $response = $this->actingAs($this->panitia)
             ->get(route('tiyas.hasil', [$pelatihan1->id]) . '?cakupan=semua');
 
         $response->assertStatus(200);
+        $html = $response->getContent();
 
-        // Extract polygon markers
-        preg_match_all('/<polygon\s+points="[^"]*"\s+fill="[^"]*"\s+stroke="[^"]*"\s+stroke-width="2"\s+opacity="0.85"/', $response->getContent(), $matches);
-        
-        $this->assertCount(2, $matches[0], "Harus ada 2 polygon markers untuk 2 pelatihan");
+        // Parse dengan DOMDocument (format dengan UTF-8)
+        $dom = new \DOMDocument;
+        @$dom->loadHTML('<?xml encoding="UTF-8">'.$html);
+        $xpath = new \DOMXPath($dom);
+
+        // Cari SVG scatter chart
+        $svgs = $xpath->query("//svg[@data-chart='fcm-scatter']");
+        $this->assertGreaterThan(0, $svgs->length, "SVG scatter chart harus ada");
+
+        $svg = $svgs->item(0);
+        $polygons = $xpath->query(".//polygon[@stroke='var(--color-text)'][@stroke-width='2'][@opacity='0.85']", $svg);
+
+        $this->assertCount(2, $polygons, "Harus ada 2 polygon markers untuk 2 pelatihan");
+
+        // SVG parameters (sesuai view)
+        $svgW = 700;
+        $svgH = 500;
+        $margin = ['l' => 70, 'r' => 40, 't' => 68, 'b' => 50];
+        $plotW = $svgW - $margin['l'] - $margin['r'];
+        $plotH = $svgH - $margin['t'] - $margin['b'];
+
+        // Extract posisiPelatihan dari service
+        $comparisonData = $klasterService->perbandinganAntarPelatihan();
+        $posisiPelatihan = $klasterService->posisiPelatihan($klasterResult, $comparisonData['comparisonData']);
+
+        // Cocok polygon dengan posisiPelatihan via <title>
+        foreach ($polygons as $polygon) {
+            $points_str = $polygon->getAttribute('points');
+            $this->assertNotEmpty($points_str, "Polygon harus punya points");
+
+            // Parse points dari polygon (format: "x1,y1 x2,y2 x3,y3 x4,y4")
+            $points = array_filter(array_map('trim', preg_split('/[\s,]+/', trim($points_str))));
+            $points = array_chunk($points, 2);
+            
+            $this->assertCount(4, $points, "Polygon harus punya 4 titik untuk diamond");
+
+            // Hitung centroid
+            $xs = array_map(fn($p) => floatval($p[0]), $points);
+            $ys = array_map(fn($p) => floatval($p[1]), $points);
+            $centroidX_view = array_sum($xs) / count($xs);
+            $centroidY_view = array_sum($ys) / count($ys);
+
+            // Cari title untuk cocokkan nama pelatihan
+            $titles = $xpath->query(".//title", $polygon);
+            if ($titles->length > 0) {
+                $titleText = $titles->item(0)->textContent;
+                
+                // Extract nama pelatihan dari title (format: "Pelatihan Alpha (n=5) | ..." atau "Pelatihan Alpha | ...")
+                if (preg_match('/^([^(]+?)(?:\s*\([^)]*\))?\s*(?:\||$)/', $titleText, $m)) {
+                    $nama_in_title = trim($m[1]);
+
+                    // Cari matching pelatihan di posisiPelatihan
+                    $matching_pelatihan = null;
+                    foreach ($posisiPelatihan as $pel) {
+                        if ($pel['nama'] === $nama_in_title) {
+                            $matching_pelatihan = $pel;
+                            break;
+                        }
+                    }
+
+                    $this->assertNotNull($matching_pelatihan, "Pelatihan '{$nama_in_title}' harus ada di service posisiPelatihan");
+
+                    // Expected centroid dari service
+                    $centroid = $matching_pelatihan['centroid_pelatihan']; // [TC, TE, ITT, YB]
+                    // Asumsikan xAxis=TC (1), yAxis=YB (4) per default di controller
+                    $centroidX_service = floatval($centroid[0]); // TC
+                    $centroidY_service = floatval($centroid[3]); // YB
+
+                    // Convert ke pixel
+                    $expectedX = $margin['l'] + (($centroidX_service - 1) / 3) * $plotW;
+                    $expectedY = $margin['t'] + (1 - ($centroidY_service - 1) / 3) * $plotH;
+
+                    // Toleransi 0.5px
+                    $this->assertEqualsWithDelta($expectedX, $centroidX_view, 0.5, 
+                        "Centroid X '{$nama_in_title}' mismatch: expected {$expectedX}, got {$centroidX_view}");
+                    $this->assertEqualsWithDelta($expectedY, $centroidY_view, 0.5,
+                        "Centroid Y '{$nama_in_title}' mismatch: expected {$expectedY}, got {$centroidY_view}");
+                }
+            }
+        }
     }
 
     /**
