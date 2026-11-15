@@ -399,4 +399,104 @@ class TiyasProfilKlaster
             'pelatihansForComparison' => $pelatihansForComparison,
         ];
     }
+
+    /**
+     * Hitung posisi tiap pelatihan terhadap klaster FCM.
+     *
+     * Per pelatihan:
+     * - centroid_pelatihan: rata-rata skor_raw tiap konstruk (TC, TE, ITT, YB)
+     * - rata_keanggotaan: rata-rata membership % ke setiap klaster (1-based)
+     * - klaster_terdekat: klaster dengan rata_keanggotaan tertinggi (1-based)
+     *
+     * @param  array  $analisis        Result dari analisis() dengan tabel_peserta
+     * @param  array  $comparisonData  Map pelatihan_id => {id, nama, ...}
+     * @return array  Array of [{id, nama, n_peserta, centroid_pelatihan, rata_keanggotaan, klaster_terdekat}, ...]
+     */
+    public function posisiPelatihan($analisis, $comparisonData)
+    {
+        $tabelPeserta = $analisis['tabel_peserta'] ?? [];
+        if (empty($tabelPeserta)) {
+            return [];
+        }
+
+        // Group peserta by pelatihan_id
+        $pelatihans = [];
+        foreach ($tabelPeserta as $peserta) {
+            $pelatihan_id = $peserta['pelatihan_id'] ?? null;
+            if ($pelatihan_id === null) {
+                continue;
+            }
+
+            if (!isset($pelatihans[$pelatihan_id])) {
+                $pelatihans[$pelatihan_id] = [];
+            }
+
+            $pelatihans[$pelatihan_id][] = $peserta;
+        }
+
+        // Hitung per pelatihan
+        $result = [];
+        foreach ($pelatihans as $pelatihan_id => $pesertaList) {
+            $n = count($pesertaList);
+
+            // Centroid: rata-rata skor_raw
+            $centroidRaw = [0, 0, 0, 0]; // [TC, TE, ITT, YB]
+            foreach ($pesertaList as $peserta) {
+                $skor_raw = $peserta['skor_raw'] ?? [0, 0, 0, 0];
+                for ($i = 0; $i < 4; $i++) {
+                    $centroidRaw[$i] += floatval($skor_raw[$i] ?? 0);
+                }
+            }
+
+            for ($i = 0; $i < 4; $i++) {
+                $centroidRaw[$i] = round($centroidRaw[$i] / $n, 2);
+            }
+
+            // Rata-rata keanggotaan per klaster (1-based)
+            $maxCluster = 0;
+            $membershipSums = [];
+            foreach ($pesertaList as $peserta) {
+                $memberships = $peserta['memberships'] ?? [];
+                foreach ($memberships as $k => $v) {
+                    $maxCluster = max($maxCluster, $k);
+                    if (!isset($membershipSums[$k])) {
+                        $membershipSums[$k] = 0;
+                    }
+                    $membershipSums[$k] += floatval($v);
+                }
+            }
+
+            $rataKeanggotaan = [];
+            for ($k = 1; $k <= $maxCluster; $k++) {
+                $rataKeanggotaan[$k] = isset($membershipSums[$k])
+                    ? round($membershipSums[$k] / $n, 1)
+                    : 0.0;
+            }
+
+            // Klaster terdekat: argmax rata_keanggotaan
+            $klasterTerdekat = 1;
+            $maxMembership = $rataKeanggotaan[1] ?? 0;
+            for ($k = 2; $k <= $maxCluster; $k++) {
+                if (($rataKeanggotaan[$k] ?? 0) > $maxMembership) {
+                    $maxMembership = $rataKeanggotaan[$k];
+                    $klasterTerdekat = $k;
+                }
+            }
+
+            // Get pelatihan info
+            $pelatihan = $comparisonData[$pelatihan_id] ?? null;
+            $pelatihan_nama = $pelatihan['nama'] ?? "Pelatihan {$pelatihan_id}";
+
+            $result[] = [
+                'id' => $pelatihan_id,
+                'nama' => $pelatihan_nama,
+                'n_peserta' => $n,
+                'centroid_pelatihan' => $centroidRaw,
+                'rata_keanggotaan' => $rataKeanggotaan,
+                'klaster_terdekat' => $klasterTerdekat,
+            ];
+        }
+
+        return $result;
+    }
 }

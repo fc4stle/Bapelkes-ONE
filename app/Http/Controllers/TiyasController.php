@@ -295,11 +295,17 @@ class TiyasController extends Controller
         // Hanya jika cakupan=semua, kumpulkan response count per pelatihan
         $comparisonData = [];
         $pelatihansForComparison = [];
+        $posisiPelatihan = [];
 
         if ($cakupan === 'semua') {
             $comparison = $klasterService->perbandinganAntarPelatihan();
             $comparisonData = $comparison['comparisonData'];
             $pelatihansForComparison = $comparison['pelatihansForComparison'];
+
+            // Hitung posisi pelatihan terhadap klaster (hanya jika >= 2 pelatihan dan status sukses)
+            if (count($pelatihansForComparison) >= 2 && $klasterResult['status'] === 'sukses') {
+                $posisiPelatihan = $klasterService->posisiPelatihan($klasterResult, $comparisonData);
+            }
         }
 
         return view('tiyas.hasil', [
@@ -322,6 +328,7 @@ class TiyasController extends Controller
             'skorKonstrukRaw' => $skorKonstrukRaw ?? [], // Untuk scatter plot FCM
             'comparisonData' => $comparisonData,
             'pelatihansForComparison' => $pelatihansForComparison,
+            'posisiPelatihan' => $posisiPelatihan,
         ]);
     }
 

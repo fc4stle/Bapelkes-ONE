@@ -735,6 +735,85 @@
                                             <!-- Label centroid -->
                                             <text x="{{$cpx + 10}}" y="{{$cpy - 8}}" style="font-size: 12px; font-weight: 700; fill: {{$centroidColor}};">{{ $centroid['label'] }}</text>
                                         @endforeach
+                                        
+                                        <!-- Plot penanda pelatihan (kotak belah ketupat per pelatihan) -->
+                                        @if ($cakupan === 'semua' && count($pelatihansForComparison) >= 2 && !empty($posisiPelatihan))
+                                            @php
+                                                // Hitung posisi label yang valid (hanya yang lolos validasi)
+                                                $validMarkers = [];
+                                                foreach ($posisiPelatihan as $idx => $pelatihan_pos) {
+                                                    $centroidX = $pelatihan_pos['centroid_pelatihan'][$xIdx] ?? null;
+                                                    $centroidY = $pelatihan_pos['centroid_pelatihan'][$yIdx] ?? null;
+                                                    
+                                                    if (is_finite($centroidX) && is_finite($centroidY) && $centroidX >= 1 && $centroidX <= 4 && $centroidY >= 1 && $centroidY <= 4) {
+                                                        $validMarkers[] = $idx;
+                                                    }
+                                                }
+                                            @endphp
+                                            @foreach ($posisiPelatihan as $idx => $pelatihan_pos)
+                                                @php
+                                                    $centroidX = $pelatihan_pos['centroid_pelatihan'][$xIdx] ?? null;
+                                                    $centroidY = $pelatihan_pos['centroid_pelatihan'][$yIdx] ?? null;
+                                                    
+                                                    // Validasi
+                                                    if (!is_finite($centroidX) || !is_finite($centroidY) || $centroidX < 1 || $centroidX > 4 || $centroidY < 1 || $centroidY > 4) {
+                                                        continue;
+                                                    }
+                                                    
+                                                    // Posisi SVG
+                                                    $px = $margin['l'] + (($centroidX - 1) / 3) * $plotW;
+                                                    $py = $margin['t'] + (1 - ($centroidY - 1) / 3) * $plotH;
+                                                    
+                                                    // Klaster terdekat untuk warna
+                                                    $klasterTerdekat = $pelatihan_pos['klaster_terdekat'];
+                                                    $penandaColor = isset($klasterColors['K' . $klasterTerdekat]) 
+                                                        ? $klasterColors['K' . $klasterTerdekat]
+                                                        : 'var(--color-primary)';
+                                                    
+                                                    // Build tooltip: nama pelatihan + n peserta + semua keanggotaan klaster
+                                                    $tooltipLines = [
+                                                        $pelatihan_pos['nama'] . ' (n=' . $pelatihan_pos['n_peserta'] . ')'
+                                                    ];
+                                                    foreach ($pelatihan_pos['rata_keanggotaan'] as $k => $m) {
+                                                        $tooltipLines[] = 'K' . $k . ': ' . number_format($m, 1) . '%';
+                                                    }
+                                                    $penandaTitle = implode(' | ', $tooltipLines);
+                                                    
+                                                    // Ukuran penanda (kotak belah ketupat) - diperbesar menjadi 9
+                                                    $markerSize = 9;
+                                                    
+                                                    // Label pendek: P1, P2, ... berdasarkan urutan di validMarkers
+                                                    $labelIndex = array_search($idx, $validMarkers) + 1;
+                                                    $shortLabel = 'P' . $labelIndex;
+                                                    
+                                                    // Hitung text width (estimasi: ~6px per karakter untuk font-size 11px)
+                                                    $textWidth = strlen($shortLabel) * 6 + 2; // padding
+                                                    $labelX = $px + 12;
+                                                    $labelY = $py + 12;
+                                                    $textAnchor = 'start';
+                                                    
+                                                    // Cek apakah label akan keluar dari viewBox (700 adalah viewBox width)
+                                                    if ($labelX + $textWidth > 700) {
+                                                        $labelX = $px - 12;
+                                                        $textAnchor = 'end';
+                                                    }
+                                                @endphp
+                                                
+                                                <!-- Kotak belah ketupat (diamond) untuk penanda pelatihan -->
+                                                <polygon points="{{$px}},{{$py - $markerSize}} {{$px + $markerSize}},{{$py}} {{$px}},{{$py + $markerSize}} {{$px - $markerSize}},{{$py}}" 
+                                                    fill="{{$penandaColor}}" 
+                                                    stroke="var(--color-text)" 
+                                                    stroke-width="2" 
+                                                    opacity="0.85">
+                                                    <title>{{$penandaTitle}}</title>
+                                                </polygon>
+                                                
+                                                <!-- Label pendek P1, P2, ... di dekat marker -->
+                                                <text x="{{$labelX}}" y="{{$labelY}}" text-anchor="{{$textAnchor}}" style="font-size: 11px; font-weight: 600; fill: {{$penandaColor}};">
+                                                    {{ $shortLabel }}
+                                                </text>
+                                            @endforeach
+                                        @endif
                                     </svg>
                                     
                                     <!-- Legend HTML -->
@@ -751,11 +830,41 @@
                                                 <span>Klaster {{ $klasterNum }} · {{ $klaster['kode_profil'] }}: {{ $klaster['profil'] }} ({{ $klaster['jumlah_peserta'] }} peserta)</span>
                                             </div>
                                         @endforeach
+                                        
+                                        @if ($cakupan === 'semua' && count($pelatihansForComparison) >= 2 && !empty($posisiPelatihan))
+                                            <div class="flex items-center gap-2">
+                                                <svg width="12" height="12" viewBox="0 0 12 12" style="flex-shrink: 0;">
+                                                    <polygon points="6,2 10,6 6,10 2,6" fill="var(--color-primary)" stroke="var(--color-text)" stroke-width="1" opacity="0.85"/>
+                                                </svg>
+                                                <span>Penanda pelatihan (posisi rata-rata skor di plot)</span>
+                                            </div>
+                                            
+                                            <!-- Legenda label pelatihan P1, P2, ... -->
+                                            @php
+                                                $validMarkers = [];
+                                                foreach ($posisiPelatihan as $idx => $pelatihan_pos) {
+                                                    $centroidX = $pelatihan_pos['centroid_pelatihan'][$xIdx] ?? null;
+                                                    $centroidY = $pelatihan_pos['centroid_pelatihan'][$yIdx] ?? null;
+                                                    
+                                                    if (is_finite($centroidX) && is_finite($centroidY) && $centroidX >= 1 && $centroidX <= 4 && $centroidY >= 1 && $centroidY <= 4) {
+                                                        $validMarkers[] = $idx;
+                                                    }
+                                                }
+                                            @endphp
+                                            @foreach ($validMarkers as $markerIdx => $idx)
+                                                <div style="color: var(--color-text); font-size: 11px;">
+                                                    P{{ $markerIdx + 1 }} = {{ $posisiPelatihan[$idx]['nama'] }}
+                                                </div>
+                                            @endforeach
+                                        @endif
                                     </div>
                                     
                                     <!-- Catatan warna dan opacity -->
                                     <p class="text-xs mt-3" style="color: var(--color-text); opacity: 0.6;">
                                         <strong>Catatan:</strong> Warna titik = klaster dominan. Kepekatan (opacity) menunjukkan derajat keanggotaan klaster dominan: semakin pekat, semakin kuat keanggotaannya.
+                                        @if ($cakupan === 'semua' && count($pelatihansForComparison) >= 2 && !empty($posisiPelatihan))
+                                            Berlian (◇) menunjukkan posisi rata-rata per pelatihan di plot; warnanya sesuai klaster terdekat.
+                                        @endif
                                     </p>
                                 </div>
                             @endif
@@ -1249,6 +1358,105 @@
                             </div>
                         @endif
                     </x-card>
+
+                    <!-- B.2 Kedekatan Pelatihan ke Klaster (hanya jika >= 2 pelatihan dan status = sukses) -->
+                    @if (!empty($posisiPelatihan) && count($klasterResult['klaster_labels'] ?? []) >= 2)
+                        <x-card class="mb-6">
+                            <h3 class="font-semibold text-sm mb-6" style="color: var(--color-text);">Kedekatan Pelatihan ke Klaster</h3>
+                            
+                            <!-- Deskripsi per pelatihan -->
+                            <div class="space-y-2 mb-6 text-xs" style="color: var(--color-text);">
+                                @foreach ($posisiPelatihan as $pel_pos)
+                                    @php
+                                        $klasterLabel = $klasterResult['klaster_labels'][$pel_pos['klaster_terdekat'] - 1] ?? 'Klaster ' . $pel_pos['klaster_terdekat'];
+                                        $klasterKode = $klasterResult['tabel_klaster'][$pel_pos['klaster_terdekat'] - 1]['kode_profil'] ?? '';
+                                        $klasterProfil = $klasterResult['tabel_klaster'][$pel_pos['klaster_terdekat'] - 1]['profil'] ?? '';
+                                        $nearestMembership = $pel_pos['rata_keanggotaan'][$pel_pos['klaster_terdekat']] ?? 0;
+                                    @endphp
+                                    <p>
+                                        <strong>{{ $pel_pos['nama'] }}</strong> paling dekat ke 
+                                        <strong>{{ $klasterLabel }}</strong>
+                                        @if ($klasterKode)
+                                            ({{ $klasterKode }}{{ $klasterProfil ? ': ' . $klasterProfil : '' }})
+                                        @endif
+                                        dengan rata-rata keanggotaan <strong>{{ number_format($nearestMembership, 1) }}%</strong>.
+                                    </p>
+                                @endforeach
+                            </div>
+                            
+                            <!-- Tabel Rata-rata Keanggotaan -->
+                            <div style="overflow-x: auto;">
+                                <table style="width: 100%; border-collapse: collapse; border-spacing: 0;">
+                                    <thead>
+                                        <tr style="background-color: color-mix(in srgb, var(--color-primary) 10%, transparent); border-bottom: 2px solid var(--color-primary);">
+                                            <th style="padding: 0.75rem; text-align: left; color: var(--color-text); font-weight: 600;">Pelatihan</th>
+                                            @foreach ($klasterResult['klaster_labels'] ?? [] as $klaster_idx => $label)
+                                                <th style="padding: 0.75rem; text-align: center; color: var(--color-text); font-weight: 600; white-space: nowrap;">
+                                                    {{ $label }}
+                                                </th>
+                                            @endforeach
+                                            <th style="padding: 0.75rem; text-align: center; color: var(--color-text); font-weight: 600; background-color: color-mix(in srgb, var(--color-accent) 15%, transparent); white-space: nowrap;">
+                                                Klaster Terdekat
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @php
+                                            // Hitung label P1, P2, ... untuk tabel (dengan validasi yang sama seperti scatter)
+                                            $tableLabelMap = [];
+                                            $labelCounter = 1;
+                                            foreach ($posisiPelatihan as $idx => $pelatihan_pos) {
+                                                $centroidX = $pelatihan_pos['centroid_pelatihan'][$xIdx] ?? null;
+                                                $centroidY = $pelatihan_pos['centroid_pelatihan'][$yIdx] ?? null;
+                                                
+                                                if (is_finite($centroidX) && is_finite($centroidY) && $centroidX >= 1 && $centroidX <= 4 && $centroidY >= 1 && $centroidY <= 4) {
+                                                    $tableLabelMap[$idx] = 'P' . $labelCounter;
+                                                    $labelCounter++;
+                                                }
+                                            }
+                                        @endphp
+                                        @foreach ($posisiPelatihan as $idx => $pel_pos)
+                                            <tr style="border-bottom: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);">
+                                                <td style="padding: 0.75rem; color: var(--color-text); font-weight: 500;">
+                                                    @if (isset($tableLabelMap[$idx]))
+                                                        {{ $tableLabelMap[$idx] }} · {{ $pel_pos['nama'] }}
+                                                    @else
+                                                        {{ $pel_pos['nama'] }}
+                                                    @endif
+                                                </td>
+                                                
+                                                @foreach ($klasterResult['klaster_labels'] ?? [] as $klaster_idx => $label)
+                                                    @php
+                                                        $klaster_num = $klaster_idx + 1;
+                                                        $membership = $pel_pos['rata_keanggotaan'][$klaster_num] ?? 0;
+                                                        $isNearest = ($klaster_num === $pel_pos['klaster_terdekat']);
+                                                    @endphp
+                                                    <td style="padding: 0.75rem; text-align: center; color: var(--color-text);
+                                                        @if ($isNearest)
+                                                            background-color: color-mix(in srgb, var(--color-accent) 25%, transparent); font-weight: 600;
+                                                        @endif
+                                                        ">
+                                                        {{ number_format($membership, 1) }}%
+                                                    </td>
+                                                @endforeach
+                                                
+                                                <td style="padding: 0.75rem; text-align: center; color: var(--color-text); font-weight: 600; background-color: color-mix(in srgb, var(--color-accent) 15%, transparent);">
+                                                    {{ $klasterResult['klaster_labels'][$pel_pos['klaster_terdekat'] - 1] ?? 'K' . $pel_pos['klaster_terdekat'] }}
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <!-- Catatan -->
+                            <p class="text-xs mt-4" style="color: var(--color-text); opacity: 0.6;">
+                                <strong>Catatan:</strong> Tabel menunjukkan rata-rata persentase keanggotaan setiap pelatihan di tiap klaster (1-based). 
+                                Kolom "Klaster Terdekat" menandai klaster dengan persentase tertinggi pada setiap baris.
+                            </p>
+                        </x-card>
+                    @endif
+
                 @elseif (count($pelatihansForComparison) === 1)
                     <x-card class="mb-6">
                         <p style="color: var(--color-text); opacity: 0.7;" class="text-center py-6">
