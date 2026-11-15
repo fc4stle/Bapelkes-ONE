@@ -268,55 +268,125 @@ class TiyasPosisiPelatihanViewTest extends TestCase
     }
 
     /**
-     * Test C: Marker fill color tidak NaN/INF, adalah hex/rgba yang valid.
+     * Test 2 (B): Warna fill polygon = config('tiyas.warna_klaster')['K'.klaster_terdekat].
+     *
+     * Setup: 2 pelatihan, klaster terdekat berbeda.
+     * Assert: Tiap <polygon> fill color cocok dengan klaster terdekat dari service.
      */
-    public function test_marker_fill_color_valid_no_nan_inf()
+    public function test_marker_fill_color_matches_cluster()
     {
-        $pelatihan1 = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
-        $pelatihan2 = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
+        $pelatihan1 = Pelatihan::factory()->create([
+            'status' => 'selesai',
+            'tanggal_selesai' => now()->subDay(),
+            'nama' => 'Pelatihan Alpha'
+        ]);
+        $pelatihan2 = Pelatihan::factory()->create([
+            'status' => 'selesai',
+            'tanggal_selesai' => now()->subDay(),
+            'nama' => 'Pelatihan Beta'
+        ]);
 
+        // 5 respons pelatihan 1 dengan profil optimal (berharap K1)
         for ($i = 0; $i < 5; $i++) {
             $peserta = User::factory()->create(['role' => 'peserta']);
             $pendaftaran = Pendaftaran::factory()->hadir()->create([
+                'status_verifikasi' => 'diverifikasi',
                 'peserta_id' => $peserta->id,
                 'pelatihan_id' => $pelatihan1->id,
-                'status_verifikasi' => 'diverifikasi',
             ]);
             TiyasResponse::factory()->withProfil('optimal')->create([
                 'pendaftaran_id' => $pendaftaran->id,
             ]);
         }
 
+        // 5 respons pelatihan 2 dengan profil at_risk (berharap K4)
         for ($i = 0; $i < 5; $i++) {
             $peserta = User::factory()->create(['role' => 'peserta']);
             $pendaftaran = Pendaftaran::factory()->hadir()->create([
+                'status_verifikasi' => 'diverifikasi',
                 'peserta_id' => $peserta->id,
                 'pelatihan_id' => $pelatihan2->id,
-                'status_verifikasi' => 'diverifikasi',
             ]);
             TiyasResponse::factory()->withProfil('at_risk')->create([
                 'pendaftaran_id' => $pendaftaran->id,
             ]);
         }
 
+        // Get service result
+        $scorer = new \App\Services\TiyasScorer();
+        $fcm = new \App\Services\FuzzyCMeans();
+        $klasterService = new \App\Services\TiyasProfilKlaster($scorer, $fcm);
+        
+        $responses = \App\Models\TiyasResponse::whereHas('pendaftaran', function ($q) {
+            $q->where('status_verifikasi', 'diverifikasi')->whereNotNull('hadir_at');
+        })->with('pendaftaran.peserta', 'pendaftaran.pelatihan')->get();
+        
+        $klasterResult = $klasterService->analisis($responses);
+        
         $response = $this->actingAs($this->panitia)
             ->get(route('tiyas.hasil', [$pelatihan1->id]) . '?cakupan=semua');
 
         $response->assertStatus(200);
+        $html = $response->getContent();
 
-        $content = $response->getContent();
+        // Parse dengan DOMDocument
+        $dom = new \DOMDocument;
+        @$dom->loadHTML('<?xml encoding="UTF-8">'.$html);
+        $xpath = new \DOMXPath($dom);
+
+        // Cari SVG scatter chart
+        $svgs = $xpath->query("//svg[@data-chart='fcm-scatter']");
+        $this->assertGreaterThan(0, $svgs->length, "SVG scatter chart harus ada");
+
+        $svg = $svgs->item(0);
+        $polygons = $xpath->query(".//polygon[@stroke='var(--color-text)'][@stroke-width='2'][@opacity='0.85']", $svg);
+
+        $this->assertCount(2, $polygons, "Harus ada 2 polygon markers");
+
+        // Extract posisiPelatihan dan warna config
+        $comparisonData = $klasterService->perbandinganAntarPelatihan();
+        $posisiPelatihan = $klasterService->posisiPelatihan($klasterResult, $comparisonData['comparisonData']);
         
-        // Cek tidak ada NaN atau INF
-        $this->assertStringNotContainsString('NaN', $content, "Content tidak boleh NaN");
-        $this->assertStringNotContainsString('INF', $content, "Content tidak boleh INF");
-        
-        // Extract warna fill dari polygon
-        preg_match_all('/fill="([^"]*)"/', $content, $fillMatches);
-        
-        foreach (array_slice($fillMatches[1], 0, 2) as $color) {
-            $this->assertNotEmpty($color, "Warna tidak boleh kosong");
-            $this->assertFalse(strpos($color, 'NaN') !== false);
-            $this->assertFalse(strpos($color, 'INF') !== false);
+        $klasterColors = config('tiyas.warna_klaster', [
+            'K1' => 'var(--color-danger)',
+            'K2' => 'var(--color-primary)',
+            'K3' => 'var(--color-success)',
+            'K4' => 'var(--color-accent)',
+        ]);
+
+        // Cocok warna polygon dengan klaster terdekat
+        foreach ($polygons as $polygon) {
+            $fillColor = $polygon->getAttribute('fill');
+            $this->assertNotEmpty($fillColor, "Polygon harus punya fill color");
+
+            // Cari title untuk cocokkan nama pelatihan
+            $titles = $xpath->query(".//title", $polygon);
+            if ($titles->length > 0) {
+                $titleText = $titles->item(0)->textContent;
+                
+                // Extract nama pelatihan dari title
+                if (preg_match('/^([^(]+?)(?:\s*\([^)]*\))?\s*(?:\||$)/', $titleText, $m)) {
+                    $nama_in_title = trim($m[1]);
+
+                    // Cari matching pelatihan
+                    $matching_pelatihan = null;
+                    foreach ($posisiPelatihan as $pel) {
+                        if ($pel['nama'] === $nama_in_title) {
+                            $matching_pelatihan = $pel;
+                            break;
+                        }
+                    }
+
+                    $this->assertNotNull($matching_pelatihan, "Pelatihan '{$nama_in_title}' harus ada");
+
+                    // Expected warna dari klaster terdekat
+                    $klasterTerdekat = $matching_pelatihan['klaster_terdekat'];
+                    $expectedColor = $klasterColors['K' . $klasterTerdekat] ?? 'var(--color-primary)';
+
+                    $this->assertEquals($expectedColor, $fillColor,
+                        "Warna polygon '{$nama_in_title}' harus cocok dengan klaster {$klasterTerdekat}: expected '{$expectedColor}', got '{$fillColor}'");
+                }
+            }
         }
     }
 
