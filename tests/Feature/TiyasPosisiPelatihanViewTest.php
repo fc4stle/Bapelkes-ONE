@@ -391,6 +391,139 @@ class TiyasPosisiPelatihanViewTest extends TestCase
     }
 
     /**
+     * Test 3 (C): Tooltip <title> polygon memuat nama, n=, dan rata_keanggotaan tiap klaster (1 desimal).
+     *
+     * Setup: 2 pelatihan dengan berbagai profil.
+     * Assert: <title> polygon cocok format dan nilai dari service posisiPelatihan.
+     */
+    public function test_marker_tooltip_contains_name_count_and_membership()
+    {
+        $pelatihan1 = Pelatihan::factory()->create([
+            'status' => 'selesai',
+            'tanggal_selesai' => now()->subDay(),
+            'nama' => 'Pelatihan Alpha'
+        ]);
+        $pelatihan2 = Pelatihan::factory()->create([
+            'status' => 'selesai',
+            'tanggal_selesai' => now()->subDay(),
+            'nama' => 'Pelatihan Beta'
+        ]);
+
+        // 5 respons pelatihan 1
+        for ($i = 0; $i < 5; $i++) {
+            $peserta = User::factory()->create(['role' => 'peserta']);
+            $pendaftaran = Pendaftaran::factory()->hadir()->create([
+                'status_verifikasi' => 'diverifikasi',
+                'peserta_id' => $peserta->id,
+                'pelatihan_id' => $pelatihan1->id,
+            ]);
+            TiyasResponse::factory()->withProfil('optimal')->create([
+                'pendaftaran_id' => $pendaftaran->id,
+            ]);
+        }
+
+        // 5 respons pelatihan 2
+        for ($i = 0; $i < 5; $i++) {
+            $peserta = User::factory()->create(['role' => 'peserta']);
+            $pendaftaran = Pendaftaran::factory()->hadir()->create([
+                'status_verifikasi' => 'diverifikasi',
+                'peserta_id' => $peserta->id,
+                'pelatihan_id' => $pelatihan2->id,
+            ]);
+            TiyasResponse::factory()->withProfil('at_risk')->create([
+                'pendaftaran_id' => $pendaftaran->id,
+            ]);
+        }
+
+        // Get service result
+        $scorer = new \App\Services\TiyasScorer();
+        $fcm = new \App\Services\FuzzyCMeans();
+        $klasterService = new \App\Services\TiyasProfilKlaster($scorer, $fcm);
+        
+        $responses = \App\Models\TiyasResponse::whereHas('pendaftaran', function ($q) {
+            $q->where('status_verifikasi', 'diverifikasi')->whereNotNull('hadir_at');
+        })->with('pendaftaran.peserta', 'pendaftaran.pelatihan')->get();
+        
+        $klasterResult = $klasterService->analisis($responses);
+        
+        $response = $this->actingAs($this->panitia)
+            ->get(route('tiyas.hasil', [$pelatihan1->id]) . '?cakupan=semua');
+
+        $response->assertStatus(200);
+        $html = $response->getContent();
+
+        // Parse dengan DOMDocument
+        $dom = new \DOMDocument;
+        @$dom->loadHTML('<?xml encoding="UTF-8">'.$html);
+        $xpath = new \DOMXPath($dom);
+
+        // Cari SVG scatter chart
+        $svgs = $xpath->query("//svg[@data-chart='fcm-scatter']");
+        $this->assertGreaterThan(0, $svgs->length, "SVG scatter chart harus ada");
+
+        $svg = $svgs->item(0);
+        $polygons = $xpath->query(".//polygon[@stroke='var(--color-text)'][@stroke-width='2'][@opacity='0.85']", $svg);
+
+        $this->assertCount(2, $polygons, "Harus ada 2 polygon markers");
+
+        // Extract posisiPelatihan dari service
+        $comparisonData = $klasterService->perbandinganAntarPelatihan();
+        $posisiPelatihan = $klasterService->posisiPelatihan($klasterResult, $comparisonData['comparisonData']);
+
+        // Validasi tooltip untuk tiap polygon
+        foreach ($polygons as $polygon) {
+            $titles = $xpath->query(".//title", $polygon);
+            $this->assertGreaterThan(0, $titles->length, "Polygon harus punya <title> tooltip");
+
+            $titleText = $titles->item(0)->textContent;
+            $this->assertNotEmpty($titleText, "Title harus tidak kosong");
+
+            // Format ekspektasi: "Pelatihan Alpha (n=5) | K1: 45.2% | K2: 25.1% | K3: 18.9% | K4: 10.8%"
+            // Parse title untuk extract nama dan n
+            if (preg_match('/^([^(]+?)\s*\(n=(\d+)\)\s*\|/', $titleText, $m)) {
+                $nama_in_title = trim($m[1]);
+                $n_in_title = intval($m[2]);
+
+                // Cari matching pelatihan di service
+                $matching_pelatihan = null;
+                foreach ($posisiPelatihan as $pel) {
+                    if ($pel['nama'] === $nama_in_title) {
+                        $matching_pelatihan = $pel;
+                        break;
+                    }
+                }
+
+                $this->assertNotNull($matching_pelatihan, "Pelatihan '{$nama_in_title}' harus ada di service");
+                $this->assertEquals($matching_pelatihan['n_peserta'], $n_in_title, "Jumlah peserta harus cocok");
+
+                // Parse membership percentages dari title
+                $titleParts = explode('|', $titleText);
+                array_shift($titleParts); // Skip nama part
+
+                // Validasi tiap klaster membership
+                $expectedMembership = $matching_pelatihan['rata_keanggotaan'];
+                foreach ($titleParts as $part) {
+                    $part = trim($part);
+                    if (preg_match('/^K(\d+):\s*([\d.]+)%/', $part, $m)) {
+                        $klasterNum = intval($m[1]);
+                        $persentase_in_title = floatval($m[2]);
+
+                        $this->assertArrayHasKey($klasterNum, $expectedMembership, 
+                            "Klaster K{$klasterNum} harus ada di service membership");
+
+                        $expected_value = $expectedMembership[$klasterNum];
+                        // Tolerate 0.1% rounding difference (title punya 1 desimal)
+                        $this->assertEqualsWithDelta($expected_value, $persentase_in_title, 0.15,
+                            "Membership K{$klasterNum} untuk '{$nama_in_title}' mismatch: expected {$expected_value}%, got {$persentase_in_title}%");
+                    }
+                }
+            } else {
+                $this->fail("Title format tidak cocok: '{$titleText}' (expect: 'Pelatihan Name (n=5) | K1: 45.2% | ...')");
+            }
+        }
+    }
+
+    /**
      * Test D: Label text P1, P2, ... exists, distinct, dan dalam viewBox bounds [0, 700].
      */
     public function test_marker_labels_p1_p2_exist_distinct_in_bounds()
