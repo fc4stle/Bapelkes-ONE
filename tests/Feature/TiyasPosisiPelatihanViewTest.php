@@ -160,41 +160,42 @@ class TiyasPosisiPelatihanViewTest extends TestCase
 
             // Cari title untuk cocokkan nama pelatihan
             $titles = $xpath->query(".//title", $polygon);
-            if ($titles->length > 0) {
-                $titleText = $titles->item(0)->textContent;
-                
-                // Extract nama pelatihan dari title (format: "Pelatihan Alpha (n=5) | ..." atau "Pelatihan Alpha | ...")
-                if (preg_match('/^([^(]+?)(?:\s*\([^)]*\))?\s*(?:\||$)/', $titleText, $m)) {
-                    $nama_in_title = trim($m[1]);
+            $this->assertGreaterThan(0, $titles->length, "Polygon harus punya title element");
+            
+            $titleText = $titles->item(0)->textContent;
+            
+            // Extract nama pelatihan dari title (format: "Pelatihan Alpha (n=5) | ..." atau "Pelatihan Alpha | ...")
+            $matchResult = preg_match('/^([^(]+?)(?:\s*\([^)]*\))?\s*(?:\||$)/', $titleText, $m);
+            $this->assertSame(1, $matchResult, "Title '{$titleText}' harus cocok dengan format nama pelatihan");
+            
+            $nama_in_title = trim($m[1]);
 
-                    // Cari matching pelatihan di posisiPelatihan
-                    $matching_pelatihan = null;
-                    foreach ($posisiPelatihan as $pel) {
-                        if ($pel['nama'] === $nama_in_title) {
-                            $matching_pelatihan = $pel;
-                            break;
-                        }
-                    }
-
-                    $this->assertNotNull($matching_pelatihan, "Pelatihan '{$nama_in_title}' harus ada di service posisiPelatihan");
-
-                    // Expected centroid dari service
-                    $centroid = $matching_pelatihan['centroid_pelatihan']; // [TC, TE, ITT, YB]
-                    // Asumsikan xAxis=TC (1), yAxis=YB (4) per default di controller
-                    $centroidX_service = floatval($centroid[0]); // TC
-                    $centroidY_service = floatval($centroid[3]); // YB
-
-                    // Convert ke pixel
-                    $expectedX = $margin['l'] + (($centroidX_service - 1) / 3) * $plotW;
-                    $expectedY = $margin['t'] + (1 - ($centroidY_service - 1) / 3) * $plotH;
-
-                    // Toleransi 0.5px
-                    $this->assertEqualsWithDelta($expectedX, $centroidX_view, 0.5, 
-                        "Centroid X '{$nama_in_title}' mismatch: expected {$expectedX}, got {$centroidX_view}");
-                    $this->assertEqualsWithDelta($expectedY, $centroidY_view, 0.5,
-                        "Centroid Y '{$nama_in_title}' mismatch: expected {$expectedY}, got {$centroidY_view}");
+            // Cari matching pelatihan di posisiPelatihan
+            $matching_pelatihan = null;
+            foreach ($posisiPelatihan as $pel) {
+                if ($pel['nama'] === $nama_in_title) {
+                    $matching_pelatihan = $pel;
+                    break;
                 }
             }
+
+            $this->assertNotNull($matching_pelatihan, "Pelatihan '{$nama_in_title}' harus ada di service posisiPelatihan");
+
+            // Expected centroid dari service
+            $centroid = $matching_pelatihan['centroid_pelatihan']; // [TC, TE, ITT, YB]
+            // Asumsikan xAxis=TC (1), yAxis=YB (4) per default di controller
+            $centroidX_service = floatval($centroid[0]); // TC
+            $centroidY_service = floatval($centroid[3]); // YB
+
+            // Convert ke pixel
+            $expectedX = $margin['l'] + (($centroidX_service - 1) / 3) * $plotW;
+            $expectedY = $margin['t'] + (1 - ($centroidY_service - 1) / 3) * $plotH;
+
+            // Toleransi 0.5px
+            $this->assertEqualsWithDelta($expectedX, $centroidX_view, 0.5, 
+                "Centroid X '{$nama_in_title}' mismatch: expected {$expectedX}, got {$centroidX_view}");
+            $this->assertEqualsWithDelta($expectedY, $centroidY_view, 0.5,
+                "Centroid Y '{$nama_in_title}' mismatch: expected {$expectedY}, got {$centroidY_view}");
         }
     }
 
@@ -361,32 +362,33 @@ class TiyasPosisiPelatihanViewTest extends TestCase
 
             // Cari title untuk cocokkan nama pelatihan
             $titles = $xpath->query(".//title", $polygon);
-            if ($titles->length > 0) {
-                $titleText = $titles->item(0)->textContent;
-                
-                // Extract nama pelatihan dari title
-                if (preg_match('/^([^(]+?)(?:\s*\([^)]*\))?\s*(?:\||$)/', $titleText, $m)) {
-                    $nama_in_title = trim($m[1]);
+            $this->assertGreaterThan(0, $titles->length, "Polygon harus punya title element");
+            
+            $titleText = $titles->item(0)->textContent;
+            
+            // Extract nama pelatihan dari title
+            $matchResult = preg_match('/^([^(]+?)(?:\s*\([^)]*\))?\s*(?:\||$)/', $titleText, $m);
+            $this->assertSame(1, $matchResult, "Title '{$titleText}' harus cocok dengan format nama pelatihan");
+            
+            $nama_in_title = trim($m[1]);
 
-                    // Cari matching pelatihan
-                    $matching_pelatihan = null;
-                    foreach ($posisiPelatihan as $pel) {
-                        if ($pel['nama'] === $nama_in_title) {
-                            $matching_pelatihan = $pel;
-                            break;
-                        }
-                    }
-
-                    $this->assertNotNull($matching_pelatihan, "Pelatihan '{$nama_in_title}' harus ada");
-
-                    // Expected warna dari klaster terdekat
-                    $klasterTerdekat = $matching_pelatihan['klaster_terdekat'];
-                    $expectedColor = $klasterColors['K' . $klasterTerdekat] ?? 'var(--color-primary)';
-
-                    $this->assertEquals($expectedColor, $fillColor,
-                        "Warna polygon '{$nama_in_title}' harus cocok dengan klaster {$klasterTerdekat}: expected '{$expectedColor}', got '{$fillColor}'");
+            // Cari matching pelatihan
+            $matching_pelatihan = null;
+            foreach ($posisiPelatihan as $pel) {
+                if ($pel['nama'] === $nama_in_title) {
+                    $matching_pelatihan = $pel;
+                    break;
                 }
             }
+
+            $this->assertNotNull($matching_pelatihan, "Pelatihan '{$nama_in_title}' harus ada");
+
+            // Expected warna dari klaster terdekat
+            $klasterTerdekat = $matching_pelatihan['klaster_terdekat'];
+            $expectedColor = $klasterColors['K' . $klasterTerdekat] ?? 'var(--color-primary)';
+
+            $this->assertEquals($expectedColor, $fillColor,
+                "Warna polygon '{$nama_in_title}' harus cocok dengan klaster {$klasterTerdekat}: expected '{$expectedColor}', got '{$fillColor}'");
         }
     }
 
@@ -633,11 +635,9 @@ class TiyasPosisiPelatihanViewTest extends TestCase
             for ($i = 1; $i < $cells->length - 1; $i++) { // Skip kolom nama, skip kolom "Klaster Terdekat"
                 $cellText = trim($cells->item($i)->textContent);
                 // Format: "45.2%" atau "45.2 %"
-                if (preg_match('/^([\d.]+)\s*%$/', $cellText, $m)) {
-                    $membershipCells[] = floatval($m[1]);
-                } else {
-                    $membershipCells[] = 0; // fallback
-                }
+                $matchResult = preg_match('/^([\d.]+)\s*%$/', $cellText, $m);
+                $this->assertSame(1, $matchResult, "Membership cell harus format 'XX.X%', got '{$cellText}'");
+                $membershipCells[] = floatval($m[1]);
             }
 
             // Validasi membership values cocok dengan service
@@ -648,10 +648,10 @@ class TiyasPosisiPelatihanViewTest extends TestCase
 
             foreach ($expectedMembership as $klasterNum => $expectedValue) {
                 $cellIdx = $klasterNum - 1; // Klaster 1 -> cell 0, Klaster 2 -> cell 1, etc
-                if (isset($membershipCells[$cellIdx])) {
-                    $this->assertEqualsWithDelta($expectedValue, $membershipCells[$cellIdx], 0.15,
-                        "Baris {$rowIdx}: Klaster {$klasterNum} membership harus cocok (expected {$expectedValue}%, got {$membershipCells[$cellIdx]}%)");
-                }
+                $this->assertArrayHasKey($cellIdx, $membershipCells, 
+                    "Baris {$rowIdx}: membership cell untuk Klaster {$klasterNum} harus ada");
+                $this->assertEqualsWithDelta($expectedValue, $membershipCells[$cellIdx], 0.15,
+                    "Baris {$rowIdx}: Klaster {$klasterNum} membership harus cocok (expected {$expectedValue}%, got {$membershipCells[$cellIdx]}%)");
             }
 
             // Cell terakhir = "Klaster Terdekat" label
