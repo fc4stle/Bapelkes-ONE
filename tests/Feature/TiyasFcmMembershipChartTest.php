@@ -218,18 +218,19 @@ class TiyasFcmMembershipChartTest extends TestCase
         $scatterSvg = $xpath->query('//svg[@data-chart="fcm-pelatihan-scatter"]')->item(0);
         $circles = $xpath->query('.//circle[@r="7"]', $scatterSvg);
 
-        $configColors = config('tiyas.warna_klaster');
-
-        // Validate each circle color is from valid config
+        $configColors = array_values(config('tiyas.warna_klaster'));
         $validColorCount = 0;
+
         foreach ($circles as $circle) {
             $fill = $circle->getAttribute('fill');
-            if (in_array($fill, array_values($configColors))) {
+            // Strict check: must exactly match a config color, not fallback
+            if ($fill !== 'var(--color-primary)' && in_array($fill, $configColors)) {
                 $validColorCount++;
             }
         }
 
-        $this->assertGreaterThanOrEqual(7, $validColorCount, 'Expected at least 7 circles with valid colors, got'.$validColorCount);
+        // Expect all 7 circles have valid colors
+        $this->assertEquals(7, $validColorCount, 'Expected 7 circles with valid config colors, got'.$validColorCount);
     }
 
     public function test_scatter_p_labels_exist_and_unique()
@@ -278,6 +279,60 @@ class TiyasFcmMembershipChartTest extends TestCase
 
         // Should have at least 7 trainings × c_optimal clusters = many rects
         $this->assertGreaterThan(7, $rects->length, 'Expected at least 7+ rectangles in membership bars');
+    }
+
+    public function test_membership_bar_segments_width_from_service()
+    {
+        // Build comparison data
+        $comparisonData = [];
+        foreach ($this->pelatihanList as $pel) {
+            $comparisonData[$pel->id] = [
+                'nama' => $pel->nama,
+                'mean' => $this->getMeanScoresForTraining($pel),
+            ];
+        }
+
+        // Get service result
+        $klasterService = app(TiyasProfilKlaster::class);
+        $hasil = $klasterService->klasterPelatihan($comparisonData);
+
+        $response = $this->actingAs($this->panitia)->get(
+            route('tiyas.hasil', ['pelatihan' => $this->pelatihanList[0]->id]).'?cakupan=semua'
+        );
+
+        $dom = new DOMDocument('1.0', 'UTF-8');
+        @$dom->loadHTML(mb_convert_encoding($response->getContent(), 'HTML-ENTITIES', 'UTF-8'));
+        $xpath = new DOMXPath($dom);
+
+        $membershipSvg = $xpath->query('//svg[@data-chart="fcm-pelatihan-membership"]')->item(0);
+        $this->assertNotNull($membershipSvg, 'Membership SVG not found');
+
+        // For first training, validate segment widths match service keanggotaan
+        $tabularData = $hasil['tabel_pelatihan'][0] ?? null;
+        $this->assertNotNull($tabularData, 'First training data not found');
+
+        $keanggotaan = $tabularData['keanggotaan'] ?? [];
+        $this->assertNotEmpty($keanggotaan, 'No keanggotaan data');
+
+        // Get ALL rects in membership svg (background + segment rects)
+        $rects = $xpath->query('.//rect', $membershipSvg);
+
+        // Skip first rect (background bar), then validate segment rects
+        // First training uses x=200, barWidth=300, barHeight=30
+        // Expected segment widths from service keanggotaan
+        $maxKlaster = max(array_keys($hasil['tabel_pelatihan'][0]['keanggotaan'] ?? []));
+
+        $segmentRectIdx = 1;  // Start from 1 (0 is background)
+        for ($k = 1; $k <= $maxKlaster; $k++) {
+            $membership = $keanggotaan[$k] ?? 0;
+            if ($membership > 0 && $segmentRectIdx < $rects->length) {
+                $rect = $rects->item($segmentRectIdx);
+                $expectedWidth = ($membership / 100) * 300;  // 300 = barWidth
+                $actualWidth = (float) $rect->getAttribute('width');
+                $this->assertEqualsWithDelta($expectedWidth, $actualWidth, 0.5, 'Segment K'.$k.' width mismatch');
+                $segmentRectIdx++;
+            }
+        }
     }
 
     public function test_membership_table_has_seven_rows()
@@ -394,8 +449,25 @@ class TiyasFcmMembershipChartTest extends TestCase
         $scatterSvg = $xpath->query('//svg[@data-chart="fcm-pelatihan-scatter"]')->item(0);
         $lines = $xpath->query('.//line', $scatterSvg);
 
-        // Validate crosshairs exist
-        $this->assertGreaterThan(0, $lines->length, 'Expected at least one crosshair line for centroids');
+        // Must have crosshairs (at least 2 per cluster: vertical + horizontal)
+        $cOptimal = $hasil['c_optimal'] ?? 0;
+        $minExpectedLines = $cOptimal * 2;  // Each cluster has vertical + horizontal crosshair
+        $this->assertGreaterThanOrEqual($minExpectedLines, $lines->length,
+            'Expected at least '.$minExpectedLines.' crosshair lines, got '.$lines->length);
+
+        // Validate first vertical crosshair position matches service centroids_raw[0][0] (K1, TC axis)
+        if ($lines->length >= 2) {
+            $firstLine = $lines->item(0);
+            if ($firstLine && $firstLine->hasAttribute('x1')) {
+                $x1 = (float) $firstLine->getAttribute('x1');
+                // Expected cx from centroids_raw[0][0] using formula: cx = 70 + ((TC - 1) / 3) * 590
+                $tc = $hasil['centroids_raw'][0][0] ?? null;
+                if ($tc !== null) {
+                    $expectedCx = 70 + (($tc - 1) / 3) * 590;
+                    $this->assertEqualsWithDelta($expectedCx, $x1, 1.0, 'Centroid K1 X position mismatch');
+                }
+            }
+        }
     }
 
     public function test_five_trainings_shows_insufficient_data_message_and_no_svgs()
