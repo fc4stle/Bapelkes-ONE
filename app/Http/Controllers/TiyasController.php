@@ -296,6 +296,7 @@ class TiyasController extends Controller
         $comparisonData = [];
         $pelatihansForComparison = [];
         $posisiPelatihan = [];
+        $klasterPelatihan = [];
 
         if ($cakupan === 'semua') {
             $comparison = $klasterService->perbandinganAntarPelatihan();
@@ -306,6 +307,9 @@ class TiyasController extends Controller
             if (count($pelatihansForComparison) >= 2 && $klasterResult['status'] === 'sukses') {
                 $posisiPelatihan = $klasterService->posisiPelatihan($klasterResult, $comparisonData);
             }
+
+            // Hitung FCM antar pelatihan (hanya untuk cakupan=semua)
+            $klasterPelatihan = $klasterService->klasterPelatihan($comparisonData);
         }
 
         return view('tiyas.hasil', [
@@ -329,6 +333,7 @@ class TiyasController extends Controller
             'comparisonData' => $comparisonData,
             'pelatihansForComparison' => $pelatihansForComparison,
             'posisiPelatihan' => $posisiPelatihan,
+            'klasterPelatihan' => $klasterPelatihan,
         ]);
     }
 
