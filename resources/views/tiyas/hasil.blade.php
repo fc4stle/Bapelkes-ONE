@@ -1457,6 +1457,141 @@
                         </x-card>
                     @endif
 
+                    <!-- B.3 Pengelompokan Pelatihan (FCM antar Pelatihan) - hanya untuk cakupan=semua -->
+                    @if ($cakupan === 'semua')
+                        @if ($klasterPelatihan['status'] === 'kurang_data')
+                            <x-card class="mb-6">
+                                <h3 class="font-semibold text-sm mb-4" style="color: var(--color-text);">Pengelompokan Pelatihan (FCM antar Pelatihan)</h3>
+                                <p style="color: var(--color-text); opacity: 0.7;" class="text-sm">
+                                    Belum cukup pelatihan untuk pengelompokan (butuh minimal {{ $klasterPelatihan['jumlah_butuh'] }}, saat ini {{ $klasterPelatihan['jumlah_sekarang'] }}).
+                                </p>
+                            </x-card>
+                        @elseif ($klasterPelatihan['status'] === 'sukses')
+                            <x-card class="mb-6">
+                                <h3 class="font-semibold text-sm mb-6" style="color: var(--color-text);">Pengelompokan Pelatihan (FCM antar Pelatihan)</h3>
+
+                                <!-- Legend P1 = nama pelatihan -->
+                                @php
+                                    $pelatihanLabels = [];
+                                    $labelCounter = 1;
+                                    foreach ($klasterPelatihan['tabel_pelatihan'] as $pel) {
+                                        $pelatihanLabels['P' . $labelCounter] = $pel['nama'];
+                                        $labelCounter++;
+                                    }
+                                @endphp
+                                <div class="mb-6 text-xs" style="color: var(--color-text); opacity: 0.8;">
+                                    <strong>Penomoran Pelatihan:</strong><br>
+                                    @foreach ($pelatihanLabels as $label => $nama)
+                                        <div>{{ $label }} = {{ $nama }}</div>
+                                    @endforeach
+                                </div>
+
+                                <!-- Scatter SVG: FCM antar Pelatihan -->
+                                <div data-chart="fcm-pelatihan-scatter" style="margin-bottom: 2rem;"></div>
+
+                                <!-- Membership Bar Chart -->
+                                <div data-chart="fcm-pelatihan-membership" style="margin-bottom: 2rem;"></div>
+
+                                <!-- Tabel Keanggotaan Pelatihan per Klaster -->
+                                <div class="mb-6" style="overflow-x: auto;">
+                                    <table style="width: 100%; border-collapse: collapse; border-spacing: 0;">
+                                        <thead>
+                                            <tr style="background-color: color-mix(in srgb, var(--color-primary) 10%, transparent); border-bottom: 2px solid var(--color-primary);">
+                                                <th style="padding: 0.75rem; text-align: left; color: var(--color-text); font-weight: 600;">Pelatihan</th>
+                                                @for ($c = 1; $c <= $klasterPelatihan['c_optimal']; $c++)
+                                                    <th style="padding: 0.75rem; text-align: center; color: var(--color-text); font-weight: 600; white-space: nowrap;">
+                                                        Klaster {{ $c }}
+                                                    </th>
+                                                @endfor
+                                                <th style="padding: 0.75rem; text-align: center; color: var(--color-text); font-weight: 600; background-color: color-mix(in srgb, var(--color-accent) 15%, transparent); white-space: nowrap;">
+                                                    Klaster Dominan
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @php
+                                                $pelLabel = 1;
+                                            @endphp
+                                            @foreach ($klasterPelatihan['tabel_pelatihan'] as $pelatihan)
+                                                <tr style="border-bottom: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);">
+                                                    <td style="padding: 0.75rem; color: var(--color-text); font-weight: 500;">
+                                                        P{{ $pelLabel }} · {{ $pelatihan['nama'] }}
+                                                    </td>
+                                                    @for ($c = 1; $c <= $klasterPelatihan['c_optimal']; $c++)
+                                                        @php
+                                                            $membership = $pelatihan['keanggotaan'][$c] ?? 0;
+                                                            $isDominant = ($c === $pelatihan['klaster_dominan']);
+                                                        @endphp
+                                                        <td style="padding: 0.75rem; text-align: center; color: var(--color-text);
+                                                            @if ($isDominant)
+                                                                background-color: color-mix(in srgb, var(--color-accent) 25%, transparent); font-weight: 600;
+                                                            @endif
+                                                            ">
+                                                            {{ number_format($membership, 1) }}%
+                                                        </td>
+                                                    @endfor
+                                                    <td style="padding: 0.75rem; text-align: center; color: var(--color-text); font-weight: 600; background-color: color-mix(in srgb, var(--color-accent) 15%, transparent);">
+                                                        K{{ $pelatihan['klaster_dominan'] }}
+                                                        @if (!empty($klasterPelatihan['tabel_klaster'][$pelatihan['klaster_dominan'] - 1]['kode_profil']))
+                                                            ({{ $klasterPelatihan['tabel_klaster'][$pelatihan['klaster_dominan'] - 1]['kode_profil'] }})
+                                                        @endif
+                                                    </td>
+                                                </tr>
+                                                @php
+                                                    $pelLabel++;
+                                                @endphp
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <!-- Kartu Klaster -->
+                                <div class="grid grid-cols-1 gap-4">
+                                    @foreach ($klasterPelatihan['tabel_klaster'] as $klaster)
+                                        <div style="border: 1px solid color-mix(in srgb, var(--color-primary) 30%, transparent); border-radius: var(--radius-card); padding: 1rem; background-color: color-mix(in srgb, var(--color-primary) 5%, transparent);">
+                                            <h4 class="font-semibold text-sm mb-2" style="color: var(--color-text);">
+                                                Klaster {{ $klaster['klaster'] }}
+                                                @if (!empty($klaster['kode_profil']))
+                                                    · {{ $klaster['kode_profil'] }}
+                                                @endif
+                                            </h4>
+                                            @if (!empty($klaster['profil']))
+                                                <p style="color: var(--color-text); opacity: 0.8;" class="text-xs mb-2">
+                                                    <strong>Profil:</strong> {{ $klaster['profil'] }}
+                                                </p>
+                                            @endif
+                                            <p style="color: var(--color-text); opacity: 0.8;" class="text-xs mb-2">
+                                                <strong>Centroid:</strong> 
+                                                TC={{ number_format($klaster['centroid']['TC'] ?? 0, 2) }}, 
+                                                TE={{ number_format($klaster['centroid']['TE'] ?? 0, 2) }}, 
+                                                ITT={{ number_format($klaster['centroid']['ITT'] ?? 0, 2) }}, 
+                                                YB={{ number_format($klaster['centroid']['YB'] ?? 0, 2) }}
+                                            </p>
+                                            <p style="color: var(--color-text); opacity: 0.8;" class="text-xs">
+                                                <strong>Anggota Dominan:</strong>
+                                                @php
+                                                    $dominantMembers = [];
+                                                    $memberLabel = 1;
+                                                    foreach ($klasterPelatihan['tabel_pelatihan'] as $pel) {
+                                                        if ($pel['klaster_dominan'] === $klaster['klaster']) {
+                                                            $dominantMembers[] = 'P' . $memberLabel;
+                                                        }
+                                                        $memberLabel++;
+                                                    }
+                                                @endphp
+                                                @if (!empty($dominantMembers))
+                                                    {{ implode(', ', $dominantMembers) }}
+                                                @else
+                                                    (tidak ada)
+                                                @endif
+                                            </p>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </x-card>
+                        @endif
+                    @endif
+
                 @elseif (count($pelatihansForComparison) === 1)
                     <x-card class="mb-6">
                         <p style="color: var(--color-text); opacity: 0.7;" class="text-center py-6">
