@@ -1713,15 +1713,14 @@
                                                 $segmentData = [];
                                                 for ($k = 1; $k <= $maxKlaster; $k++) {
                                                     $membership = $keanggotaan[$k] ?? 0;
-                                                    if ($membership > 0) {
-                                                        $segmentWidth = ($membership / 100) * $barWidth;
-                                                        $segmentData[$k] = [
-                                                            'x' => $x + $offset,
-                                                            'width' => $segmentWidth,
-                                                            'membership' => $membership,
-                                                        ];
-                                                        $offset += $segmentWidth;
-                                                    }
+                                                    // PERBAIKAN: Buat rect untuk SETIAP klaster, meski membership=0
+                                                    $segmentWidth = ($membership / 100) * $barWidth;
+                                                    $segmentData[$k] = [
+                                                        'x' => $x + $offset,
+                                                        'width' => $segmentWidth,
+                                                        'membership' => $membership,
+                                                    ];
+                                                    $offset += $segmentWidth;
                                                 }
                                             @endphp
                                             

@@ -218,19 +218,29 @@ class TiyasFcmMembershipChartTest extends TestCase
         $scatterSvg = $xpath->query('//svg[@data-chart="fcm-pelatihan-scatter"]')->item(0);
         $circles = $xpath->query('.//circle[@r="7"]', $scatterSvg);
 
-        $configColors = array_values(config('tiyas.warna_klaster'));
-        $validColorCount = 0;
+        // TIAP baris tabel_pelatihan: cari circle r=7 dengan <title> diawali $row['nama']
+        foreach ($hasil['tabel_pelatihan'] as $row) {
+            $rowNama = $row['nama'];
+            $rowKlasterDominan = $row['klaster_dominan'];
+            $expectedColor = config('tiyas.warna_klaster')['K'.$rowKlasterDominan];
 
-        foreach ($circles as $circle) {
-            $fill = $circle->getAttribute('fill');
-            // Strict check: must exactly match a config color, not fallback
-            if ($fill !== 'var(--color-primary)' && in_array($fill, $configColors)) {
-                $validColorCount++;
+            $found = false;
+            for ($i = 0; $i < $circles->length; $i++) {
+                $circle = $circles->item($i);
+                $titleElement = $xpath->query('./title', $circle)->item(0);
+
+                if ($titleElement && strpos($titleElement->nodeValue, $rowNama) === 0) {
+                    // Ini adalah circle yang dicari
+                    $fill = $circle->getAttribute('fill');
+                    $this->assertSame($expectedColor, $fill,
+                        "Circle untuk {$rowNama} (K{$rowKlasterDominan}) harus warna {$expectedColor}, tapi dapat {$fill}");
+                    $found = true;
+                    break;
+                }
             }
-        }
 
-        // Expect all 7 circles have valid colors
-        $this->assertEquals(7, $validColorCount, 'Expected 7 circles with valid config colors, got'.$validColorCount);
+            $this->assertNotNull($found, "Circle dengan title diawali '{$rowNama}' tidak ditemukan");
+        }
     }
 
     public function test_scatter_p_labels_exist_and_unique()
@@ -307,32 +317,66 @@ class TiyasFcmMembershipChartTest extends TestCase
         $membershipSvg = $xpath->query('//svg[@data-chart="fcm-pelatihan-membership"]')->item(0);
         $this->assertNotNull($membershipSvg, 'Membership SVG not found');
 
-        // For first training, validate segment widths match service keanggotaan
-        $tabularData = $hasil['tabel_pelatihan'][0] ?? null;
-        $this->assertNotNull($tabularData, 'First training data not found');
+        // TIAP pelatihan i dan TIAP klaster k
+        $sortedTableData = collect($hasil['tabel_pelatihan'])
+            ->sortBy('id')
+            ->values()
+            ->all();
 
-        $keanggotaan = $tabularData['keanggotaan'] ?? [];
-        $this->assertNotEmpty($keanggotaan, 'No keanggotaan data');
+        $cOptimal = $hasil['c_optimal'] ?? 0;
+        $barWidth = 300;
 
-        // Get ALL rects in membership svg (background + segment rects)
+        $rectsByTitle = []; // Map <title> -> DOMElement
         $rects = $xpath->query('.//rect', $membershipSvg);
 
-        // Skip first rect (background bar), then validate segment rects
-        // First training uses x=200, barWidth=300, barHeight=30
-        // Expected segment widths from service keanggotaan
-        $maxKlaster = max(array_keys($hasil['tabel_pelatihan'][0]['keanggotaan'] ?? []));
-
-        $segmentRectIdx = 1;  // Start from 1 (0 is background)
-        for ($k = 1; $k <= $maxKlaster; $k++) {
-            $membership = $keanggotaan[$k] ?? 0;
-            if ($membership > 0 && $segmentRectIdx < $rects->length) {
-                $rect = $rects->item($segmentRectIdx);
-                $expectedWidth = ($membership / 100) * 300;  // 300 = barWidth
-                $actualWidth = (float) $rect->getAttribute('width');
-                $this->assertEqualsWithDelta($expectedWidth, $actualWidth, 0.5, 'Segment K'.$k.' width mismatch');
-                $segmentRectIdx++;
+        for ($i = 0; $i < $rects->length; $i++) {
+            $rect = $rects->item($i);
+            $titleElem = $xpath->query('./title', $rect)->item(0);
+            if ($titleElem) {
+                $rectsByTitle[$titleElem->nodeValue] = $rect;
             }
         }
+
+        // TIAP pelatihan dan TIAP klaster
+        $expectedRectCount = 0;
+        for ($i = 0; $i < count($sortedTableData); $i++) {
+            $pelatihan = $sortedTableData[$i];
+            $keanggotaan = $pelatihan['keanggotaan'] ?? [];
+
+            for ($k = 1; $k <= $cOptimal; $k++) {
+                $membership = $keanggotaan[$k] ?? 0;
+
+                // Generate title seperti di view: "P{i+1} | Klaster {k}: X.X%"
+                $pLabel = 'P'.($i + 1);
+                // Cari rect dengan title diawali pattern
+                $titlePrefix = $pLabel.' | Klaster '.$k.':';
+
+                // Cari rect yang match
+                $foundRect = null;
+                foreach ($rectsByTitle as $title => $rect) {
+                    if (strpos($title, $titlePrefix) === 0) {
+                        $foundRect = $rect;
+                        break;
+                    }
+                }
+
+                // Selalu assertNotNull — tidak boleh skip meski membership=0
+                $this->assertNotNull($foundRect,
+                    "Rect dengan title diawali '{$titlePrefix}' tidak ditemukan (membership {$membership}%)");
+
+                $expectedWidth = ($membership / 100) * $barWidth;
+                $actualWidth = (float) $foundRect->getAttribute('width');
+
+                $this->assertEqualsWithDelta($expectedWidth, $actualWidth, 0.5,
+                    "Lebar rect untuk {$titlePrefix} harusnya {$expectedWidth}, dapat {$actualWidth}");
+
+                $expectedRectCount++;
+            }
+        }
+
+        // Cek jumlah rect berjudul Klaster = 7 x c_optimal
+        $this->assertSame(7 * $cOptimal, $expectedRectCount,
+            "Harus ada 7 x {$cOptimal} = ".(7 * $cOptimal)." rect segment, dapat {$expectedRectCount}");
     }
 
     public function test_membership_table_has_seven_rows()
@@ -447,26 +491,57 @@ class TiyasFcmMembershipChartTest extends TestCase
         $xpath = new DOMXPath($dom);
 
         $scatterSvg = $xpath->query('//svg[@data-chart="fcm-pelatihan-scatter"]')->item(0);
-        $lines = $xpath->query('.//line', $scatterSvg);
+        $lines = $xpath->query('.//line[@stroke-width="3"]', $scatterSvg);
 
         // Must have crosshairs (at least 2 per cluster: vertical + horizontal)
         $cOptimal = $hasil['c_optimal'] ?? 0;
-        $minExpectedLines = $cOptimal * 2;  // Each cluster has vertical + horizontal crosshair
-        $this->assertGreaterThanOrEqual($minExpectedLines, $lines->length,
-            'Expected at least '.$minExpectedLines.' crosshair lines, got '.$lines->length);
+        $expectedLineCount = $cOptimal * 2;  // Each cluster has vertical + horizontal crosshair
 
-        // Validate first vertical crosshair position matches service centroids_raw[0][0] (K1, TC axis)
-        if ($lines->length >= 2) {
-            $firstLine = $lines->item(0);
-            if ($firstLine && $firstLine->hasAttribute('x1')) {
-                $x1 = (float) $firstLine->getAttribute('x1');
-                // Expected cx from centroids_raw[0][0] using formula: cx = 70 + ((TC - 1) / 3) * 590
-                $tc = $hasil['centroids_raw'][0][0] ?? null;
-                if ($tc !== null) {
-                    $expectedCx = 70 + (($tc - 1) / 3) * 590;
-                    $this->assertEqualsWithDelta($expectedCx, $x1, 1.0, 'Centroid K1 X position mismatch');
-                }
-            }
+        $this->assertCount($expectedLineCount, $lines,
+            "Expected exactly {$expectedLineCount} crosshair lines (2 per cluster x {$cOptimal} clusters), got {$lines->length}");
+
+        // Validate each crosshair position
+        $centroids_raw = $hasil['centroids_raw'] ?? [];
+        $konstrukAll = ['TC', 'TE', 'ITT', 'YB'];
+        $xAxisIdx = array_search('TC', $konstrukAll);  // TC is X axis
+        $yAxisIdx = array_search('YB', $konstrukAll);  // YB is Y axis
+
+        // SVG dimensions
+        $marginL = 70;
+        $marginT = 68;
+        $plotW = 590;
+        $plotH = 382;
+
+        // Klaster k (0-based): horizontal = item(2k), vertikal = item(2k+1)
+        for ($k = 0; $k < $cOptimal; $k++) {
+            $horizontalIdx = 2 * $k;
+            $verticalIdx = 2 * $k + 1;
+
+            $this->assertTrue($verticalIdx < $lines->length, "Vertical line index {$verticalIdx} out of bounds");
+            $this->assertTrue($horizontalIdx < $lines->length, "Horizontal line index {$horizontalIdx} out of bounds");
+
+            $verticalLine = $lines->item($verticalIdx);
+            $horizontalLine = $lines->item($horizontalIdx);
+
+            // Vertikal: x1==x2
+            $vertX1 = (float) $verticalLine->getAttribute('x1');
+            $vertX2 = (float) $verticalLine->getAttribute('x2');
+            $this->assertEqualsWithDelta($vertX1, $vertX2, 0.5,
+                'Vertical line K'.($k + 1).' should have x1==x2');
+
+            // Vertikal: x1 = 70+((centroids_raw[k][0]-1)/3)*590
+            $centroid = $centroids_raw[$k] ?? null;
+            $this->assertNotNull($centroid, 'Centroid for K'.($k + 1).' not found');
+
+            $expectedVertX = $marginL + (($centroid[$xAxisIdx] - 1) / 3) * $plotW;
+            $this->assertEqualsWithDelta($expectedVertX, $vertX1, 0.5,
+                'Vertical line K'.($k + 1)." X position (TC axis) should be {$expectedVertX}, got {$vertX1}");
+
+            // Horizontal: y1 = 68+(1-(centroids_raw[k][3]-1)/3)*382
+            $horizY1 = (float) $horizontalLine->getAttribute('y1');
+            $expectedHorizY = $marginT + (1 - ($centroid[$yAxisIdx] - 1) / 3) * $plotH;
+            $this->assertEqualsWithDelta($expectedHorizY, $horizY1, 0.5,
+                'Horizontal line K'.($k + 1)." Y position (YB axis) should be {$expectedHorizY}, got {$horizY1}");
         }
     }
 
