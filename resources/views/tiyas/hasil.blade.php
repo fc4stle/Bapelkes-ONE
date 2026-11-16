@@ -1669,7 +1669,101 @@
                                 @endif
 
                                 <!-- Membership Bar Chart -->
-                                <div data-chart="fcm-pelatihan-membership" style="margin-bottom: 2rem;"></div>
+                                @if ($klasterPelatihan['status'] === 'sukses' && !empty($klasterPelatihan['tabel_pelatihan']))
+                                    @php
+                                        // Siapkan data untuk SVG
+                                        $sortedPelatihan = collect($klasterPelatihan['tabel_pelatihan'] ?? [])
+                                            ->sortBy('id')
+                                            ->values();
+                                        
+                                        $maxKlaster = $klasterPelatihan['c_optimal'] ?? 2;
+                                        $nBaris = count($sortedPelatihan);
+                                        $barHeight = 30;
+                                        $barSpacing = 45;
+                                        $marginL = 120; // Untuk label P1, P2, ...
+                                        $marginR = 20;
+                                        $marginT = 20;
+                                        $marginB = 20;
+                                        $barWidth = 300; // Lebar area untuk bar (0-100%)
+                                        
+                                        $totalHeight = $marginT + $marginB + $nBaris * $barSpacing;
+                                        $totalWidth = $marginL + $marginR + $barWidth;
+                                    @endphp
+                                    
+                                    <svg width="100%" height="{{$totalHeight}}" viewBox="0 0 {{$totalWidth}} {{$totalHeight}}" 
+                                         data-chart="fcm-pelatihan-membership" style="margin-bottom: 2rem; border: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent); border-radius: var(--radius-card);">
+                                        <defs>
+                                            <style type="text/css">
+                                                .membership-bar-label { font-family: system-ui, sans-serif; font-size: 12px; font-weight: 500; }
+                                                .membership-segment-pct { font-family: system-ui, sans-serif; font-size: 11px; font-weight: 600; }
+                                                .membership-bar-bg { stroke: color-mix(in srgb, var(--color-text) 20%, transparent); stroke-width: 1; }
+                                            </style>
+                                        </defs>
+                                        
+                                        <!-- Garis background grid (opsional) -->
+                                        <line x1="{{$marginL}}" y1="{{$marginT}}" x2="{{$marginL}}" y2="{{$totalHeight - $marginB}}" 
+                                              stroke="color-mix(in srgb, var(--color-text) 10%, transparent)" stroke-width="1"/>
+                                        <line x1="{{$marginL + $barWidth}}" y1="{{$marginT}}" x2="{{$marginL + $barWidth}}" y2="{{$totalHeight - $marginB}}" 
+                                              stroke="color-mix(in srgb, var(--color-text) 10%, transparent)" stroke-width="1"/>
+                                        
+                                        <!-- Batang untuk setiap pelatihan -->
+                                        @foreach ($sortedPelatihan as $idx => $pel)
+                                            @php
+                                                $pelId = $pel['id'] ?? null;
+                                                $pelLabel = $pelatihanLabels[$pelId] ?? 'P?';
+                                                $keanggotaan = $pel['keanggotaan'] ?? [];
+                                                
+                                                $y = $marginT + $idx * $barSpacing + $barSpacing / 2 - $barHeight / 2;
+                                                $x = $marginL;
+                                                
+                                                // Hitung posisi tiap segmen (kumulatif)
+                                                $offset = 0;
+                                                $segmentData = [];
+                                                for ($k = 1; $k <= $maxKlaster; $k++) {
+                                                    $membership = $keanggotaan[$k] ?? 0;
+                                                    if ($membership > 0) {
+                                                        $segmentWidth = ($membership / 100) * $barWidth;
+                                                        $segmentData[$k] = [
+                                                            'x' => $x + $offset,
+                                                            'width' => $segmentWidth,
+                                                            'membership' => $membership,
+                                                        ];
+                                                        $offset += $segmentWidth;
+                                                    }
+                                                }
+                                            @endphp
+                                            
+                                            <!-- Label (P1, P2, ...) -->
+                                            <text x="{{$marginL - 10}}" y="{{$y + $barHeight / 2 + 4}}" text-anchor="end" 
+                                                  class="membership-bar-label" fill="var(--color-text)">{{ $pelLabel }}</text>
+                                            
+                                            <!-- Background bar -->
+                                            <rect x="{{$x}}" y="{{$y}}" width="{{$barWidth}}" height="{{$barHeight}}" 
+                                                  fill="color-mix(in srgb, var(--color-text) 5%, transparent)" class="membership-bar-bg"/>
+                                            
+                                            <!-- Segmen per klaster -->
+                                            @foreach ($segmentData as $klasterNum => $seg)
+                                                @php
+                                                    $segColor = isset($klasterColors['K' . $klasterNum])
+                                                        ? $klasterColors['K' . $klasterNum]
+                                                        : 'var(--color-primary)';
+                                                @endphp
+                                                <rect x="{{$seg['x']}}" y="{{$y}}" width="{{$seg['width']}}" height="{{$barHeight}}" 
+                                                      fill="{{$segColor}}" stroke="white" stroke-width="1">
+                                                    <title>{{ $pelLabel }} | Klaster {{ $klasterNum }}: {{ number_format($seg['membership'], 1) }}%</title>
+                                                </rect>
+                                                
+                                                <!-- Label persen jika lebar segmen >= 8% dari total bar width (24px) -->
+                                                @if ($seg['width'] >= 24)
+                                                    <text x="{{$seg['x'] + $seg['width'] / 2}}" y="{{$y + $barHeight / 2 + 4}}" text-anchor="middle" 
+                                                          class="membership-segment-pct" fill="white" opacity="0.9">
+                                                        {{ number_format($seg['membership'], 0) }}%
+                                                    </text>
+                                                @endif
+                                            @endforeach
+                                        @endforeach
+                                    </svg>
+                                @endif
 
                                 <!-- Tabel Keanggotaan Pelatihan per Klaster -->
                                 <div class="mb-6" style="overflow-x: auto;">
@@ -1716,7 +1810,13 @@
                                                             {{ number_format($membership, 1) }}%
                                                         </td>
                                                     @endfor
-                                                    <td style="padding: 0.75rem; text-align: center; color: var(--color-text); font-weight: 600; background-color: color-mix(in srgb, var(--color-accent) 15%, transparent);">
+                                                    @php
+                                                        $klasterDominantNum = $pelatihan['klaster_dominan'];
+                                                        $klasterDominantColor = isset($klasterColors['K' . $klasterDominantNum])
+                                                            ? $klasterColors['K' . $klasterDominantNum]
+                                                            : 'var(--color-primary)';
+                                                    @endphp
+                                                    <td style="padding: 0.75rem; text-align: center; color: var(--color-text); font-weight: 600; background-color: color-mix(in srgb, var(--color-accent) 15%, transparent); border-left: 4px solid {{$klasterDominantColor}};">
                                                         K{{ $pelatihan['klaster_dominan'] }}
                                                         @if (!empty($klasterPelatihan['tabel_klaster'][$pelatihan['klaster_dominan'] - 1]['kode_profil']))
                                                             ({{ $klasterPelatihan['tabel_klaster'][$pelatihan['klaster_dominan'] - 1]['kode_profil'] }})
@@ -1731,8 +1831,15 @@
                                 <!-- Kartu Klaster -->
                                 <div class="grid grid-cols-1 gap-4">
                                     @foreach ($klasterPelatihan['tabel_klaster'] as $klaster)
-                                        <div style="border: 1px solid color-mix(in srgb, var(--color-primary) 30%, transparent); border-radius: var(--radius-card); padding: 1rem; background-color: color-mix(in srgb, var(--color-primary) 5%, transparent);">
+                                        @php
+                                            $klasterNum = $klaster['klaster'];
+                                            $klasterColor = isset($klasterColors['K' . $klasterNum])
+                                                ? $klasterColors['K' . $klasterNum]
+                                                : 'var(--color-primary)';
+                                        @endphp
+                                        <div style="border: 1px solid color-mix(in srgb, var(--color-primary) 30%, transparent); border-left: 5px solid {{$klasterColor}}; border-radius: var(--radius-card); padding: 1rem; background-color: color-mix(in srgb, var(--color-primary) 5%, transparent);">
                                             <h4 class="font-semibold text-sm mb-2" style="color: var(--color-text);">
+                                                <span style="display: inline-block; width: 12px; height: 12px; background-color: {{$klasterColor}}; border-radius: 2px; vertical-align: middle; margin-right: 0.5rem;"></span>
                                                 Klaster {{ $klaster['klaster'] }}
                                                 @if (!empty($klaster['kode_profil']))
                                                     · {{ $klaster['kode_profil'] }}
