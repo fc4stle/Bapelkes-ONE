@@ -16,14 +16,14 @@
                         <p style="color: var(--color-text); opacity: 0.7;" class="mt-1">{{ $pelatihan->nama }}</p>
 
             <!-- Tabs cakupan analisis -->
-            <div class="mb-6 flex gap-2">
+            <div class="mb-6 flex flex-wrap gap-2">
                 <a href="{{ route('tiyas.hasil', ['pelatihan' => $pelatihan, 'cakupan' => 'pelatihan']) }}" 
-                   class="px-4 py-2 rounded-lg font-medium transition-all" 
+                   class="flex-1 sm:flex-none px-4 py-2 rounded-lg font-medium text-center transition-all" 
                    style="{{ $cakupan === 'pelatihan' ? 'background-color: var(--color-primary); color: white;' : 'background-color: color-mix(in srgb, var(--color-text) 10%, transparent); color: var(--color-text);' }}">
                     Pelatihan Ini
                 </a>
                 <a href="{{ route('tiyas.hasil', ['pelatihan' => $pelatihan, 'cakupan' => 'semua']) }}" 
-                   class="px-4 py-2 rounded-lg font-medium transition-all" 
+                   class="flex-1 sm:flex-none px-4 py-2 rounded-lg font-medium text-center transition-all" 
                    style="{{ $cakupan === 'semua' ? 'background-color: var(--color-primary); color: white;' : 'background-color: color-mix(in srgb, var(--color-text) 10%, transparent); color: var(--color-text);' }}">
                     Semua Pelatihan
                 </a>
@@ -548,23 +548,23 @@
                                         }
                                     @endphp
                                     
-                                    <form method="GET" class="mb-3 flex gap-2 flex-wrap items-center text-sm">
+                                    <form method="GET" class="mb-3 flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-2 text-sm">
                                         <!-- Hidden input untuk mempertahankan cakupan -->
                                         <input type="hidden" name="cakupan" value="{{ $cakupan }}">
                                         
                                         <label style="color: var(--color-text); opacity: 0.8;">Sumbu:</label>
-                                        <select name="x" style="padding: 0.25rem 0.5rem; border: 1px solid color-mix(in srgb, var(--color-text) 20%, transparent); border-radius: 0.25rem; background-color: var(--color-surface); color: var(--color-text); font-size: 0.875rem;">
+                                        <select name="x" class="w-full sm:w-auto" style="padding: 0.25rem 0.5rem; border: 1px solid color-mix(in srgb, var(--color-text) 20%, transparent); border-radius: 0.25rem; background-color: var(--color-surface); color: var(--color-text); font-size: 0.875rem;">
                                             @foreach (['TC', 'TE', 'ITT', 'YB'] as $kod)
                                                 <option value="{{ $kod }}" @selected($formXAxis == $kod)>{{ $kod }} ({{ config('tiyas.konstruk.' . $kod . '.judul', 'N/A') }})</option>
                                             @endforeach
                                         </select>
-                                        vs
-                                        <select name="y" style="padding: 0.25rem 0.5rem; border: 1px solid color-mix(in srgb, var(--color-text) 20%, transparent); border-radius: 0.25rem; background-color: var(--color-surface); color: var(--color-text); font-size: 0.875rem;">
+                                        <span class="text-center sm:text-left">vs</span>
+                                        <select name="y" class="w-full sm:w-auto" style="padding: 0.25rem 0.5rem; border: 1px solid color-mix(in srgb, var(--color-text) 20%, transparent); border-radius: 0.25rem; background-color: var(--color-surface); color: var(--color-text); font-size: 0.875rem;">
                                             @foreach (['TC', 'TE', 'ITT', 'YB'] as $kod)
                                                 <option value="{{ $kod }}" @selected($formYAxis == $kod)>{{ $kod }} ({{ config('tiyas.konstruk.' . $kod . '.judul', 'N/A') }})</option>
                                             @endforeach
                                         </select>
-                                        <button type="submit" class="px-3 py-1" style="background-color: var(--color-primary); color: white; border: none; border-radius: 0.25rem; cursor: pointer; font-size: 0.875rem;">Tampilkan</button>
+                                        <button type="submit" class="w-full sm:w-auto px-3 py-1" style="background-color: var(--color-primary); color: white; border: none; border-radius: 0.25rem; cursor: pointer; font-size: 0.875rem;">Tampilkan</button>
                                     </form>
 
                                     <!-- SVG Scatter Plot -->
