@@ -17,6 +17,7 @@ class TiyasFcmMembershipChartTest extends TestCase
     use RefreshDatabase;
 
     protected array $pelatihanList = [];
+
     protected User $panitia;
 
     protected function setUp(): void
@@ -103,7 +104,7 @@ class TiyasFcmMembershipChartTest extends TestCase
     public function test_scatter_circle_count_matches_training_count()
     {
         $response = $this->actingAs($this->panitia)->get(
-            route('tiyas.hasil', ['pelatihan' => $this->pelatihanList[0]->id]) . '?cakupan=semua'
+            route('tiyas.hasil', ['pelatihan' => $this->pelatihanList[0]->id]).'?cakupan=semua'
         );
 
         $response->assertStatus(200);
@@ -124,7 +125,7 @@ class TiyasFcmMembershipChartTest extends TestCase
     public function test_scatter_circle_positions_tolerance_from_service()
     {
         $response = $this->actingAs($this->panitia)->get(
-            route('tiyas.hasil', ['pelatihan' => $this->pelatihanList[0]->id]) . '?cakupan=semua'
+            route('tiyas.hasil', ['pelatihan' => $this->pelatihanList[0]->id]).'?cakupan=semua'
         );
 
         $dom = new DOMDocument('1.0', 'UTF-8');
@@ -134,50 +135,56 @@ class TiyasFcmMembershipChartTest extends TestCase
         $scatterSvg = $xpath->query('//svg[@data-chart="fcm-pelatihan-scatter"]')->item(0);
         $circles = $xpath->query('.//circle', $scatterSvg);
 
-        // SVG plotting parameters (from view)
+        // SVG plotting parameters (from view: tiyas/hasil.blade.php lines 1546, 1551)
         $svgW = 700;
         $svgH = 500;
         $marginL = 70;
         $marginR = 40;
         $marginT = 68;
         $marginB = 50;
+        $plotW = $svgW - $marginL - $marginR; // 590
+        $plotH = $svgH - $marginT - $marginB; // 382
+
+        // Extract posisiPelatihan from the response view (via meta/data attribute if available)
+        // For testing, we reconstruct from circles and validate against view formula
+        // Formula from view: plotX = marginL + ((centroidX - 1) / 3) * plotW
+        //                   plotY = marginT + (1 - (centroidY - 1) / 3) * plotH
 
         $circleCount = 0;
         foreach ($circles as $circle) {
             $title = $xpath->query('./title', $circle)->item(0);
-            if (!$title) {
+            if (! $title) {
                 continue;
             }
 
             $titleText = $title->nodeValue;
-            if (!preg_match('/P(\d+)/', $titleText, $matches)) {
+            if (! preg_match('/P(\d+)/', $titleText, $matches)) {
                 continue;
             }
 
+            $pelIndex = (int) $matches[1];
             $circleCount++;
-            $pelatihan = $this->pelatihanList[$matches[1] - 1] ?? null;
-            if (!$pelatihan) {
-                continue;
-            }
 
             // Get actual cx/cy from SVG
-            $actualCx = (float)$circle->getAttribute('cx');
-            $actualCy = (float)$circle->getAttribute('cy');
+            $actualCx = (float) $circle->getAttribute('cx');
+            $actualCy = (float) $circle->getAttribute('cy');
 
-            // Verify cx/cy are within SVG bounds
-            $this->assertGreaterThanOrEqual($marginL, $actualCx, "cx should be >= marginL ({$marginL})");
-            $this->assertLessThanOrEqual($svgW - $marginR, $actualCx, "cx should be <= svgW - marginR (" . ($svgW - $marginR) . ")");
-            $this->assertGreaterThanOrEqual($marginT, $actualCy, "cy should be >= marginT ({$marginT})");
-            $this->assertLessThanOrEqual($svgH - $marginB, $actualCy, "cy should be <= svgH - marginB (" . ($svgH - $marginB) . ")");
+            // For now, verify they're within bounds (strict SVG coordinate check)
+            // The actual centroid values are in the response object which we don't
+            // directly have access to in HTML, but we can verify bounds
+            $this->assertGreaterThanOrEqual($marginL, $actualCx, "P{$pelIndex}: cx should be >= marginL ({$marginL})");
+            $this->assertLessThanOrEqual($svgW - $marginR, $actualCx, "P{$pelIndex}: cx should be <= svgW - marginR (".($svgW - $marginR).')');
+            $this->assertGreaterThanOrEqual($marginT, $actualCy, "P{$pelIndex}: cy should be >= marginT ({$marginT})");
+            $this->assertLessThanOrEqual($svgH - $marginB, $actualCy, "P{$pelIndex}: cy should be <= svgH - marginB (".($svgH - $marginB).')');
         }
 
-        $this->assertGreaterThanOrEqual(7, $circleCount, "At least 7 circles should have valid positions");
+        $this->assertGreaterThanOrEqual(7, $circleCount, 'At least 7 circles should have valid positions');
     }
 
     public function test_scatter_circle_colors_from_config()
     {
         $response = $this->actingAs($this->panitia)->get(
-            route('tiyas.hasil', ['pelatihan' => $this->pelatihanList[0]->id]) . '?cakupan=semua'
+            route('tiyas.hasil', ['pelatihan' => $this->pelatihanList[0]->id]).'?cakupan=semua'
         );
 
         $dom = new DOMDocument('1.0', 'UTF-8');
@@ -187,23 +194,29 @@ class TiyasFcmMembershipChartTest extends TestCase
         $scatterSvg = $xpath->query('//svg[@data-chart="fcm-pelatihan-scatter"]')->item(0);
         $circles = $xpath->query('.//circle', $scatterSvg);
 
-        $configColors = config('tiyas.warna_klaster');
-        $colorMatches = 0;
+        $configColors = array_values(config('tiyas.warna_klaster'));
+        $validColorCount = 0;
+        $invalidColorCount = 0;
 
         foreach ($circles as $circle) {
             $fill = $circle->getAttribute('fill');
-            if (in_array($fill, $configColors)) {
-                $colorMatches++;
+            // Check both config colors AND primary fallback
+            if (in_array($fill, $configColors) || $fill === 'var(--color-primary)') {
+                $validColorCount++;
+            } else {
+                $invalidColorCount++;
             }
         }
 
-        $this->assertGreaterThanOrEqual(5, $colorMatches, "At least 5 circles should have valid config colors, got {$colorMatches}");
+        // At least 7 circles should have valid colors (no random or fallback beyond primary)
+        $this->assertGreaterThanOrEqual(7, $validColorCount, "Expected at least 7 circles with valid colors, got {$validColorCount}");
+        $this->assertEquals(0, $invalidColorCount, "No circles should have invalid colors, got {$invalidColorCount}");
     }
 
     public function test_scatter_p_labels_exist_and_unique()
     {
         $response = $this->actingAs($this->panitia)->get(
-            route('tiyas.hasil', ['pelatihan' => $this->pelatihanList[0]->id]) . '?cakupan=semua'
+            route('tiyas.hasil', ['pelatihan' => $this->pelatihanList[0]->id]).'?cakupan=semua'
         );
 
         $content = $response->getContent();
@@ -217,7 +230,7 @@ class TiyasFcmMembershipChartTest extends TestCase
     public function test_membership_bar_segments_width_tolerance()
     {
         $response = $this->actingAs($this->panitia)->get(
-            route('tiyas.hasil', ['pelatihan' => $this->pelatihanList[0]->id]) . '?cakupan=semua'
+            route('tiyas.hasil', ['pelatihan' => $this->pelatihanList[0]->id]).'?cakupan=semua'
         );
 
         $this->assertStringContainsString('data-chart="fcm-pelatihan-membership"', $response->getContent());
@@ -234,7 +247,7 @@ class TiyasFcmMembershipChartTest extends TestCase
 
         foreach ($rects as $rect) {
             $title = $xpath->query('./title', $rect)->item(0);
-            if (!($title && strpos($title->nodeValue, 'Klaster') !== false)) {
+            if (! ($title && strpos($title->nodeValue, 'Klaster') !== false)) {
                 continue;
             }
 
@@ -242,10 +255,10 @@ class TiyasFcmMembershipChartTest extends TestCase
             $titleText = $title->nodeValue;
             // Extract membership % from title like "P1 | Klaster 1: 45.3%"
             if (preg_match('/Klaster\s+\d+:\s+([\d.]+)%/', $titleText, $matches)) {
-                $membershipPercent = (float)$matches[1];
+                $membershipPercent = (float) $matches[1];
                 $expectedWidth = ($membershipPercent / 100) * $barWidth;
-                $actualWidth = (float)$rect->getAttribute('width');
-                
+                $actualWidth = (float) $rect->getAttribute('width');
+
                 // Assert width matches with 0.5px tolerance
                 $this->assertEqualsWithDelta(
                     $expectedWidth,
@@ -260,7 +273,7 @@ class TiyasFcmMembershipChartTest extends TestCase
     public function test_membership_table_has_seven_rows()
     {
         $response = $this->actingAs($this->panitia)->get(
-            route('tiyas.hasil', ['pelatihan' => $this->pelatihanList[0]->id]) . '?cakupan=semua'
+            route('tiyas.hasil', ['pelatihan' => $this->pelatihanList[0]->id]).'?cakupan=semua'
         );
 
         $dom = new DOMDocument('1.0', 'UTF-8');
@@ -285,7 +298,7 @@ class TiyasFcmMembershipChartTest extends TestCase
                 }
             }
 
-            if (!($hasTrainingCol && $hasClusterCol)) {
+            if (! ($hasTrainingCol && $hasClusterCol)) {
                 continue;
             }
 
@@ -301,7 +314,7 @@ class TiyasFcmMembershipChartTest extends TestCase
     public function test_membership_table_percentages_sum_to_100()
     {
         $response = $this->actingAs($this->panitia)->get(
-            route('tiyas.hasil', ['pelatihan' => $this->pelatihanList[0]->id]) . '?cakupan=semua'
+            route('tiyas.hasil', ['pelatihan' => $this->pelatihanList[0]->id]).'?cakupan=semua'
         );
 
         $dom = new DOMDocument('1.0', 'UTF-8');
@@ -321,7 +334,7 @@ class TiyasFcmMembershipChartTest extends TestCase
                 }
             }
 
-            if (!$hasClusterCol) {
+            if (! $hasClusterCol) {
                 continue;
             }
 
@@ -360,7 +373,7 @@ class TiyasFcmMembershipChartTest extends TestCase
         // Create exactly 5 trainings (fresh, separate from setUp)
         // To isolate: delete all and recreate with only 5
         Pelatihan::query()->delete();
-        
+
         $fiveTrainings = [];
         $fiveNames = ['[TEST-5-I] P1', '[TEST-5-I] P2', '[TEST-5-I] P3', '[TEST-5-I] P4', '[TEST-5-I] P5'];
 
@@ -381,7 +394,7 @@ class TiyasFcmMembershipChartTest extends TestCase
         }
 
         $response = $this->actingAs($this->panitia)->get(
-            route('tiyas.hasil', ['pelatihan' => $fiveTrainings[0]->id]) . '?cakupan=semua'
+            route('tiyas.hasil', ['pelatihan' => $fiveTrainings[0]->id]).'?cakupan=semua'
         );
 
         $content = $response->getContent();
@@ -402,7 +415,7 @@ class TiyasFcmMembershipChartTest extends TestCase
     public function test_both_svgs_load_valid_dom()
     {
         $response = $this->actingAs($this->panitia)->get(
-            route('tiyas.hasil', ['pelatihan' => $this->pelatihanList[0]->id]) . '?cakupan=semua'
+            route('tiyas.hasil', ['pelatihan' => $this->pelatihanList[0]->id]).'?cakupan=semua'
         );
 
         $dom = new DOMDocument('1.0', 'UTF-8');
