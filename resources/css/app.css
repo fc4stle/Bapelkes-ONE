@@ -155,8 +155,14 @@ input[type="radio"] {
     appearance: base-select;
   }
 
-  /* Kolom select: pertahankan tampilan sekarang */
+  /* Kolom select: responsive flex layout */
   select {
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    max-width: 100%;
+    text-overflow: ellipsis;
     background-color: var(--color-surface);
     border: 1px solid #e5e7eb;
     border-radius: var(--radius-btn);
@@ -178,7 +184,10 @@ input[type="radio"] {
     border-radius: var(--radius-card);
     box-shadow: var(--shadow-card);
     padding: 4px;
-    width: anchor-size(width);
+    width: max-content;
+    min-width: anchor-size(width);
+    max-width: min(92vw, 28rem);
+    overflow-x: hidden;
     max-height: 18rem;
   }
 
@@ -188,6 +197,8 @@ input[type="radio"] {
     border-radius: 8px;
     font-size: var(--fs-body);
     color: var(--color-text);
+    white-space: normal;
+    overflow-wrap: anywhere;
   }
 
   option:hover {
@@ -205,6 +216,8 @@ input[type="radio"] {
 
   /* Ikon dropdown */
   select::picker-icon {
+    flex-shrink: 0;
+    margin-left: 0.25rem;
     color: var(--color-primary);
   }
 }
