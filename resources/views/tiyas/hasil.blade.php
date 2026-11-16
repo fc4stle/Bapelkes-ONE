@@ -1395,7 +1395,7 @@
                             </div>
                             
                             <!-- Tabel Rata-rata Keanggotaan -->
-                            <div style="overflow-x: auto;">
+                            <div class="overflow-x-auto">
                                 <table style="width: 100%; border-collapse: collapse; border-spacing: 0;">
                                     <thead>
                                         <tr style="background-color: color-mix(in srgb, var(--color-primary) 10%, transparent); border-bottom: 2px solid var(--color-primary);">
@@ -1773,7 +1773,7 @@
                                 @endif
 
                                 <!-- Tabel Keanggotaan Pelatihan per Klaster -->
-                                <div class="mb-6" style="overflow-x: auto;">
+                                <div class="mb-6 overflow-x-auto">
                                     <table style="width: 100%; border-collapse: collapse; border-spacing: 0;">
                                         <thead>
                                             <tr style="background-color: color-mix(in srgb, var(--color-primary) 10%, transparent); border-bottom: 2px solid var(--color-primary);">
