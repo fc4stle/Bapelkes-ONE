@@ -1530,9 +1530,8 @@
                                         $centroidsPlot_pel = [];
                                         foreach ($klasterPelatihan['tabel_klaster'] ?? [] as $klaster) {
                                             $klasterNum = $klaster['klaster'];
-                                            // Centroid dari tabel_klaster sudah dalam format ['TC' => ..., 'TE' => ...], tapi perlu index array
-                                            // Pakai dari klasterResult untuk raw centroid
-                                            $centroidRaw = $klasterResult['centroids_raw'][$klasterNum - 1] ?? null;
+                                            // Centroid dari centroids_raw service
+                                            $centroidRaw = $klasterPelatihan['centroids_raw'][$klasterNum - 1] ?? null;
                                             if ($centroidRaw) {
                                                 $centroidsPlot_pel[$klasterNum] = [
                                                     'x' => $centroidRaw[$xIdx_pel],
@@ -1583,37 +1582,30 @@
                                         <text x="15" y="{{($margin_pel['t'] + $svgH_pel - $margin_pel['b']) / 2}}" text-anchor="middle" style="font-size: 12px; fill: var(--color-text); opacity: 0.8; font-weight: 500;" transform="rotate(-90 15 {{($margin_pel['t'] + $svgH_pel - $margin_pel['b']) / 2}})">{{ $yAxis_pel }}</text>
                                         
                                         <!-- Plot pelatihan sebagai titik (lingkaran r=7) -->
-                                        @foreach ($posisiPelatihan as $pelatihan_pos)
+                                        @foreach ($klasterPelatihan['tabel_pelatihan'] as $pelatihan_pel)
                                             @php
-                                                $centroidX_pel = $pelatihan_pos['centroid_pelatihan'][$xIdx_pel] ?? null;
-                                                $centroidY_pel = $pelatihan_pos['centroid_pelatihan'][$yIdx_pel] ?? null;
+                                                $centroidX_pel = $pelatihan_pel['mean'][$xAxis_pel] ?? null;
+                                                $centroidY_pel = $pelatihan_pel['mean'][$yAxis_pel] ?? null;
                                                 
-                                                // Validasi
-                                                if (!is_finite($centroidX_pel) || !is_finite($centroidY_pel) || $centroidX_pel < 1 || $centroidX_pel > 4 || $centroidY_pel < 1 || $centroidY_pel > 4) {
-                                                    continue;
-                                                }
-                                                
-                                                // Koordinat SVG
+                                                // Koordinat SVG dari mean skor (1-4 range)
                                                 $plotX_pel = $margin_pel['l'] + (($centroidX_pel - 1) / 3) * $plotW_pel;
                                                 $plotY_pel = $margin_pel['t'] + (1 - ($centroidY_pel - 1) / 3) * $plotH_pel;
                                                 
                                                 // Warna: klaster dominan pelatihan
-                                                $dominantKlaster_pel = $pelatihan_pos['klaster_terdekat'] ?? 1;
-                                                $pointColor_pel = isset($klasterColors['K' . $dominantKlaster_pel]) 
-                                                    ? $klasterColors['K' . $dominantKlaster_pel]
-                                                    : 'var(--color-primary)';
+                                                $dominantKlaster_pel = $pelatihan_pel['klaster_dominan'];
+                                                $pointColor_pel = $klasterColors['K' . $dominantKlaster_pel] ?? 'var(--color-primary)';
                                                 
                                                 // Tooltip
                                                 $tooltipLines_pel = [
-                                                    $pelatihan_pos['nama'] . ' (n=' . $pelatihan_pos['n_peserta'] . ')'
+                                                    $pelatihan_pel['nama']
                                                 ];
-                                                foreach ($pelatihan_pos['rata_keanggotaan'] as $k => $m) {
-                                                    $tooltipLines_pel[] = 'K' . $k . ': ' . number_format($m, 1) . '%';
+                                                foreach ($pelatihan_pel['keanggotaan'] as $k => $pct) {
+                                                    $tooltipLines_pel[] = 'K' . $k . ': ' . number_format($pct, 1) . '%';
                                                 }
                                                 $pointTitle_pel = implode(' | ', $tooltipLines_pel);
                                                 
                                                 // Label P
-                                                $pelId_pel = $pelatihan_pos['id'] ?? null;
+                                                $pelId_pel = $pelatihan_pel['id'];
                                                 $pelLabel_pel = $pelatihanLabels[$pelId_pel] ?? 'P?';
                                             @endphp
                                             
