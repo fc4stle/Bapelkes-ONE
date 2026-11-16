@@ -280,6 +280,48 @@ class TiyasKlasterPelatihanDOMTest extends TestCase
     }
 
     /**
+     * Test HTML rendering: cluster cards dengan warna dari config.
+     */
+    public function test_html_render_cluster_cards_color_from_config(): void
+    {
+        $comparisonData = [
+            1 => ['id' => 1, 'nama' => 'P1', 'mean' => ['TC' => 3.5, 'TE' => 3.5, 'ITT' => 3.5, 'YB' => 3.5]],
+            2 => ['id' => 2, 'nama' => 'P2', 'mean' => ['TC' => 3.6, 'TE' => 3.6, 'ITT' => 3.6, 'YB' => 3.6]],
+            3 => ['id' => 3, 'nama' => 'P3', 'mean' => ['TC' => 1.5, 'TE' => 1.5, 'ITT' => 1.5, 'YB' => 1.5]],
+            4 => ['id' => 4, 'nama' => 'P4', 'mean' => ['TC' => 1.6, 'TE' => 1.6, 'ITT' => 1.6, 'YB' => 1.6]],
+            5 => ['id' => 5, 'nama' => 'P5', 'mean' => ['TC' => 2.5, 'TE' => 2.5, 'ITT' => 2.5, 'YB' => 2.5]],
+            6 => ['id' => 6, 'nama' => 'P6', 'mean' => ['TC' => 2.4, 'TE' => 2.4, 'ITT' => 2.4, 'YB' => 2.4]],
+        ];
+
+        $result = $this->service->klasterPelatihan($comparisonData);
+
+        $html = view('components.fcm-pelatihan-section', [
+            'klasterPelatihan' => $result,
+            'cakupan' => 'semua',
+        ])->render();
+
+        // Get expected colors from config
+        $expectedColors = config('tiyas.warna_klaster', []);
+
+        // Extract data-color attributes from cluster cards
+        if (preg_match_all('/data-klaster="(\d+)"[^>]*data-color="([^"]*)"/', $html, $matches)) {
+            $klasterNumbers = $matches[1];
+            $dataColors = $matches[2];
+
+            foreach ($klasterNumbers as $idx => $klasterNum) {
+                $klasterIdx = (int) $klasterNum - 1;
+                $expectedColor = $expectedColors[$klasterIdx] ?? '#cccccc';
+                $actualColor = $dataColors[$idx];
+
+                $this->assertSame($expectedColor, $actualColor, 
+                    "Klaster $klasterNum color must match config('tiyas.warna_klaster')[$klasterIdx]");
+            }
+        } else {
+            $this->fail('data-klaster or data-color attribute not found in HTML');
+        }
+    }
+
+    /**
      * Test HTML loadXML: no corrupt attributes.
      */
     public function test_html_loadxml_valid(): void

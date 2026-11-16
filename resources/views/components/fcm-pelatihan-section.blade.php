@@ -58,7 +58,10 @@
             <!-- Cluster cards -->
             <div class="grid grid-cols-1 md:grid-cols-{{ $klasterPelatihan['c_optimal'] }} gap-4">
                 @foreach ($klasterPelatihan['tabel_klaster'] as $klaster)
-                    <div class="bg-white border-2 rounded p-4">
+                    @php
+                        $warnaKlaster = config('tiyas.warna_klaster', [])[$klaster['klaster'] - 1] ?? '#cccccc';
+                    @endphp
+                    <div class="bg-white border-2 rounded p-4" data-klaster="{{ $klaster['klaster'] }}" data-color="{{ $warnaKlaster }}">
                         <h4 class="font-bold mb-2">Klaster {{ $klaster['klaster'] }} - {{ $klaster['profil'] }}</h4>
                         <p class="text-sm mb-2"><strong>Pelatihan:</strong></p>
                         <ul class="text-sm list-disc pl-5">
