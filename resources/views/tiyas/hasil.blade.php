@@ -1402,16 +1402,17 @@
                                     </thead>
                                     <tbody>
                                         @php
-                                            // Hitung label P1, P2, ... untuk tabel (dengan validasi yang sama seperti scatter)
+                                            // Gunakan label yang sudah disiapkan di controller
                                             $tableLabelMap = [];
-                                            $labelCounter = 1;
                                             foreach ($posisiPelatihan as $idx => $pelatihan_pos) {
                                                 $centroidX = $pelatihan_pos['centroid_pelatihan'][$xIdx] ?? null;
                                                 $centroidY = $pelatihan_pos['centroid_pelatihan'][$yIdx] ?? null;
                                                 
                                                 if (is_finite($centroidX) && is_finite($centroidY) && $centroidX >= 1 && $centroidX <= 4 && $centroidY >= 1 && $centroidY <= 4) {
-                                                    $tableLabelMap[$idx] = 'P' . $labelCounter;
-                                                    $labelCounter++;
+                                                    $pelatihanId = $pelatihan_pos['id'] ?? null;
+                                                    if ($pelatihanId && isset($pelatihanLabels[$pelatihanId])) {
+                                                        $tableLabelMap[$idx] = $pelatihanLabels[$pelatihanId];
+                                                    }
                                                 }
                                             }
                                         @endphp
@@ -1472,16 +1473,22 @@
 
                                 <!-- Legend P1 = nama pelatihan -->
                                 @php
-                                    $pelatihanLabels = [];
-                                    $labelCounter = 1;
-                                    foreach ($klasterPelatihan['tabel_pelatihan'] as $pel) {
-                                        $pelatihanLabels['P' . $labelCounter] = $pel['nama'];
-                                        $labelCounter++;
+                                    $sortedTableData = [];
+                                    foreach ($klasterPelatihan['tabel_pelatihan'] ?? [] as $pel) {
+                                        $sortedTableData[$pel['id'] ?? null] = $pel;
+                                    }
+                                    // Sort by id
+                                    ksort($sortedTableData);
+                                    
+                                    $fcmPelatihanLabels = [];
+                                    foreach ($sortedTableData as $id => $pel) {
+                                        $label = $pelatihanLabels[$id] ?? ('P' . (count($fcmPelatihanLabels) + 1));
+                                        $fcmPelatihanLabels[$label] = $pel['nama'];
                                     }
                                 @endphp
                                 <div class="mb-6 text-xs" style="color: var(--color-text); opacity: 0.8;">
                                     <strong>Penomoran Pelatihan:</strong><br>
-                                    @foreach ($pelatihanLabels as $label => $nama)
+                                    @foreach ($fcmPelatihanLabels as $label => $nama)
                                         <div>{{ $label }} = {{ $nama }}</div>
                                     @endforeach
                                 </div>
@@ -1510,12 +1517,19 @@
                                         </thead>
                                         <tbody>
                                             @php
-                                                $pelLabel = 1;
+                                                // Urutkan tabel_pelatihan by id untuk konsistensi
+                                                $sortedTabelPelatihan = collect($klasterPelatihan['tabel_pelatihan'] ?? [])
+                                                    ->sortBy('id')
+                                                    ->values();
                                             @endphp
-                                            @foreach ($klasterPelatihan['tabel_pelatihan'] as $pelatihan)
+                                            @foreach ($sortedTabelPelatihan as $pelatihan)
+                                                @php
+                                                    $pelId = $pelatihan['id'] ?? null;
+                                                    $pelLabel = $pelatihanLabels[$pelId] ?? 'P?';
+                                                @endphp
                                                 <tr style="border-bottom: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);">
                                                     <td style="padding: 0.75rem; color: var(--color-text); font-weight: 500;">
-                                                        P{{ $pelLabel }} · {{ $pelatihan['nama'] }}
+                                                        {{ $pelLabel }} · {{ $pelatihan['nama'] }}
                                                     </td>
                                                     @for ($c = 1; $c <= $klasterPelatihan['c_optimal']; $c++)
                                                         @php
@@ -1537,9 +1551,6 @@
                                                         @endif
                                                     </td>
                                                 </tr>
-                                                @php
-                                                    $pelLabel++;
-                                                @endphp
                                             @endforeach
                                         </tbody>
                                     </table>
