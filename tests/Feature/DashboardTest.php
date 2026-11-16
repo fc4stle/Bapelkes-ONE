@@ -28,8 +28,8 @@ class DashboardTest extends TestCase
         $this->pelatihan = Pelatihan::factory()->create([
             'status' => 'dibuka',
             'kuota' => 50,
-            'tanggal_mulai' => '2026-11-10',
-            'tanggal_selesai' => '2026-11-15',
+            'tanggal_mulai' => now()->addDays(2)->toDateString(),
+            'tanggal_selesai' => now()->addDays(7)->toDateString(),
         ]);
     }
 

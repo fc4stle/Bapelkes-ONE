@@ -244,10 +244,14 @@ class PendaftaranLangkahBerikutnyaTest extends TestCase
 
     public function test_d_diverifikasi_belum_hadir(): void
     {
+        $tanggalMulai = now()->addDays(2);
+        $tanggalSelesai = now()->addDays(7);
+        $formatMulai = $tanggalMulai->format('d M');
+
         $pelatihan = Pelatihan::factory()->create([
             'status' => 'dibuka',
-            'tanggal_mulai' => '2026-11-10',
-            'tanggal_selesai' => '2026-11-15',
+            'tanggal_mulai' => $tanggalMulai->toDateString(),
+            'tanggal_selesai' => $tanggalSelesai->toDateString(),
         ]);
 
         $pendaftaran = Pendaftaran::factory()->create([
@@ -262,7 +266,7 @@ class PendaftaranLangkahBerikutnyaTest extends TestCase
         $langkah = $pendaftaran->langkahBerikutnya();
 
         $this->assertEquals('Pendaftaran terverifikasi', $langkah['judul']);
-        $this->assertStringContainsString('10 Nov', $langkah['deskripsi']);
+        $this->assertStringContainsString($formatMulai, $langkah['deskripsi']);
         $this->assertEquals('info', $langkah['tone']);
         $this->assertCount(1, $langkah['aksi']);
         $this->assertEquals('Kartu peserta', $langkah['aksi'][0]['label']);
@@ -270,10 +274,14 @@ class PendaftaranLangkahBerikutnyaTest extends TestCase
 
     public function test_e_diverifikasi_sudah_hadir(): void
     {
+        $tanggalMulai = now()->addDays(2);
+        $tanggalSelesai = now()->addDays(7);
+        $formatSelesai = $tanggalSelesai->format('d M');
+
         $pelatihan = Pelatihan::factory()->create([
             'status' => 'dibuka',
-            'tanggal_mulai' => '2026-11-10',
-            'tanggal_selesai' => '2026-11-15',
+            'tanggal_mulai' => $tanggalMulai->toDateString(),
+            'tanggal_selesai' => $tanggalSelesai->toDateString(),
         ]);
 
         $pendaftaran = Pendaftaran::factory()->create([
@@ -288,7 +296,7 @@ class PendaftaranLangkahBerikutnyaTest extends TestCase
         $langkah = $pendaftaran->langkahBerikutnya();
 
         $this->assertEquals('Anda sudah hadir', $langkah['judul']);
-        $this->assertStringContainsString('15 Nov', $langkah['deskripsi']);
+        $this->assertStringContainsString($formatSelesai, $langkah['deskripsi']);
         $this->assertEquals('info', $langkah['tone']);
         $this->assertEmpty($langkah['aksi']);
     }
