@@ -296,16 +296,26 @@ class TiyasController extends Controller
         $comparisonData = [];
         $pelatihansForComparison = [];
         $posisiPelatihan = [];
+        $klasterPelatihan = [];
 
+        $pelatihanLabels = []; // Map pelatihan_id => 'P1', 'P2', ...
         if ($cakupan === 'semua') {
             $comparison = $klasterService->perbandinganAntarPelatihan();
             $comparisonData = $comparison['comparisonData'];
             $pelatihansForComparison = $comparison['pelatihansForComparison'];
 
+            // Tentukan urutan pelatihan KONSISTEN: urut by id naik
+            $sortedIds = collect($comparisonData)->keys()->sort()->values()->toArray();
+            $pelatihanLabels = array_flip(array_map(fn ($idx) => 'P'.($idx + 1), array_keys($sortedIds)));
+            $pelatihanLabels = array_combine($sortedIds, array_map(fn ($idx) => 'P'.($idx + 1), range(0, count($sortedIds) - 1)));
+
             // Hitung posisi pelatihan terhadap klaster (hanya jika >= 2 pelatihan dan status sukses)
             if (count($pelatihansForComparison) >= 2 && $klasterResult['status'] === 'sukses') {
                 $posisiPelatihan = $klasterService->posisiPelatihan($klasterResult, $comparisonData);
             }
+
+            // Hitung FCM antar pelatihan (hanya untuk cakupan=semua)
+            $klasterPelatihan = $klasterService->klasterPelatihan($comparisonData);
         }
 
         return view('tiyas.hasil', [
@@ -329,6 +339,8 @@ class TiyasController extends Controller
             'comparisonData' => $comparisonData,
             'pelatihansForComparison' => $pelatihansForComparison,
             'posisiPelatihan' => $posisiPelatihan,
+            'klasterPelatihan' => $klasterPelatihan,
+            'pelatihanLabels' => $pelatihanLabels,
         ]);
     }
 

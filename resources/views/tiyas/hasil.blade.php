@@ -1402,16 +1402,17 @@
                                     </thead>
                                     <tbody>
                                         @php
-                                            // Hitung label P1, P2, ... untuk tabel (dengan validasi yang sama seperti scatter)
+                                            // Gunakan label yang sudah disiapkan di controller
                                             $tableLabelMap = [];
-                                            $labelCounter = 1;
                                             foreach ($posisiPelatihan as $idx => $pelatihan_pos) {
                                                 $centroidX = $pelatihan_pos['centroid_pelatihan'][$xIdx] ?? null;
                                                 $centroidY = $pelatihan_pos['centroid_pelatihan'][$yIdx] ?? null;
                                                 
                                                 if (is_finite($centroidX) && is_finite($centroidY) && $centroidX >= 1 && $centroidX <= 4 && $centroidY >= 1 && $centroidY <= 4) {
-                                                    $tableLabelMap[$idx] = 'P' . $labelCounter;
-                                                    $labelCounter++;
+                                                    $pelatihanId = $pelatihan_pos['id'] ?? null;
+                                                    if ($pelatihanId && isset($pelatihanLabels[$pelatihanId])) {
+                                                        $tableLabelMap[$idx] = $pelatihanLabels[$pelatihanId];
+                                                    }
                                                 }
                                             }
                                         @endphp
@@ -1455,6 +1456,422 @@
                                 Kolom "Klaster Terdekat" menandai klaster dengan persentase tertinggi pada setiap baris.
                             </p>
                         </x-card>
+                    @endif
+
+                    <!-- B.3 Pengelompokan Pelatihan (FCM antar Pelatihan) - hanya untuk cakupan=semua -->
+                    @if ($cakupan === 'semua')
+                        @if ($klasterPelatihan['status'] === 'kurang_data')
+                            <x-card class="mb-6">
+                                <h3 class="font-semibold text-sm mb-4" style="color: var(--color-text);">Pengelompokan Pelatihan (FCM antar Pelatihan)</h3>
+                                <p style="color: var(--color-text); opacity: 0.7;" class="text-sm">
+                                    Belum cukup pelatihan untuk pengelompokan (butuh minimal {{ $klasterPelatihan['jumlah_butuh'] }}, saat ini {{ $klasterPelatihan['jumlah_sekarang'] }}).
+                                </p>
+                            </x-card>
+                        @elseif ($klasterPelatihan['status'] === 'sukses')
+                            <x-card class="mb-6">
+                                <h3 class="font-semibold text-sm mb-6" style="color: var(--color-text);">Pengelompokan Pelatihan (FCM antar Pelatihan)</h3>
+
+                                <!-- Legend P1 = nama pelatihan -->
+                                @php
+                                    $sortedTableData = [];
+                                    foreach ($klasterPelatihan['tabel_pelatihan'] ?? [] as $pel) {
+                                        $sortedTableData[$pel['id'] ?? null] = $pel;
+                                    }
+                                    // Sort by id
+                                    ksort($sortedTableData);
+                                    
+                                    $fcmPelatihanLabels = [];
+                                    foreach ($sortedTableData as $id => $pel) {
+                                        $label = $pelatihanLabels[$id] ?? ('P' . (count($fcmPelatihanLabels) + 1));
+                                        $fcmPelatihanLabels[$label] = $pel['nama'];
+                                    }
+                                @endphp
+                                <div class="mb-6 text-xs" style="color: var(--color-text); opacity: 0.8;">
+                                    <strong>Penomoran Pelatihan:</strong><br>
+                                    @foreach ($fcmPelatihanLabels as $label => $nama)
+                                        <div>{{ $label }} = {{ $nama }}</div>
+                                    @endforeach
+                                </div>
+
+                                <!-- Scatter SVG: FCM antar Pelatihan -->
+                                @if (!empty($posisiPelatihan))
+                                    @php
+                                        // Map kode to label
+                                        $kodeToLabel = [
+                                            'TC' => config('tiyas.konstruk.TC.nama', 'Transfer Climate'),
+                                            'TE' => config('tiyas.konstruk.TE.nama', 'Transfer Environment'),
+                                            'ITT' => config('tiyas.konstruk.ITT.nama', 'Intention to Transfer'),
+                                            'YB' => config('tiyas.konstruk.YB.nama', 'Yielded Behavior'),
+                                        ];
+                                        
+                                        // Warna klaster (sama seperti scatter peserta)
+                                        $klasterColors = config('tiyas.warna_klaster', [
+                                            'K1' => 'var(--color-danger)',
+                                            'K2' => 'var(--color-primary)',
+                                            'K3' => 'var(--color-success)',
+                                            'K4' => 'var(--color-accent)',
+                                        ]);
+                                        
+                                        // SVG dimensions (sama seperti scatter peserta)
+                                        $svgW_pel = 700;
+                                        $svgH_pel = 500;
+                                        $margin_pel = ['l' => 70, 'r' => 40, 't' => 68, 'b' => 50];
+                                        $plotW_pel = $svgW_pel - $margin_pel['l'] - $margin_pel['r'];
+                                        $plotH_pel = $svgH_pel - $margin_pel['t'] - $margin_pel['b'];
+                                        
+                                        // Extract index untuk sumbu x/y (default TC, YB)
+                                        $konstrukAll = ['TC', 'TE', 'ITT', 'YB'];
+                                        $xAxis_pel = $xAxis ?? 'TC';
+                                        $yAxis_pel = $yAxis ?? 'YB';
+                                        $xIdx_pel = array_search($xAxis_pel, $konstrukAll);
+                                        $yIdx_pel = array_search($yAxis_pel, $konstrukAll);
+                                        
+                                        // Centroid klaster (untuk crosshair)
+                                        $centroidsPlot_pel = [];
+                                        foreach ($klasterPelatihan['tabel_klaster'] ?? [] as $klaster) {
+                                            $klasterNum = $klaster['klaster'];
+                                            // Centroid dari centroids_raw service
+                                            $centroidRaw = $klasterPelatihan['centroids_raw'][$klasterNum - 1] ?? null;
+                                            if ($centroidRaw) {
+                                                $centroidsPlot_pel[$klasterNum] = [
+                                                    'x' => $centroidRaw[$xIdx_pel],
+                                                    'y' => $centroidRaw[$yIdx_pel],
+                                                    'label' => 'K' . $klasterNum,
+                                                ];
+                                            }
+                                        }
+                                    @endphp
+                                    
+                                    <svg viewBox="0 0 {{$svgW_pel}} {{$svgH_pel}}" class="w-full rounded" style="border: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent); background-color: var(--color-surface);" data-chart="fcm-pelatihan-scatter">
+                                        <!-- Title -->
+                                        <text x="{{$svgW_pel / 2}}" y="25" text-anchor="middle" style="font-size: 16px; font-weight: 600; fill: var(--color-text);">
+                                            <tspan x="{{$svgW_pel / 2}}" dy="0">Sebaran Pelatihan: {{ $kodeToLabel[$xAxis_pel] }} vs {{ $kodeToLabel[$yAxis_pel] }}</tspan>
+                                            <tspan x="{{$svgW_pel / 2}}" dy="1.5em" style="font-size: 12px; opacity: 0.7;">FCM Antar Pelatihan</tspan>
+                                        </text>
+                                        
+                                        <!-- Grid lines di 1, 2, 3, 4 -->
+                                        @for ($i = 1; $i <= 4; $i++)
+                                            @php
+                                                $xGridPos_pel = $margin_pel['l'] + (($i - 1) / 3) * $plotW_pel;
+                                                $yGridPos_pel = $margin_pel['t'] + (1 - ($i - 1) / 3) * $plotH_pel;
+                                                $lineColor_pel = ($i == 2 || $i == 3) ? 'color-mix(in srgb, var(--color-text) 20%, transparent)' : 'color-mix(in srgb, var(--color-text) 10%, transparent)';
+                                                $strokeDashValue_pel = ($i == 2 || $i == 3) ? '5,5' : 'none';
+                                            @endphp
+                                            <line x1="{{$xGridPos_pel}}" y1="{{$margin_pel['t']}}" x2="{{$xGridPos_pel}}" y2="{{$svgH_pel - $margin_pel['b']}}" stroke="{{$lineColor_pel}}" stroke-width="1" stroke-dasharray="{{$strokeDashValue_pel}}"/>
+                                            <line x1="{{$margin_pel['l']}}" y1="{{$yGridPos_pel}}" x2="{{$svgW_pel - $margin_pel['r']}}" y2="{{$yGridPos_pel}}" stroke="{{$lineColor_pel}}" stroke-width="1" stroke-dasharray="{{$strokeDashValue_pel}}"/>
+                                        @endfor
+                                        
+                                        <!-- Axes -->
+                                        <line x1="{{$margin_pel['l']}}" y1="{{$svgH_pel - $margin_pel['b']}}" x2="{{$svgW_pel - $margin_pel['r']}}" y2="{{$svgH_pel - $margin_pel['b']}}" stroke="var(--color-text)" stroke-width="2"/>
+                                        <line x1="{{$margin_pel['l']}}" y1="{{$margin_pel['t']}}" x2="{{$margin_pel['l']}}" y2="{{$svgH_pel - $margin_pel['b']}}" stroke="var(--color-text)" stroke-width="2"/>
+                                        
+                                        <!-- Axis labels (1, 2, 3, 4) -->
+                                        @for ($i = 1; $i <= 4; $i++)
+                                            @php
+                                                $xLabelPos_pel = $margin_pel['l'] + (($i - 1) / 3) * $plotW_pel;
+                                                $yLabelPos_pel = $margin_pel['t'] + (1 - ($i - 1) / 3) * $plotH_pel;
+                                            @endphp
+                                            <text x="{{$xLabelPos_pel}}" y="{{$svgH_pel - $margin_pel['b'] + 20}}" text-anchor="middle" style="font-size: 11px; fill: var(--color-text); opacity: 0.7;">{{ $i }}</text>
+                                            <text x="{{$margin_pel['l'] - 15}}" y="{{$yLabelPos_pel + 4}}" text-anchor="end" style="font-size: 11px; fill: var(--color-text); opacity: 0.7;">{{ $i }}</text>
+                                        @endfor
+                                        
+                                        <!-- X-axis label -->
+                                        <text x="{{($margin_pel['l'] + $svgW_pel - $margin_pel['r']) / 2}}" y="{{$svgH_pel - 5}}" text-anchor="middle" style="font-size: 12px; fill: var(--color-text); opacity: 0.8; font-weight: 500;">{{ $xAxis_pel }}</text>
+                                        
+                                        <!-- Y-axis label -->
+                                        <text x="15" y="{{($margin_pel['t'] + $svgH_pel - $margin_pel['b']) / 2}}" text-anchor="middle" style="font-size: 12px; fill: var(--color-text); opacity: 0.8; font-weight: 500;" transform="rotate(-90 15 {{($margin_pel['t'] + $svgH_pel - $margin_pel['b']) / 2}})">{{ $yAxis_pel }}</text>
+                                        
+                                        <!-- Plot pelatihan sebagai titik (lingkaran r=7) -->
+                                        @foreach ($klasterPelatihan['tabel_pelatihan'] as $pelatihan_pel)
+                                            @php
+                                                $centroidX_pel = $pelatihan_pel['mean'][$xAxis_pel] ?? null;
+                                                $centroidY_pel = $pelatihan_pel['mean'][$yAxis_pel] ?? null;
+                                                
+                                                // Koordinat SVG dari mean skor (1-4 range)
+                                                $plotX_pel = $margin_pel['l'] + (($centroidX_pel - 1) / 3) * $plotW_pel;
+                                                $plotY_pel = $margin_pel['t'] + (1 - ($centroidY_pel - 1) / 3) * $plotH_pel;
+                                                
+                                                // Warna: klaster dominan pelatihan
+                                                $dominantKlaster_pel = $pelatihan_pel['klaster_dominan'];
+                                                $pointColor_pel = $klasterColors['K' . $dominantKlaster_pel] ?? 'var(--color-primary)';
+                                                
+                                                // Tooltip
+                                                $tooltipLines_pel = [
+                                                    $pelatihan_pel['nama']
+                                                ];
+                                                foreach ($pelatihan_pel['keanggotaan'] as $k => $pct) {
+                                                    $tooltipLines_pel[] = 'K' . $k . ': ' . number_format($pct, 1) . '%';
+                                                }
+                                                $pointTitle_pel = implode(' | ', $tooltipLines_pel);
+                                                
+                                                // Label P
+                                                $pelId_pel = $pelatihan_pel['id'];
+                                                $pelLabel_pel = $pelatihanLabels[$pelId_pel] ?? 'P?';
+                                            @endphp
+                                            
+                                            <!-- Lingkaran pelatihan r=7 -->
+                                            <circle cx="{{$plotX_pel}}" cy="{{$plotY_pel}}" r="7" fill="{{$pointColor_pel}}" opacity="0.7" stroke="var(--color-text)" stroke-width="1">
+                                                <title>{{$pointTitle_pel}}</title>
+                                            </circle>
+                                            
+                                            <!-- Label P di tengah lingkaran -->
+                                            <text x="{{$plotX_pel}}" y="{{$plotY_pel + 4}}" text-anchor="middle" style="font-size: 10px; font-weight: 600; fill: var(--color-surface);">{{ $pelLabel_pel }}</text>
+                                        @endforeach
+                                        
+                                        <!-- Plot centroid klaster sebagai X (crosshair) -->
+                                        @foreach ($centroidsPlot_pel as $klasterNum_pel => $centroid_pel)
+                                            @php
+                                                $cpx_pel = $margin_pel['l'] + (($centroid_pel['x'] - 1) / 3) * $plotW_pel;
+                                                $cpy_pel = $margin_pel['t'] + (1 - ($centroid_pel['y'] - 1) / 3) * $plotH_pel;
+                                                $crossSize_pel = 8;
+                                                
+                                                $centroidColor_pel = isset($klasterColors['K' . $klasterNum_pel]) 
+                                                    ? $klasterColors['K' . $klasterNum_pel]
+                                                    : 'var(--color-primary)';
+                                            @endphp
+                                            
+                                            <!-- Crosshair -->
+                                            <line x1="{{$cpx_pel - $crossSize_pel}}" y1="{{$cpy_pel}}" x2="{{$cpx_pel + $crossSize_pel}}" y2="{{$cpy_pel}}" stroke="{{$centroidColor_pel}}" stroke-width="3"/>
+                                            <line x1="{{$cpx_pel}}" y1="{{$cpy_pel - $crossSize_pel}}" x2="{{$cpx_pel}}" y2="{{$cpy_pel + $crossSize_pel}}" stroke="{{$centroidColor_pel}}" stroke-width="3"/>
+                                            
+                                            <!-- Label centroid -->
+                                            <text x="{{$cpx_pel + 10}}" y="{{$cpy_pel - 8}}" style="font-size: 12px; font-weight: 700; fill: {{$centroidColor_pel}};">{{ $centroid_pel['label'] }}</text>
+                                        @endforeach
+                                    </svg>
+                                    
+                                    <!-- Legend -->
+                                    <div class="mt-3 flex flex-wrap gap-4 text-xs" style="color: var(--color-text);">
+                                        @foreach (($klasterPelatihan['tabel_klaster'] ?? []) as $klaster)
+                                            @php
+                                                $klasterNum_legend = $klaster['klaster'];
+                                                $klasterColor_legend = isset($klasterColors['K' . $klasterNum_legend]) 
+                                                    ? $klasterColors['K' . $klasterNum_legend]
+                                                    : 'var(--color-primary)';
+                                            @endphp
+                                            <div class="flex items-center gap-2">
+                                                <span class="w-3 h-3 rounded-sm" style="background-color: {{$klasterColor_legend}};"></span>
+                                                <span>K{{ $klasterNum_legend }}</span>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @else
+                                    <div class="text-xs text-center" style="color: var(--color-text); opacity: 0.6; padding: 1rem;">
+                                        (Scatter plot tidak tersedia: data pelatihan peserta kurang)
+                                    </div>
+                                @endif
+
+                                <!-- Membership Bar Chart -->
+                                @if ($klasterPelatihan['status'] === 'sukses' && !empty($klasterPelatihan['tabel_pelatihan']))
+                                    @php
+                                        // Siapkan data untuk SVG
+                                        $sortedPelatihan = collect($klasterPelatihan['tabel_pelatihan'] ?? [])
+                                            ->sortBy('id')
+                                            ->values();
+                                        
+                                        $maxKlaster = $klasterPelatihan['c_optimal'] ?? 2;
+                                        $nBaris = count($sortedPelatihan);
+                                        $barHeight = 30;
+                                        $barSpacing = 45;
+                                        $marginL = 120; // Untuk label P1, P2, ...
+                                        $marginR = 20;
+                                        $marginT = 20;
+                                        $marginB = 20;
+                                        $barWidth = 300; // Lebar area untuk bar (0-100%)
+                                        
+                                        $totalHeight = $marginT + $marginB + $nBaris * $barSpacing;
+                                        $totalWidth = $marginL + $marginR + $barWidth;
+                                    @endphp
+                                    
+                                    <svg width="100%" height="{{$totalHeight}}" viewBox="0 0 {{$totalWidth}} {{$totalHeight}}" 
+                                         data-chart="fcm-pelatihan-membership" style="margin-bottom: 2rem; border: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent); border-radius: var(--radius-card);">
+                                        <defs>
+                                            <style type="text/css">
+                                                .membership-bar-label { font-family: system-ui, sans-serif; font-size: 12px; font-weight: 500; }
+                                                .membership-segment-pct { font-family: system-ui, sans-serif; font-size: 11px; font-weight: 600; }
+                                                .membership-bar-bg { stroke: color-mix(in srgb, var(--color-text) 20%, transparent); stroke-width: 1; }
+                                            </style>
+                                        </defs>
+                                        
+                                        <!-- Garis background grid (opsional) -->
+                                        <line x1="{{$marginL}}" y1="{{$marginT}}" x2="{{$marginL}}" y2="{{$totalHeight - $marginB}}" 
+                                              stroke="color-mix(in srgb, var(--color-text) 10%, transparent)" stroke-width="1"/>
+                                        <line x1="{{$marginL + $barWidth}}" y1="{{$marginT}}" x2="{{$marginL + $barWidth}}" y2="{{$totalHeight - $marginB}}" 
+                                              stroke="color-mix(in srgb, var(--color-text) 10%, transparent)" stroke-width="1"/>
+                                        
+                                        <!-- Batang untuk setiap pelatihan -->
+                                        @foreach ($sortedPelatihan as $idx => $pel)
+                                            @php
+                                                $pelId = $pel['id'] ?? null;
+                                                $pelLabel = $pelatihanLabels[$pelId] ?? 'P?';
+                                                $keanggotaan = $pel['keanggotaan'] ?? [];
+                                                
+                                                $y = $marginT + $idx * $barSpacing + $barSpacing / 2 - $barHeight / 2;
+                                                $x = $marginL;
+                                                
+                                                // Hitung posisi tiap segmen (kumulatif)
+                                                $offset = 0;
+                                                $segmentData = [];
+                                                for ($k = 1; $k <= $maxKlaster; $k++) {
+                                                    $membership = $keanggotaan[$k] ?? 0;
+                                                    if ($membership > 0) {
+                                                        $segmentWidth = ($membership / 100) * $barWidth;
+                                                        $segmentData[$k] = [
+                                                            'x' => $x + $offset,
+                                                            'width' => $segmentWidth,
+                                                            'membership' => $membership,
+                                                        ];
+                                                        $offset += $segmentWidth;
+                                                    }
+                                                }
+                                            @endphp
+                                            
+                                            <!-- Label (P1, P2, ...) -->
+                                            <text x="{{$marginL - 10}}" y="{{$y + $barHeight / 2 + 4}}" text-anchor="end" 
+                                                  class="membership-bar-label" fill="var(--color-text)">{{ $pelLabel }}</text>
+                                            
+                                            <!-- Background bar -->
+                                            <rect x="{{$x}}" y="{{$y}}" width="{{$barWidth}}" height="{{$barHeight}}" 
+                                                  fill="color-mix(in srgb, var(--color-text) 5%, transparent)" class="membership-bar-bg"/>
+                                            
+                                            <!-- Segmen per klaster -->
+                                            @foreach ($segmentData as $klasterNum => $seg)
+                                                @php
+                                                    $segColor = isset($klasterColors['K' . $klasterNum])
+                                                        ? $klasterColors['K' . $klasterNum]
+                                                        : 'var(--color-primary)';
+                                                @endphp
+                                                <rect x="{{$seg['x']}}" y="{{$y}}" width="{{$seg['width']}}" height="{{$barHeight}}" 
+                                                      fill="{{$segColor}}" stroke="white" stroke-width="1">
+                                                    <title>{{ $pelLabel }} | Klaster {{ $klasterNum }}: {{ number_format($seg['membership'], 1) }}%</title>
+                                                </rect>
+                                                
+                                                <!-- Label persen jika lebar segmen >= 8% dari total bar width (24px) -->
+                                                @if ($seg['width'] >= 24)
+                                                    <text x="{{$seg['x'] + $seg['width'] / 2}}" y="{{$y + $barHeight / 2 + 4}}" text-anchor="middle" 
+                                                          class="membership-segment-pct" fill="white" opacity="0.9">
+                                                        {{ number_format($seg['membership'], 0) }}%
+                                                    </text>
+                                                @endif
+                                            @endforeach
+                                        @endforeach
+                                    </svg>
+                                @endif
+
+                                <!-- Tabel Keanggotaan Pelatihan per Klaster -->
+                                <div class="mb-6" style="overflow-x: auto;">
+                                    <table style="width: 100%; border-collapse: collapse; border-spacing: 0;">
+                                        <thead>
+                                            <tr style="background-color: color-mix(in srgb, var(--color-primary) 10%, transparent); border-bottom: 2px solid var(--color-primary);">
+                                                <th style="padding: 0.75rem; text-align: left; color: var(--color-text); font-weight: 600;">Pelatihan</th>
+                                                @for ($c = 1; $c <= $klasterPelatihan['c_optimal']; $c++)
+                                                    <th style="padding: 0.75rem; text-align: center; color: var(--color-text); font-weight: 600; white-space: nowrap;">
+                                                        Klaster {{ $c }}
+                                                    </th>
+                                                @endfor
+                                                <th style="padding: 0.75rem; text-align: center; color: var(--color-text); font-weight: 600; background-color: color-mix(in srgb, var(--color-accent) 15%, transparent); white-space: nowrap;">
+                                                    Klaster Dominan
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @php
+                                                // Urutkan tabel_pelatihan by id untuk konsistensi
+                                                $sortedTabelPelatihan = collect($klasterPelatihan['tabel_pelatihan'] ?? [])
+                                                    ->sortBy('id')
+                                                    ->values();
+                                            @endphp
+                                            @foreach ($sortedTabelPelatihan as $pelatihan)
+                                                @php
+                                                    $pelId = $pelatihan['id'] ?? null;
+                                                    $pelLabel = $pelatihanLabels[$pelId] ?? 'P?';
+                                                @endphp
+                                                <tr style="border-bottom: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);">
+                                                    <td style="padding: 0.75rem; color: var(--color-text); font-weight: 500;">
+                                                        {{ $pelLabel }} · {{ $pelatihan['nama'] }}
+                                                    </td>
+                                                    @for ($c = 1; $c <= $klasterPelatihan['c_optimal']; $c++)
+                                                        @php
+                                                            $membership = $pelatihan['keanggotaan'][$c] ?? 0;
+                                                            $isDominant = ($c === $pelatihan['klaster_dominan']);
+                                                        @endphp
+                                                        <td style="padding: 0.75rem; text-align: center; color: var(--color-text);
+                                                            @if ($isDominant)
+                                                                background-color: color-mix(in srgb, var(--color-accent) 25%, transparent); font-weight: 600;
+                                                            @endif
+                                                            ">
+                                                            {{ number_format($membership, 1) }}%
+                                                        </td>
+                                                    @endfor
+                                                    @php
+                                                        $klasterDominantNum = $pelatihan['klaster_dominan'];
+                                                        $klasterDominantColor = isset($klasterColors['K' . $klasterDominantNum])
+                                                            ? $klasterColors['K' . $klasterDominantNum]
+                                                            : 'var(--color-primary)';
+                                                    @endphp
+                                                    <td style="padding: 0.75rem; text-align: center; color: var(--color-text); font-weight: 600; background-color: color-mix(in srgb, var(--color-accent) 15%, transparent); border-left: 4px solid {{$klasterDominantColor}};">
+                                                        K{{ $pelatihan['klaster_dominan'] }}
+                                                        @if (!empty($klasterPelatihan['tabel_klaster'][$pelatihan['klaster_dominan'] - 1]['kode_profil']))
+                                                            ({{ $klasterPelatihan['tabel_klaster'][$pelatihan['klaster_dominan'] - 1]['kode_profil'] }})
+                                                        @endif
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <!-- Kartu Klaster -->
+                                <div class="grid grid-cols-1 gap-4">
+                                    @foreach ($klasterPelatihan['tabel_klaster'] as $klaster)
+                                        @php
+                                            $klasterNum = $klaster['klaster'];
+                                            $klasterColor = isset($klasterColors['K' . $klasterNum])
+                                                ? $klasterColors['K' . $klasterNum]
+                                                : 'var(--color-primary)';
+                                        @endphp
+                                        <div style="border: 1px solid color-mix(in srgb, var(--color-primary) 30%, transparent); border-left: 5px solid {{$klasterColor}}; border-radius: var(--radius-card); padding: 1rem; background-color: color-mix(in srgb, var(--color-primary) 5%, transparent);">
+                                            <h4 class="font-semibold text-sm mb-2" style="color: var(--color-text);">
+                                                <span style="display: inline-block; width: 12px; height: 12px; background-color: {{$klasterColor}}; border-radius: 2px; vertical-align: middle; margin-right: 0.5rem;"></span>
+                                                Klaster {{ $klaster['klaster'] }}
+                                                @if (!empty($klaster['kode_profil']))
+                                                    · {{ $klaster['kode_profil'] }}
+                                                @endif
+                                            </h4>
+                                            @if (!empty($klaster['profil']))
+                                                <p style="color: var(--color-text); opacity: 0.8;" class="text-xs mb-2">
+                                                    <strong>Profil:</strong> {{ $klaster['profil'] }}
+                                                </p>
+                                            @endif
+                                            <p style="color: var(--color-text); opacity: 0.8;" class="text-xs mb-2">
+                                                <strong>Centroid:</strong> 
+                                                TC={{ number_format($klaster['centroid']['TC'] ?? 0, 2) }}, 
+                                                TE={{ number_format($klaster['centroid']['TE'] ?? 0, 2) }}, 
+                                                ITT={{ number_format($klaster['centroid']['ITT'] ?? 0, 2) }}, 
+                                                YB={{ number_format($klaster['centroid']['YB'] ?? 0, 2) }}
+                                            </p>
+                                            <p style="color: var(--color-text); opacity: 0.8;" class="text-xs">
+                                                <strong>Anggota Dominan:</strong>
+                                                @php
+                                                    $dominantMembers = [];
+                                                    $memberLabel = 1;
+                                                    foreach ($klasterPelatihan['tabel_pelatihan'] as $pel) {
+                                                        if ($pel['klaster_dominan'] === $klaster['klaster']) {
+                                                            $dominantMembers[] = 'P' . $memberLabel;
+                                                        }
+                                                        $memberLabel++;
+                                                    }
+                                                @endphp
+                                                @if (!empty($dominantMembers))
+                                                    {{ implode(', ', $dominantMembers) }}
+                                                @else
+                                                    (tidak ada)
+                                                @endif
+                                            </p>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </x-card>
+                        @endif
                     @endif
 
                 @elseif (count($pelatihansForComparison) === 1)

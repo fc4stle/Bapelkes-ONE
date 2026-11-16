@@ -499,4 +499,164 @@ class TiyasProfilKlaster
 
         return $result;
     }
+
+    /**
+     * Analisis FCM antar PELATIHAN (bukan peserta).
+     * Objek = tiap pelatihan, fitur = mean TC, TE, ITT, YB dari comparisonData.
+     *
+     * @param  array  $comparisonData  Map id => {id, nama, mean: {TC, TE, ITT, YB}}
+     * @return array  Status, c_optimal, tabel_klaster, tabel_pelatihan, validity_table, centroid_raw
+     */
+    public function klasterPelatihan(array $comparisonData): array
+    {
+        $n = count($comparisonData);
+        $minPelatihan = config('tiyas.min_pelatihan_fcm', 6);
+
+        // Check minimum
+        if ($n < $minPelatihan) {
+            return [
+                'status' => 'kurang_data',
+                'c_optimal' => 0,
+                'jumlah_sekarang' => $n,
+                'jumlah_butuh' => $minPelatihan,
+                'tabel_klaster' => [],
+                'tabel_pelatihan' => [],
+                'validity_table' => [],
+                'iteration' => 0,
+                'fuzzy_partition_coefficient' => 0,
+                'normalized_classification_entropy' => 0,
+            ];
+        }
+
+        // Ekstrak data 4D dari mean dan nama pelatihan
+        $data = [];
+        $names = [];
+        $ids = [];
+        foreach ($comparisonData as $id => $comp) {
+            $ids[] = $id;
+            $names[] = $comp['nama'] ?? "Pelatihan {$id}";
+            $mean = $comp['mean'] ?? ['TC' => 2.0, 'TE' => 2.0, 'ITT' => 2.0, 'YB' => 2.0];
+            $data[] = [
+                floatval($mean['TC'] ?? 2.0),
+                floatval($mean['TE'] ?? 2.0),
+                floatval($mean['ITT'] ?? 2.0),
+                floatval($mean['YB'] ?? 2.0),
+            ];
+        }
+
+        // Pilih jumlah klaster optimal
+        $cMin = 2;
+        $cMax = min(4, (int) intdiv($n, 2));
+        // Pastikan cMin < cMax
+        if ($cMin >= $cMax) {
+            $cMax = $cMin + 1;
+        }
+        $bestC = $this->fcm->pilihJumlahKlaster($data, $cMin, $cMax);
+
+        // Fit FCM dengan c optimal
+        $bestResult = $this->fcm->fit($data, $bestC, $m = 2, $epsilon = 1e-5, $maxIter = 100);
+        $U = $bestResult['U'];
+        $V = $bestResult['centroid'];
+        $iter = $bestResult['iterations'];
+
+        // Bangun validity table dari semua c (cMin hingga cMax)
+        $validityTable = [];
+        for ($c = $cMin; $c <= $cMax; $c++) {
+            $indices = $this->fcm->getValidityIndices($data, $c);
+            $validityTable[] = [
+                'c' => $c,
+                'pc' => $indices['pc'],
+                'pe' => $indices['pe'],
+                'xb' => $indices['xb'],
+                'silhouette' => $indices['silhouette'],
+                'iteration' => ($c === $bestC) ? $iter : 0,
+                'is_optimal' => ($c === $bestC),
+            ];
+        }
+
+        // Bangun tabel klaster dulu untuk tahu profil setiap cluster
+        $tabelKlaster = [];
+        $centroids_raw = [];
+        $profilPerKlaster = [];
+        $klasterPelatihanCount = [];
+
+        for ($k = 0; $k < $bestC; $k++) {
+            $centroid = $V[$k];
+            $centroids_raw[] = $centroid;
+            $profil = $this->determineProfil($centroid);
+            $profilPerKlaster[$k + 1] = $profil;
+            $klasterPelatihanCount[$k + 1] = 0;
+
+            $tabelKlaster[] = [
+                'klaster' => $k + 1,
+                'kode_profil' => $profil['code'],
+                'profil' => $profil['label'],
+                'karakteristik' => $profil['karakteristik'],
+                'rekomendasi' => $profil['rekomendasi'],
+                'jumlah_pelatihan' => 0, // Akan diisi dari tabel pelatihan
+                'centroid' => [
+                    'TC' => number_format($centroid[0], 2),
+                    'TE' => number_format($centroid[1], 2),
+                    'ITT' => number_format($centroid[2], 2),
+                    'YB' => number_format($centroid[3], 2),
+                ],
+            ];
+        }
+
+        // Bangun tabel pelatihan dengan profil dominan (kode + label)
+        $tabelPelatihan = [];
+        for ($i = 0; $i < $n; $i++) {
+            $klasterDominan = 0;
+            $maxU = 0;
+            $keanggotaan = []; // 1-based
+
+            for ($k = 0; $k < $bestC; $k++) {
+                $keanggotaan[$k + 1] = round($U[$i][$k] * 100, 1); // Convert to percentage
+                if ($U[$i][$k] > $maxU) {
+                    $maxU = $U[$i][$k];
+                    $klasterDominan = $k + 1;
+                }
+            }
+
+            $profilDominan = $profilPerKlaster[$klasterDominan] ?? [];
+
+            $tabelPelatihan[] = [
+                'id' => $ids[$i],
+                'nama' => $names[$i],
+                'mean' => [  // Add mean for coordinates in scatter plot
+                    'TC' => floatval($data[$i][0]),
+                    'TE' => floatval($data[$i][1]),
+                    'ITT' => floatval($data[$i][2]),
+                    'YB' => floatval($data[$i][3]),
+                ],
+                'keanggotaan' => $keanggotaan, // 1-based, persen
+                'klaster_dominan' => $klasterDominan, // 1-based
+                'kode_profil_dominan' => $profilDominan['code'] ?? null,
+                'label_profil_dominan' => $profilDominan['label'] ?? 'Belum cocok',
+            ];
+
+            // Hitung jumlah pelatihan per klaster berdasarkan dominan
+            $klasterPelatihanCount[$klasterDominan]++;
+        }
+
+        // Update jumlah pelatihan di tabel klaster
+        foreach ($tabelKlaster as &$klaster) {
+            $klaster['jumlah_pelatihan'] = $klasterPelatihanCount[$klaster['klaster']] ?? 0;
+        }
+
+        // Hitung PC dan PE untuk summary
+        $result_best = $this->fcm->getValidityIndices($data, $bestC);
+
+        return [
+            'status' => 'sukses',
+            'c_optimal' => $bestC,
+            'tabel_klaster' => $tabelKlaster,
+            'tabel_pelatihan' => $tabelPelatihan,
+            'validity_table' => $validityTable,
+            'iteration' => $iter,
+            'fuzzy_partition_coefficient' => $result_best['pc'],
+            'normalized_classification_entropy' => $result_best['pe'],
+            'centroids_raw' => $centroids_raw,
+        ];
+    }
 }
