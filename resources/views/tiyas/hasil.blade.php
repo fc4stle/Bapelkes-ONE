@@ -290,7 +290,8 @@
                         <!-- Chart 1: Rerata & Deviasi Standar per Konstruk (Bars dengan band SD) -->
                         <div class="mb-6">
                             <h3 class="font-semibold mb-3" style="color: var(--color-text);">Rata-rata Skor dan Kisaran Variabilitas per Konstruk</h3>
-                            <svg viewBox="0 0 800 400" class="w-full rounded" style="border: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent); background-color: var(--color-surface);" data-chart="deskriptif-mean-sd">
+                            <div class="overflow-x-auto">
+                            <svg viewBox="0 0 800 400" class="w-full sm:w-auto min-w-[560px] sm:min-w-0 rounded" style="border: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent); background-color: var(--color-surface);" data-chart="deskriptif-mean-sd">
                                 <!-- Title -->
                                 <text x="400" y="25" text-anchor="middle" style="font-size: 16px; font-weight: 600; fill: var(--color-text);">Rata-rata ± SD per Konstruk</text>
                                 
@@ -352,13 +353,15 @@
                                     @endif
                                 @endforeach
                             </svg>
+                            </div>
                             <p class="text-xs mt-2" style="color: var(--color-text); opacity: 0.6;">Warna terang menunjukkan kisaran ±1 SD dari rata-rata. Garis putus-putus di 2.00 dan 3.00 adalah panduan skala.</p>
                         </div>
 
                         <!-- Chart 2: Distribusi Kategori (Stacked Bar %) -->
                         <div class="mb-6">
                             <h3 class="font-semibold mb-3" style="color: var(--color-text);">Distribusi Kategori per Konstruk</h3>
-                            <svg viewBox="0 0 800 480" class="w-full rounded" style="border: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent); background-color: var(--color-surface);" data-chart="deskriptif-kategori-stacked">
+                            <div class="overflow-x-auto">
+                            <svg viewBox="0 0 800 480" class="w-full sm:w-auto min-w-[560px] sm:min-w-0 rounded" style="border: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent); background-color: var(--color-surface);" data-chart="deskriptif-kategori-stacked">
                                 <!-- Title -->
                                 <text x="400" y="25" text-anchor="middle" style="font-size: 16px; font-weight: 600; fill: var(--color-text);">Proporsi Kategori (%)</text>
                                 
@@ -435,6 +438,7 @@
                                     <text x="{{$legXOffset + 18}}" y="{{$legY + 10}}" style="font-size: 12px; fill: var(--color-text);">{{ $catLabel }}</text>
                                 @endforeach
                             </svg>
+                            </div>
                         </div>
 
                         <!-- Tabel Kategori dengan Count -->
@@ -615,7 +619,8 @@
                                         $plotH = $svgH - $margin['t'] - $margin['b'];
                                     @endphp
                                     
-                                    <svg viewBox="0 0 {{$svgW}} {{$svgH}}" class="w-full rounded" style="border: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent); background-color: var(--color-surface);" data-chart="fcm-scatter">
+                                    <div class="overflow-x-auto">
+                                    <svg viewBox="0 0 {{$svgW}} {{$svgH}}" class="w-full sm:w-auto min-w-[480px] sm:min-w-0 rounded" style="border: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent); background-color: var(--color-surface);" data-chart="fcm-scatter">
                                         <!-- Title -->
                                         <text x="{{$svgW / 2}}" y="25" text-anchor="middle" style="font-size: 16px; font-weight: 600; fill: var(--color-text);">
                                             <!-- Main title: "Sebaran Peserta: X vs Y" (same for both comparison and single modes) -->
@@ -815,6 +820,7 @@
                                             @endforeach
                                         @endif
                                     </svg>
+                                    </div>
                                     
                                     <!-- Legend HTML -->
                                     <div class="mt-3 flex flex-wrap gap-4 text-xs" style="color: var(--color-text);">
@@ -872,7 +878,8 @@
                             <!-- 3a. Centroid Klaster (Grouped Bars) -->
                             <div class="mb-6">
                                 <h3 class="font-semibold mb-3" style="color: var(--color-text);">a) Centroid per Klaster dan Konstruk</h3>
-                                <svg viewBox="0 0 1000 620" class="w-full rounded" style="border: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent); background-color: var(--color-surface);" data-chart="centroid-grouped-bars">
+                                <div class="overflow-x-auto">
+                                <svg viewBox="0 0 1000 620" class="w-full sm:w-auto min-w-[560px] sm:min-w-0 rounded" style="border: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent); background-color: var(--color-surface);" data-chart="centroid-grouped-bars">
                                     <!-- Title -->
                                     <text x="500" y="25" text-anchor="middle" style="font-size: 16px; font-weight: 600; fill: var(--color-text);">Centroid Setiap Klaster</text>
                                     
@@ -940,13 +947,14 @@
                                         <text x="{{$legXOffset + 18}}" y="{{$legY + 10}}" style="font-size: 12px; fill: var(--color-text);">{{ $kode }}</text>
                                     @endforeach
                                 </svg>
+                                </div>
                             </div>
 
                             <!-- 3b. Derajat Keanggotaan per Peserta (Horizontal Stacked Bar) -->
                             <div class="mb-6">
                                 <h3 class="font-semibold mb-3" style="color: var(--color-text);">b) Derajat Keanggotaan Peserta per Klaster (Horizontal Stacked Bar)</h3>
-                                <div class="overflow-y-auto" style="max-height: 500px;">
-                                    <svg viewBox="0 0 1000 {{ count($klasterResult['tabel_peserta']) * 40 + 60 }}" class="w-full rounded" style="border: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent); background-color: var(--color-surface);" data-chart="membership-horizontal-stacked">
+                                <div class="overflow-x-auto overflow-y-auto" style="max-height: 500px;">
+                                    <svg viewBox="0 0 1000 {{ count($klasterResult['tabel_peserta']) * 40 + 60 }}" class="w-full sm:w-auto min-w-[560px] sm:min-w-0 rounded" style="border: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent); background-color: var(--color-surface);" data-chart="membership-horizontal-stacked">
                                         <!-- Title -->
                                         <text x="500" y="25" text-anchor="middle" style="font-size: 16px; font-weight: 600; fill: var(--color-text);">Derajat Keanggotaan (%)</text>
                                         
@@ -1188,7 +1196,8 @@
 
                             @endphp
                             
-                            <svg style="width: 100%; max-width: 100%; height: auto; min-height: 300px; border: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent); border-radius: 0.5rem; background-color: var(--color-surface);" viewBox="0 0 {{ $svg_width }} {{ $chart_height }}" data-chart="antar-pelatihan-mean">
+                            <div class="overflow-x-auto">
+                            <svg style="width: 100%; max-width: 100%; height: auto; min-height: 300px; border: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent); border-radius: 0.5rem; background-color: var(--color-surface);" viewBox="0 0 {{ $svg_width }} {{ $chart_height }}" class="min-w-[560px] sm:min-w-0" data-chart="antar-pelatihan-mean">
                                 <!-- Garis bantu untuk 2.00 dan 3.00 -->
                                 @php
                                     $scale_top = 4;
@@ -1280,6 +1289,7 @@
                                           style="font-size: 11px; text-anchor: end; fill: var(--color-text);">{{ $i }}.00</text>
                                 @endfor
                             </svg>
+                            </div>
                         </div>
 
                         <!-- Legenda -->
@@ -1542,7 +1552,8 @@
                                         }
                                     @endphp
                                     
-                                    <svg viewBox="0 0 {{$svgW_pel}} {{$svgH_pel}}" class="w-full rounded" style="border: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent); background-color: var(--color-surface);" data-chart="fcm-pelatihan-scatter">
+                                    <div class="overflow-x-auto">
+                                    <svg viewBox="0 0 {{$svgW_pel}} {{$svgH_pel}}" class="w-full sm:w-auto min-w-[480px] sm:min-w-0 rounded" style="border: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent); background-color: var(--color-surface);" data-chart="fcm-pelatihan-scatter">
                                         <!-- Title -->
                                         <text x="{{$svgW_pel / 2}}" y="25" text-anchor="middle" style="font-size: 16px; font-weight: 600; fill: var(--color-text);">
                                             <tspan x="{{$svgW_pel / 2}}" dy="0">Sebaran Pelatihan: {{ $kodeToLabel[$xAxis_pel] }} vs {{ $kodeToLabel[$yAxis_pel] }}</tspan>
@@ -1638,6 +1649,7 @@
                                             <text x="{{$cpx_pel + 10}}" y="{{$cpy_pel - 8}}" style="font-size: 12px; font-weight: 700; fill: {{$centroidColor_pel}};">{{ $centroid_pel['label'] }}</text>
                                         @endforeach
                                     </svg>
+                                    </div>
                                     
                                     <!-- Legend -->
                                     <div class="mt-3 flex flex-wrap gap-4 text-xs" style="color: var(--color-text);">
@@ -1682,7 +1694,9 @@
                                         $totalWidth = $marginL + $marginR + $barWidth;
                                     @endphp
                                     
+                                    <div class="overflow-x-auto">
                                     <svg width="100%" height="{{$totalHeight}}" viewBox="0 0 {{$totalWidth}} {{$totalHeight}}" 
+                                         class="w-full sm:w-auto min-w-[560px] sm:min-w-0"
                                          data-chart="fcm-pelatihan-membership" style="margin-bottom: 2rem; border: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent); border-radius: var(--radius-card);">
                                         <defs>
                                             <style type="text/css">
@@ -1754,6 +1768,8 @@
                                             @endforeach
                                         @endforeach
                                     </svg>
+                                    </div>
+                                    </div>
                                 @endif
 
                                 <!-- Tabel Keanggotaan Pelatihan per Klaster -->
