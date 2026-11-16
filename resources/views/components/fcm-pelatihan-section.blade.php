@@ -9,9 +9,10 @@
                 </p>
             </div>
         @else
-            <!-- Scatter chart placeholder -->
+            <!-- Scatter chart placeholder with data points -->
             <div class="mb-6">
-                <div class="bg-gray-100 rounded p-4 h-80" data-chart="fcm-pelatihan-scatter">
+                <div class="bg-gray-100 rounded p-4 h-80" data-chart="fcm-pelatihan-scatter"
+                     data-points="{{ json_encode(array_map(fn($idx, $p) => ['id' => $idx + 1, 'x' => $p['mean']['TC'] ?? 0, 'y' => $p['mean']['TE'] ?? 0, 'cluster' => $p['klaster_dominan']], array_keys($klasterPelatihan['tabel_pelatihan']), array_values($klasterPelatihan['tabel_pelatihan']))) }}">
                     <p class="text-gray-500 text-center pt-36">Scatter FCM Pelatihan (Chart akan dirender oleh JavaScript)</p>
                 </div>
             </div>

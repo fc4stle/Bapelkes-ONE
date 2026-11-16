@@ -623,6 +623,12 @@ class TiyasProfilKlaster
             $tabelPelatihan[] = [
                 'id' => $ids[$i],
                 'nama' => $names[$i],
+                'mean' => [  // Add mean for coordinates in scatter plot
+                    'TC' => floatval($data[$i][0]),
+                    'TE' => floatval($data[$i][1]),
+                    'ITT' => floatval($data[$i][2]),
+                    'YB' => floatval($data[$i][3]),
+                ],
                 'keanggotaan' => $keanggotaan, // 1-based, persen
                 'klaster_dominan' => $klasterDominan, // 1-based
                 'kode_profil_dominan' => $profilDominan['code'] ?? null,
