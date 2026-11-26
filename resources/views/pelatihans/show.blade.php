@@ -65,13 +65,13 @@
                 <dd class="mt-1 text-sm text-[var(--color-text)]">
                     @php
                         $statusColors = [
-                            \App\Enums\StatusPelatihan::Draft->value => 'bg-gray-100 text-[var(--color-text)]',
-                            \App\Enums\StatusPelatihan::Dibuka->value => 'bg-green-100 text-green-800',
-                            \App\Enums\StatusPelatihan::Ditutup->value => 'bg-yellow-100 text-yellow-800',
-                            \App\Enums\StatusPelatihan::Selesai->value => 'bg-gray-100 text-[var(--color-text)]',
+                            \App\Enums\StatusPelatihan::Draft->value => 'bg-[var(--color-line)] text-[var(--color-text)]',
+                            \App\Enums\StatusPelatihan::Dibuka->value => 'bg-[color-mix(in_srgb,var(--color-success)_15%,white)] text-[var(--color-success)]',
+                            \App\Enums\StatusPelatihan::Ditutup->value => 'bg-[color-mix(in_srgb,var(--color-warning)_15%,white)] text-[var(--color-warning)]',
+                            \App\Enums\StatusPelatihan::Selesai->value => 'bg-[var(--color-primary-soft)] text-[var(--color-primary)]',
                         ];
                     @endphp
-                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $statusColors[$pelatihan->status->value] ?? 'bg-gray-100 text-[var(--color-text)]' }}">
+                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $statusColors[$pelatihan->status->value] ?? 'bg-[var(--color-line)] text-[var(--color-text)]' }}">
                         {{ $pelatihan->status->label() }}
                     </span>
                 </dd>

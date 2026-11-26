@@ -420,15 +420,15 @@ class StatistikPelatihanTest extends TestCase
         $response->assertSee('Ditutup');
         $response->assertSee('Selesai');
 
-        // Verifikasi badge styling (Tailwind classes)
-        // Draft: bg-gray-100 text-gray-800
-        $response->assertSeeInOrder(['Pelatihan Draft', 'bg-gray-100', 'text-gray-800'], false);
-        // Dibuka: bg-green-100 text-green-800
-        $response->assertSeeInOrder(['Pelatihan Dibuka', 'bg-green-100', 'text-green-800'], false);
-        // Ditutup: bg-yellow-100 text-yellow-800
-        $response->assertSeeInOrder(['Pelatihan Ditutup', 'bg-yellow-100', 'text-yellow-800'], false);
-        // Selesai: bg-blue-100 text-blue-800
-        $response->assertSeeInOrder(['Pelatihan Selesai', 'bg-blue-100', 'text-blue-800'], false);
+        // Verifikasi badge styling (token-based classes)
+        // Draft: bg-[var(--color-line)] text-[var(--color-text)]
+        $response->assertSeeInOrder(['Pelatihan Draft', 'bg-[var(--color-line)]', 'text-[var(--color-text)]'], false);
+        // Dibuka: bg-[color-mix(in_srgb,var(--color-success)_15%,white)] text-[var(--color-success)]
+        $response->assertSeeInOrder(['Pelatihan Dibuka', 'color-mix', 'var(--color-success)', 'text-[var(--color-success)]'], false);
+        // Ditutup: bg-[color-mix(in_srgb,var(--color-warning)_15%,white)] text-[var(--color-warning)]
+        $response->assertSeeInOrder(['Pelatihan Ditutup', 'color-mix', 'var(--color-warning)', 'text-[var(--color-warning)]'], false);
+        // Selesai: bg-[var(--color-primary-soft)] text-[var(--color-primary)]
+        $response->assertSeeInOrder(['Pelatihan Selesai', 'bg-[var(--color-primary-soft)]', 'text-[var(--color-primary)]'], false);
 
         // Verifikasi struktur badge HTML
         $response->assertSee('px-2 inline-flex text-xs leading-5 font-semibold rounded-full');

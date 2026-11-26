@@ -94,13 +94,13 @@
                                         <td class="px-6 py-4">
                                             @php
                                                 $statusColors = [
-                                                    'draft' => 'bg-gray-100 text-[var(--color-text)]',
-                                                    'dibuka' => 'bg-green-100 text-green-800',
-                                                    'ditutup' => 'bg-yellow-100 text-yellow-800',
-                                                    'selesai' => 'bg-blue-100 text-blue-800',
+                                                    'draft' => 'bg-[var(--color-line)] text-[var(--color-text)]',
+                                                    'dibuka' => 'bg-[color-mix(in_srgb,var(--color-success)_15%,white)] text-[var(--color-success)]',
+                                                    'ditutup' => 'bg-[color-mix(in_srgb,var(--color-warning)_15%,white)] text-[var(--color-warning)]',
+                                                    'selesai' => 'bg-[var(--color-primary-soft)] text-[var(--color-primary)]',
                                                 ];
                                             @endphp
-                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $statusColors[$pelatihan['status']->value] ?? 'bg-gray-100 text-[var(--color-text)]' }}">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $statusColors[$pelatihan['status']->value] ?? 'bg-[var(--color-line)] text-[var(--color-text)]' }}">
                                                 {{ $pelatihan['status']->label() }}
                                             </span>
                                         </td>
