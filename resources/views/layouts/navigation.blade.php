@@ -6,13 +6,13 @@
                 <!-- Brand Circle + App Name -->
                 <a href="/" class="flex items-center gap-3 shrink-0">
                     <!-- Circle Brand -->
-                    <div class="flex items-center justify-center w-[42px] h-[42px] rounded-full border-2" style="border-color: var(--color-primary);">
-                        <span class="font-serif font-bold text-xl" style="color: var(--color-primary);">B</span>
+                    <div class="flex items-center justify-center w-[42px] h-[42px] rounded-full border-2" style="border-color: var(--color-gold-soft);">
+                        <span class="font-serif font-bold text-xl" style="color: var(--color-gold-soft);">B</span>
                     </div>
                     <!-- App Name Lines -->
                     <div class="flex flex-col max-w-[11rem] sm:max-w-[18rem]">
                         <span class="font-serif font-bold text-[15px] sm:text-[19px] leading-tight line-clamp-2" style="color: white;">{{ config('app.name', 'Portal Pelatihan Terpadu') }}</span>
-                        <span class="hidden sm:block text-xs uppercase tracking-[0.12em] leading-tight mt-0.5" style="color: var(--color-accent); font-size: 11.5px;">BAPELKES DINKES DIY</span>
+                        <span class="hidden sm:block text-xs uppercase tracking-[0.12em] leading-tight mt-0.5" style="color: var(--color-gold-soft); font-size: 11.5px;">BAPELKES DINKES DIY</span>
                     </div>
                 </a>
 

@@ -22,6 +22,10 @@ class HeaderNavigasiTest extends TestCase
         $response->assertSee(config('app.name'));
         $response->assertSee('BAPELKES DINKES DIY');
         $response->assertSee('border-bottom: 4px solid var(--color-accent)', false);
+        // Brand di navigation bar harus gold-soft, bukan primary
+        $response->assertSee('border-color: var(--color-gold-soft)', false);
+        $response->assertSee('color: var(--color-gold-soft)', false);
+        $response->assertDontSee('border-color: var(--color-primary)', false);
     }
 
     /**
