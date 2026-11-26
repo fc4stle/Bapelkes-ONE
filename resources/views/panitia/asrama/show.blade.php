@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            <h2 class="font-semibold text-xl text-[var(--color-text)] leading-tight">
                 {{ $asrama->nama }}
             </h2>
             <a href="{{ route('panitia.asrama.index') }}" class="text-sm font-medium hover:underline" style="color: var(--color-primary);">
@@ -62,7 +62,7 @@
                                 id="nomor_kamar"
                                 name="nomor_kamar"
                                 value="{{ old('nomor_kamar') }}"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-offset-2"
+                                class="w-full px-3 py-2 border border-[var(--color-line)] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-offset-2"
                                 style="--tw-ring-color: var(--color-primary);"
                                 placeholder="Cth: A-001"
                             />
@@ -82,7 +82,7 @@
                                 value="{{ old('kapasitas') }}"
                                 min="1"
                                 max="10"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-offset-2"
+                                class="w-full px-3 py-2 border border-[var(--color-line)] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-offset-2"
                                 style="--tw-ring-color: var(--color-primary);"
                                 placeholder="1-10"
                             />
@@ -109,28 +109,28 @@
 
                     @if (empty($kamars))
                         <div class="text-center py-8">
-                            <p class="text-gray-500">Belum ada kamar.</p>
+                            <p class="text-[var(--color-muted)]">Belum ada kamar.</p>
                         </div>
                     @else
                         <div class="space-y-4">
                             @foreach ($kamars as $kamar)
-                                <div class="p-4 border border-gray-200 rounded-lg">
+                                <div class="p-4 border border-[var(--color-line)] rounded-lg">
                                     <div class="flex justify-between items-start mb-4">
                                         <div>
                                             <h4 class="text-base font-semibold" style="color: var(--color-text);">
                                                 {{ $kamar['nomor_kamar'] }}
                                             </h4>
-                                            <p class="text-sm text-gray-500">
+                                            <p class="text-sm text-[var(--color-muted)]">
                                                 Kapasitas: {{ $kamar['jumlah_penghuni'] }}/{{ $kamar['kapasitas'] }} orang
                                             </p>
                                         </div>
                                         <div class="flex flex-col gap-2">
-                                            <span class="px-3 py-1 text-xs font-medium rounded-full text-white @if ($kamar['status'] === 'Penuh') text-white" style="background-color: var(--color-danger); @else text-gray-700" style="background-color: var(--color-accent); @endif">
+                                            <span class="px-3 py-1 text-xs font-medium rounded-full text-white @if ($kamar['status'] === 'Penuh') text-white" style="background-color: var(--color-danger); @else text-[var(--color-text)]" style="background-color: var(--color-accent); @endif">
                                                 {{ $kamar['status'] }}
                                             </span>
                                             <button
                                                 type="button"
-                                                class="px-2 py-1 text-xs font-medium text-gray-700 border border-gray-300 rounded hover:bg-gray-50"
+                                                class="px-2 py-1 text-xs font-medium text-[var(--color-text)] border border-[var(--color-line)] rounded hover:bg-[var(--color-bg)]"
                                                 @click="$dispatch('open-ubah-kapasitas-modal', { kamarId: {{ $kamar['id'] }}, nomorKamar: '{{ $kamar['nomor_kamar'] }}', kapasitas: {{ $kamar['kapasitas'] }} })"
                                             >
                                                 Ubah Kapasitas
@@ -139,20 +139,20 @@
                                     </div>
 
                                     @if (empty($kamar['penghuni']))
-                                        <p class="text-sm text-gray-500 italic">Belum ada penghuni.</p>
+                                        <p class="text-sm text-[var(--color-muted)] italic">Belum ada penghuni.</p>
                                     @else
                                         <div class="mt-4 space-y-2">
-                                            <p class="text-xs font-semibold text-gray-600 uppercase">Penghuni:</p>
+                                            <p class="text-xs font-semibold text-[var(--color-muted)] uppercase">Penghuni:</p>
                                             <div class="overflow-x-auto">
                                                 <table class="min-w-full text-sm">
-                                                    <thead class="bg-gray-50 border-b border-gray-200">
+                                                    <thead class="bg-[var(--color-bg)] border-b border-[var(--color-line)]">
                                                         <tr>
-                                                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-600">Nama Peserta</th>
-                                                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-600">Pelatihan</th>
-                                                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-600">Check-in</th>
-                                                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-600">Check-out</th>
-                                                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-600">Status</th>
-                                                            <th class="px-3 py-2 text-center text-xs font-medium text-gray-600">Aksi</th>
+                                                            <th class="px-3 py-2 text-left text-xs font-medium text-[var(--color-muted)]">Nama Peserta</th>
+                                                            <th class="px-3 py-2 text-left text-xs font-medium text-[var(--color-muted)]">Pelatihan</th>
+                                                            <th class="px-3 py-2 text-left text-xs font-medium text-[var(--color-muted)]">Check-in</th>
+                                                            <th class="px-3 py-2 text-left text-xs font-medium text-[var(--color-muted)]">Check-out</th>
+                                                            <th class="px-3 py-2 text-left text-xs font-medium text-[var(--color-muted)]">Status</th>
+                                                            <th class="px-3 py-2 text-center text-xs font-medium text-[var(--color-muted)]">Aksi</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody class="divide-y divide-gray-200">
@@ -180,7 +180,7 @@
                                                                 <td class="px-3 py-2 text-center">
                                                                     <button
                                                                         type="button"
-                                                                        class="px-2 py-1 text-xs font-medium text-gray-700 hover:underline"
+                                                                        class="px-2 py-1 text-xs font-medium text-[var(--color-text)] hover:underline"
                                                                         @click="$dispatch('open-pindah-kamar-modal', { pendaftaranId: {{ $penghuni['id'] }}, namaPeserta: '{{ $penghuni['nama_peserta'] }}', kamarSkrg: '{{ $kamar['nomor_kamar'] }}' })"
                                                                     >
                                                                         Pindah
@@ -217,7 +217,7 @@
     >
         <div class="rounded-lg shadow-lg p-6 max-w-md w-full mx-4" style="background-color: var(--color-surface);" @click.stop>
             <h3 class="text-lg font-semibold mb-4" style="color: var(--color-text);">Ubah Kapasitas Kamar</h3>
-            <p class="text-sm text-gray-600 mb-4">Kamar: <strong x-text="nomorKamar"></strong></p>
+            <p class="text-sm text-[var(--color-muted)] mb-4">Kamar: <strong x-text="nomorKamar"></strong></p>
 
             <form :action="`/panitia/kamar/${kamarId}`" method="POST" @submit.prevent="$el.submit()">
                 @csrf
@@ -234,7 +234,7 @@
                         x-model.number="kapasitas"
                         min="1"
                         max="10"
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-offset-2"
+                        class="w-full px-3 py-2 border border-[var(--color-line)] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-offset-2"
                         style="--tw-ring-color: var(--color-primary);"
                     />
                 </div>
@@ -243,7 +243,7 @@
                     <button
                         type="button"
                         @click="open = false"
-                        class="px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50"
+                        class="px-4 py-2 text-sm font-medium text-[var(--color-text)] border border-[var(--color-line)] rounded-md hover:bg-[var(--color-bg)]"
                     >
                         Batal
                     </button>
@@ -274,8 +274,8 @@
     >
         <div class="rounded-lg shadow-lg p-6 max-w-md w-full mx-4" style="background-color: var(--color-surface);" @click.stop>
             <h3 class="text-lg font-semibold mb-4" style="color: var(--color-text);">Pindah Kamar</h3>
-            <p class="text-sm text-gray-600 mb-1">Peserta: <strong x-text="namaPeserta"></strong></p>
-            <p class="text-sm text-gray-600 mb-4">Kamar Saat Ini: <strong x-text="kamarSkrg"></strong></p>
+            <p class="text-sm text-[var(--color-muted)] mb-1">Peserta: <strong x-text="namaPeserta"></strong></p>
+            <p class="text-sm text-[var(--color-muted)] mb-4">Kamar Saat Ini: <strong x-text="kamarSkrg"></strong></p>
 
             <form :action="`/panitia/pendaftaran/${pendaftaranId}/kamar`" method="POST" @submit.prevent="$el.submit()">
                 @csrf
@@ -289,7 +289,7 @@
                         id="kamar_tujuan"
                         name="kamar_id"
                         x-model="kamarTujuanId"
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-offset-2"
+                        class="w-full px-3 py-2 border border-[var(--color-line)] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-offset-2"
                         style="--tw-ring-color: var(--color-primary);"
                     >
                         <option value="">-- Pilih Kamar --</option>
@@ -305,7 +305,7 @@
                     <button
                         type="button"
                         @click="open = false"
-                        class="px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50"
+                        class="px-4 py-2 text-sm font-medium text-[var(--color-text)] border border-[var(--color-line)] rounded-md hover:bg-[var(--color-bg)]"
                     >
                         Batal
                     </button>

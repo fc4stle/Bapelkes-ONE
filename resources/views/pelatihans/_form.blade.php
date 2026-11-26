@@ -5,24 +5,24 @@
     @endif
 
     <div>
-        <label for="nama" class="block text-sm font-medium text-gray-700">Nama Pelatihan <span class="text-red-500">*</span></label>
-        <input type="text" name="nama" id="nama" value="{{ old('nama', $pelatihan?->nama) }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[var(--color-primary)] focus:ring-[var(--color-primary)] sm:text-sm border px-3 py-2 @error('nama') border-red-500 @enderror" required>
+        <label for="nama" class="block text-sm font-medium text-[var(--color-text)]">Nama Pelatihan <span class="text-red-500">*</span></label>
+        <input type="text" name="nama" id="nama" value="{{ old('nama', $pelatihan?->nama) }}" class="mt-1 block w-full rounded-md border-[var(--color-line)] shadow-sm focus:border-[var(--color-primary)] focus:ring-[var(--color-primary)] sm:text-sm border px-3 py-2 @error('nama') border-red-500 @enderror" required>
         @error('nama')
             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
         @enderror
     </div>
 
     <div>
-        <label for="deskripsi" class="block text-sm font-medium text-gray-700">Deskripsi</label>
-        <textarea name="deskripsi" id="deskripsi" rows="4" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[var(--color-primary)] focus:ring-[var(--color-primary)] sm:text-sm border px-3 py-2 @error('deskripsi') border-red-500 @enderror">{{ old('deskripsi', $pelatihan?->deskripsi) }}</textarea>
+        <label for="deskripsi" class="block text-sm font-medium text-[var(--color-text)]">Deskripsi</label>
+        <textarea name="deskripsi" id="deskripsi" rows="4" class="mt-1 block w-full rounded-md border-[var(--color-line)] shadow-sm focus:border-[var(--color-primary)] focus:ring-[var(--color-primary)] sm:text-sm border px-3 py-2 @error('deskripsi') border-red-500 @enderror">{{ old('deskripsi', $pelatihan?->deskripsi) }}</textarea>
         @error('deskripsi')
             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
         @enderror
     </div>
 
     <div>
-        <label for="persyaratan" class="block text-sm font-medium text-gray-700">Persyaratan</label>
-        <textarea name="persyaratan" id="persyaratan" rows="4" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[var(--color-primary)] focus:ring-[var(--color-primary)] sm:text-sm border px-3 py-2 @error('persyaratan') border-red-500 @enderror">{{ old('persyaratan', $pelatihan?->persyaratan) }}</textarea>
+        <label for="persyaratan" class="block text-sm font-medium text-[var(--color-text)]">Persyaratan</label>
+        <textarea name="persyaratan" id="persyaratan" rows="4" class="mt-1 block w-full rounded-md border-[var(--color-line)] shadow-sm focus:border-[var(--color-primary)] focus:ring-[var(--color-primary)] sm:text-sm border px-3 py-2 @error('persyaratan') border-red-500 @enderror">{{ old('persyaratan', $pelatihan?->persyaratan) }}</textarea>
         @error('persyaratan')
             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
         @enderror
@@ -30,16 +30,16 @@
 
     <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
         <div>
-            <label for="tanggal_mulai" class="block text-sm font-medium text-gray-700">Tanggal Mulai <span class="text-red-500">*</span></label>
-            <input type="date" name="tanggal_mulai" id="tanggal_mulai" value="{{ old('tanggal_mulai', $pelatihan?->tanggal_mulai?->format('Y-m-d')) }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[var(--color-primary)] focus:ring-[var(--color-primary)] sm:text-sm border px-3 py-2 @error('tanggal_mulai') border-red-500 @enderror" required>
+            <label for="tanggal_mulai" class="block text-sm font-medium text-[var(--color-text)]">Tanggal Mulai <span class="text-red-500">*</span></label>
+            <input type="date" name="tanggal_mulai" id="tanggal_mulai" value="{{ old('tanggal_mulai', $pelatihan?->tanggal_mulai?->format('Y-m-d')) }}" class="mt-1 block w-full rounded-md border-[var(--color-line)] shadow-sm focus:border-[var(--color-primary)] focus:ring-[var(--color-primary)] sm:text-sm border px-3 py-2 @error('tanggal_mulai') border-red-500 @enderror" required>
             @error('tanggal_mulai')
                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
             @enderror
         </div>
 
         <div>
-            <label for="tanggal_selesai" class="block text-sm font-medium text-gray-700">Tanggal Selesai <span class="text-red-500">*</span></label>
-            <input type="date" name="tanggal_selesai" id="tanggal_selesai" value="{{ old('tanggal_selesai', $pelatihan?->tanggal_selesai?->format('Y-m-d')) }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[var(--color-primary)] focus:ring-[var(--color-primary)] sm:text-sm border px-3 py-2 @error('tanggal_selesai') border-red-500 @enderror" required>
+            <label for="tanggal_selesai" class="block text-sm font-medium text-[var(--color-text)]">Tanggal Selesai <span class="text-red-500">*</span></label>
+            <input type="date" name="tanggal_selesai" id="tanggal_selesai" value="{{ old('tanggal_selesai', $pelatihan?->tanggal_selesai?->format('Y-m-d')) }}" class="mt-1 block w-full rounded-md border-[var(--color-line)] shadow-sm focus:border-[var(--color-primary)] focus:ring-[var(--color-primary)] sm:text-sm border px-3 py-2 @error('tanggal_selesai') border-red-500 @enderror" required>
             @error('tanggal_selesai')
                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
             @enderror
@@ -48,16 +48,16 @@
 
     <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
         <div>
-            <label for="lokasi" class="block text-sm font-medium text-gray-700">Lokasi <span class="text-red-500">*</span></label>
-            <input type="text" name="lokasi" id="lokasi" value="{{ old('lokasi', $pelatihan?->lokasi) }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[var(--color-primary)] focus:ring-[var(--color-primary)] sm:text-sm border px-3 py-2 @error('lokasi') border-red-500 @enderror" required>
+            <label for="lokasi" class="block text-sm font-medium text-[var(--color-text)]">Lokasi <span class="text-red-500">*</span></label>
+            <input type="text" name="lokasi" id="lokasi" value="{{ old('lokasi', $pelatihan?->lokasi) }}" class="mt-1 block w-full rounded-md border-[var(--color-line)] shadow-sm focus:border-[var(--color-primary)] focus:ring-[var(--color-primary)] sm:text-sm border px-3 py-2 @error('lokasi') border-red-500 @enderror" required>
             @error('lokasi')
                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
             @enderror
         </div>
 
         <div>
-            <label for="kuota" class="block text-sm font-medium text-gray-700">Kuota <span class="text-red-500">*</span></label>
-            <input type="number" name="kuota" id="kuota" min="1" value="{{ old('kuota', $pelatihan?->kuota) }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[var(--color-primary)] focus:ring-[var(--color-primary)] sm:text-sm border px-3 py-2 @error('kuota') border-red-500 @enderror" required>
+            <label for="kuota" class="block text-sm font-medium text-[var(--color-text)]">Kuota <span class="text-red-500">*</span></label>
+            <input type="number" name="kuota" id="kuota" min="1" value="{{ old('kuota', $pelatihan?->kuota) }}" class="mt-1 block w-full rounded-md border-[var(--color-line)] shadow-sm focus:border-[var(--color-primary)] focus:ring-[var(--color-primary)] sm:text-sm border px-3 py-2 @error('kuota') border-red-500 @enderror" required>
             @error('kuota')
                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
             @enderror
@@ -65,8 +65,8 @@
     </div>
 
     <div>
-        <label for="metode" class="block text-sm font-medium text-gray-700">Metode <span class="text-red-500">*</span></label>
-        <select name="metode" id="metode" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[var(--color-primary)] focus:ring-[var(--color-primary)] sm:text-sm border px-3 py-2 @error('metode') border-red-500 @enderror" required>
+        <label for="metode" class="block text-sm font-medium text-[var(--color-text)]">Metode <span class="text-red-500">*</span></label>
+        <select name="metode" id="metode" class="mt-1 block w-full rounded-md border-[var(--color-line)] shadow-sm focus:border-[var(--color-primary)] focus:ring-[var(--color-primary)] sm:text-sm border px-3 py-2 @error('metode') border-red-500 @enderror" required>
             @foreach (\App\Enums\MetodePelatihan::cases() as $metodeOption)
                 <option value="{{ $metodeOption->value }}" {{ old('metode', $pelatihan?->metode?->value) === $metodeOption->value ? 'selected' : '' }}>{{ $metodeOption->label() }}</option>
             @endforeach
@@ -77,8 +77,8 @@
     </div>
 
     <div>
-        <label for="status" class="block text-sm font-medium text-gray-700">Status <span class="text-red-500">*</span></label>
-        <select name="status" id="status" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[var(--color-primary)] focus:ring-[var(--color-primary)] sm:text-sm border px-3 py-2 @error('status') border-red-500 @enderror" required>
+        <label for="status" class="block text-sm font-medium text-[var(--color-text)]">Status <span class="text-red-500">*</span></label>
+        <select name="status" id="status" class="mt-1 block w-full rounded-md border-[var(--color-line)] shadow-sm focus:border-[var(--color-primary)] focus:ring-[var(--color-primary)] sm:text-sm border px-3 py-2 @error('status') border-red-500 @enderror" required>
             <option value="{{ \App\Enums\StatusPelatihan::Draft->value }}" {{ old('status', $pelatihan?->status?->value) === \App\Enums\StatusPelatihan::Draft->value ? 'selected' : '' }}>Draft</option>
             <option value="{{ \App\Enums\StatusPelatihan::Dibuka->value }}" {{ old('status', $pelatihan?->status?->value) === \App\Enums\StatusPelatihan::Dibuka->value ? 'selected' : '' }}>Dibuka</option>
             <option value="{{ \App\Enums\StatusPelatihan::Ditutup->value }}" {{ old('status', $pelatihan?->status?->value) === \App\Enums\StatusPelatihan::Ditutup->value ? 'selected' : '' }}>Ditutup</option>
@@ -90,7 +90,7 @@
     </div>
 
     <div class="flex justify-end space-x-3">
-        <a href="{{ route('pelatihans.index') }}" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-primary)]">
+        <a href="{{ route('pelatihans.index') }}" class="inline-flex items-center px-4 py-2 border border-[var(--color-line)] shadow-sm text-sm font-medium rounded-md text-[var(--color-text)] bg-white hover:bg-[var(--color-bg)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-primary)]">
             Batal
         </a>
         <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 transition ease-in-out duration-150 disabled:opacity-50 disabled:cursor-not-allowed" style="background-color: var(--color-primary);" x-bind:disabled="submitting">

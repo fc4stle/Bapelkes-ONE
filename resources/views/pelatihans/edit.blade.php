@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+        <h2 class="font-semibold text-xl text-[var(--color-text)] leading-tight">
             Edit Pelatihan
         </h2>
     </x-slot>
@@ -10,8 +10,8 @@
     <div class="bg-white shadow rounded-lg">
     <div class="px-4 py-5 sm:p-6">
         <div class="mb-6">
-            <h1 class="text-2xl font-bold text-gray-900">Edit Pelatihan</h1>
-            <p class="mt-1 text-sm text-gray-500">Perbarui data pelatihan di bawah.</p>
+            <h1 class="text-2xl font-bold text-[var(--color-text)]">Edit Pelatihan</h1>
+            <p class="mt-1 text-sm text-[var(--color-muted)]">Perbarui data pelatihan di bawah.</p>
         </div>
 
         @include('pelatihans._form', [

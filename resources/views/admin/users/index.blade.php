@@ -130,7 +130,7 @@
                                                     </form>
                                                 @endif
                                             @else
-                                                <span class="text-xs text-gray-500">—</span>
+                                                <span class="text-xs text-[var(--color-muted)]">—</span>
                                             @endif
                                         </div>
 
@@ -189,7 +189,7 @@
                 </div>
             @else
                 <div class="text-center py-12 rounded-[var(--radius-btn)] border-2 border-dashed" style="border-color: var(--color-accent); background-color: var(--color-bg);">
-                    <p class="text-gray-500">Tidak ada pengguna.</p>
+                    <p class="text-[var(--color-muted)]">Tidak ada pengguna.</p>
                 </div>
             @endif
         </div>

@@ -5,25 +5,62 @@
 /* Background global untuk overscroll dan halaman pendek */
 html, body {
   background-color: var(--color-bg);
+  font-family: var(--font-sans);
 }
 
 body {
   min-height: 100dvh;
 }
 
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-serif);
+  color: var(--color-primary);
+  letter-spacing: -0.01em;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-serif);
+}
+
+/* Override font-sans di heading jika ada class */
+h1.font-sans,
+h2.font-sans,
+h3.font-sans,
+h4.font-sans,
+h5.font-sans,
+h6.font-sans {
+  font-family: var(--font-sans);
+}
+
 :root {
   /* warna */
-  --color-primary: #7A1F2B;   /* marun */
-  --color-primary-hover: #5E1722;  /* marun gelap */
-  --color-accent: #D4A017;    /* emas */
-  --color-bg: #FFF8E7;        /* krem */
-  --color-text: #1F2937;
-  --color-surface: #FFFFFF;
-  --color-success: #16A34A;
-  --color-warning: #D97706;
-  --color-danger: #DC2626;
+  --color-primary: #6E1423;   /* marun institusi */
+  --color-primary-hover: #4F0E19;  /* marun gelap */
+  --color-accent: #B8892B;    /* emas institusi */
+  --color-bg: #F6F1E7;        /* krem ringan */
+  --color-text: #1E2430;      /* teks gelap */
+  --color-surface: #FFFFFF;   /* permukaan putih */
+  --color-success: #2F6F4E;
+  --color-warning: #B7791F;
+  --color-danger: #B3263F;
+  --color-muted: #5E6675;     /* teks sekunder */
+  --color-line: #DDD5C3;      /* border terang */
+  --color-gold-soft: #E9D8A6; /* emas lembut */
+  --color-primary-soft: #F3D9DC; /* marun lembut bg */
 
   /* tipografi */
+  --font-serif: 'Source Serif 4', Georgia, serif;
+  --font-sans: 'Public Sans', system-ui, sans-serif;
   --fs-h1: 28px;
   --fs-h2: 20px;
   --fs-body: 16px;
@@ -39,9 +76,9 @@ body {
   --sp-8: 32px;
 
   /* bentuk */
-  --radius-btn: 8px;
-  --radius-card: 12px;
-  --shadow-card: 0 1px 3px rgba(0,0,0,.12);
+  --radius-btn: 4px;
+  --radius-card: 2px;
+  --shadow-card: none;
 }
 
 /* ========== INTERAKSI UX ========== */
@@ -62,7 +99,7 @@ body {
   a[class*="button"]:hover,
   .btn:not(:disabled):hover {
     background-color: var(--color-primary-hover);
-    box-shadow: 0 4px 12px rgba(122, 31, 43, 0.2);
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--color-primary) 20%, transparent);
   }
 
   .primary-button:active,
@@ -164,7 +201,7 @@ input[type="radio"] {
     max-width: 100%;
     text-overflow: ellipsis;
     background-color: var(--color-surface);
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--color-line);
     border-radius: var(--radius-btn);
     padding: 8px 12px;
     font-size: var(--fs-body);
@@ -180,7 +217,7 @@ input[type="radio"] {
   /* Daftar pilihan dropdown */
   ::picker(select) {
     background: var(--color-surface);
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--color-line);
     border-radius: var(--radius-card);
     box-shadow: var(--shadow-card);
     padding: 4px;
@@ -202,11 +239,11 @@ input[type="radio"] {
   }
 
   option:hover {
-    background: #fdf2f4;
+    background: var(--color-primary-soft);
   }
 
   option:focus-visible {
-    background: #fdf2f4;
+    background: var(--color-primary-soft);
   }
 
   option:checked {

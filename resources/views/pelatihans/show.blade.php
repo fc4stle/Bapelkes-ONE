@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+        <h2 class="font-semibold text-xl text-[var(--color-text)] leading-tight">
             Detail Pelatihan
         </h2>
     </x-slot>
@@ -11,11 +11,11 @@
     <div class="px-4 py-5 sm:p-6">
         <div class="mb-6 flex justify-between items-center">
             <div>
-                <h1 class="text-2xl font-bold text-gray-900">{{ $pelatihan->nama }}</h1>
-                <p class="mt-1 text-sm text-gray-500">Detail pelatihan</p>
+                <h1 class="text-2xl font-bold text-[var(--color-text)]">{{ $pelatihan->nama }}</h1>
+                <p class="mt-1 text-sm text-[var(--color-muted)]">Detail pelatihan</p>
             </div>
             <div class="flex space-x-3">
-                <a href="{{ route('pelatihans.edit', $pelatihan) }}" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-primary)]">
+                <a href="{{ route('pelatihans.edit', $pelatihan) }}" class="inline-flex items-center px-4 py-2 border border-[var(--color-line)] shadow-sm text-sm font-medium rounded-md text-[var(--color-text)] bg-white hover:bg-[var(--color-bg)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-primary)]">
                     Edit
                 </a>
                 <a href="{{ route('pelatihans.index') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md hover:opacity-90" style="color: white; background-color: var(--color-primary); focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-primary)]">
@@ -26,65 +26,65 @@
 
         <dl class="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
             <div class="sm:col-span-2">
-                <dt class="text-sm font-medium text-gray-500">Deskripsi</dt>
-                <dd class="mt-1 text-sm text-gray-900">{{ $pelatihan->deskripsi ?? '-' }}</dd>
+                <dt class="text-sm font-medium text-[var(--color-muted)]">Deskripsi</dt>
+                <dd class="mt-1 text-sm text-[var(--color-text)]">{{ $pelatihan->deskripsi ?? '-' }}</dd>
             </div>
 
             <div class="sm:col-span-2">
-                <dt class="text-sm font-medium text-gray-500">Persyaratan</dt>
-                <dd class="mt-1 text-sm text-gray-900">{{ $pelatihan->persyaratan ?? '-' }}</dd>
+                <dt class="text-sm font-medium text-[var(--color-muted)]">Persyaratan</dt>
+                <dd class="mt-1 text-sm text-[var(--color-text)]">{{ $pelatihan->persyaratan ?? '-' }}</dd>
             </div>
 
             <div>
-                <dt class="text-sm font-medium text-gray-500">Tanggal Mulai</dt>
-                <dd class="mt-1 text-sm text-gray-900">{{ $pelatihan->tanggal_mulai->format('d F Y') }}</dd>
+                <dt class="text-sm font-medium text-[var(--color-muted)]">Tanggal Mulai</dt>
+                <dd class="mt-1 text-sm text-[var(--color-text)]">{{ $pelatihan->tanggal_mulai->format('d F Y') }}</dd>
             </div>
 
             <div>
-                <dt class="text-sm font-medium text-gray-500">Tanggal Selesai</dt>
-                <dd class="mt-1 text-sm text-gray-900">{{ $pelatihan->tanggal_selesai->format('d F Y') }}</dd>
+                <dt class="text-sm font-medium text-[var(--color-muted)]">Tanggal Selesai</dt>
+                <dd class="mt-1 text-sm text-[var(--color-text)]">{{ $pelatihan->tanggal_selesai->format('d F Y') }}</dd>
             </div>
 
             <div>
-                <dt class="text-sm font-medium text-gray-500">Lokasi</dt>
-                <dd class="mt-1 text-sm text-gray-900">{{ $pelatihan->lokasi }}</dd>
+                <dt class="text-sm font-medium text-[var(--color-muted)]">Lokasi</dt>
+                <dd class="mt-1 text-sm text-[var(--color-text)]">{{ $pelatihan->lokasi }}</dd>
             </div>
 
             <div>
-                <dt class="text-sm font-medium text-gray-500">Kuota</dt>
-                <dd class="mt-1 text-sm text-gray-900">{{ $pelatihan->kuota }} peserta</dd>
+                <dt class="text-sm font-medium text-[var(--color-muted)]">Kuota</dt>
+                <dd class="mt-1 text-sm text-[var(--color-text)]">{{ $pelatihan->kuota }} peserta</dd>
             </div>
 
             <div>
-                <dt class="text-sm font-medium text-gray-500">Metode</dt>
-                <dd class="mt-1 text-sm text-gray-900">{{ $pelatihan->metode->label() }}</dd>
+                <dt class="text-sm font-medium text-[var(--color-muted)]">Metode</dt>
+                <dd class="mt-1 text-sm text-[var(--color-text)]">{{ $pelatihan->metode->label() }}</dd>
             </div>
 
             <div>
-                <dt class="text-sm font-medium text-gray-500">Status</dt>
-                <dd class="mt-1 text-sm text-gray-900">
+                <dt class="text-sm font-medium text-[var(--color-muted)]">Status</dt>
+                <dd class="mt-1 text-sm text-[var(--color-text)]">
                     @php
                         $statusColors = [
-                            \App\Enums\StatusPelatihan::Draft->value => 'bg-gray-100 text-gray-800',
+                            \App\Enums\StatusPelatihan::Draft->value => 'bg-gray-100 text-[var(--color-text)]',
                             \App\Enums\StatusPelatihan::Dibuka->value => 'bg-green-100 text-green-800',
                             \App\Enums\StatusPelatihan::Ditutup->value => 'bg-yellow-100 text-yellow-800',
-                            \App\Enums\StatusPelatihan::Selesai->value => 'bg-gray-100 text-gray-800',
+                            \App\Enums\StatusPelatihan::Selesai->value => 'bg-gray-100 text-[var(--color-text)]',
                         ];
                     @endphp
-                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $statusColors[$pelatihan->status->value] ?? 'bg-gray-100 text-gray-800' }}">
+                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $statusColors[$pelatihan->status->value] ?? 'bg-gray-100 text-[var(--color-text)]' }}">
                         {{ $pelatihan->status->label() }}
                     </span>
                 </dd>
             </div>
 
             <div>
-                <dt class="text-sm font-medium text-gray-500">Dibuat</dt>
-                <dd class="mt-1 text-sm text-gray-900">{{ $pelatihan->created_at->format('d F Y H:i') }}</dd>
+                <dt class="text-sm font-medium text-[var(--color-muted)]">Dibuat</dt>
+                <dd class="mt-1 text-sm text-[var(--color-text)]">{{ $pelatihan->created_at->format('d F Y H:i') }}</dd>
             </div>
 
             <div>
-                <dt class="text-sm font-medium text-gray-500">Terakhir Diperbarui</dt>
-                <dd class="mt-1 text-sm text-gray-900">{{ $pelatihan->updated_at->format('d F Y H:i') }}</dd>
+                <dt class="text-sm font-medium text-[var(--color-muted)]">Terakhir Diperbarui</dt>
+                <dd class="mt-1 text-sm text-[var(--color-text)]">{{ $pelatihan->updated_at->format('d F Y H:i') }}</dd>
             </div>
         </dl>
     </div>

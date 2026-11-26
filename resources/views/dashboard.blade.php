@@ -9,11 +9,11 @@
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-[var(--sp-8)]">
             @if ($totalPendaftaran === 0)
                 {{-- Belum ada pendaftaran --}}
-                <div class="rounded-[var(--radius-card)] border border-gray-200 bg-[var(--color-surface)] p-[var(--sp-6)] shadow-[var(--shadow-card)] text-center">
+                <div class="rounded-[var(--radius-card)] border border-[var(--color-line)] bg-[var(--color-surface)] p-[var(--sp-6)] shadow-[var(--shadow-card)] text-center">
                     <h3 class="text-lg font-semibold text-[var(--color-text)] mb-[var(--sp-2)]">
                         Anda belum mendaftar pelatihan apa pun
                     </h3>
-                    <p class="text-sm text-gray-600 mb-[var(--sp-4)]">
+                    <p class="text-sm text-[var(--color-muted)] mb-[var(--sp-4)]">
                         Jelajahi katalog pelatihan yang tersedia dan daftarkan diri Anda sekarang.
                     </p>
                     <a href="{{ route('pelatihan.katalog') }}" class="inline-flex items-center px-4 py-2 bg-[var(--color-primary)] border border-transparent rounded-[var(--radius-btn)] font-semibold text-xs text-white uppercase tracking-widest hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-2 transition ease-in-out duration-150">
@@ -26,7 +26,7 @@
                     <h1 class="text-2xl font-bold text-[var(--color-text)]">
                         Halo, {{ $user->name }}
                     </h1>
-                    <p class="mt-[var(--sp-2)] text-sm text-gray-600">
+                    <p class="mt-[var(--sp-2)] text-sm text-[var(--color-muted)]">
                         Pantau status pendaftaran pelatihan Anda dan lihat pelatihan yang dibuka.
                     </p>
                 </div>
@@ -39,10 +39,10 @@
                                 <h3 class="font-semibold text-[var(--color-warning)]">
                                     ⚠️ {{ $bannerPengingat['label'] }}
                                 </h3>
-                                <p class="mt-[var(--sp-1)] text-sm text-gray-700">
+                                <p class="mt-[var(--sp-1)] text-sm text-[var(--color-text)]">
                                     <strong>{{ $bannerPengingat['pendaftaran']->pelatihan->nama }}</strong>
                                 </p>
-                                <p class="mt-[var(--sp-1)] text-xs text-gray-600">
+                                <p class="mt-[var(--sp-1)] text-xs text-[var(--color-muted)]">
                                     Mulai: <strong>{{ $bannerPengingat['pendaftaran']->pelatihan->tanggal_mulai->translatedFormat('d M Y') }}</strong>
                                 </p>
                             </div>
@@ -55,27 +55,27 @@
 
                 {{-- B. Tiga angka ringkas --}}
                 <div class="grid grid-cols-3 gap-[var(--sp-4)] sm:gap-[var(--sp-6)]">
-                    <div class="rounded-[var(--radius-card)] border border-gray-200 bg-[var(--color-surface)] p-[var(--sp-4)] shadow-[var(--shadow-card)] text-center">
+                    <div class="rounded-[var(--radius-card)] border border-[var(--color-line)] bg-[var(--color-surface)] p-[var(--sp-4)] shadow-[var(--shadow-card)] text-center">
                         <div class="text-2xl sm:text-3xl font-bold text-[var(--color-primary)]">
                             {{ $totalPendaftaran }}
                         </div>
-                        <p class="mt-[var(--sp-1)] text-xs sm:text-sm text-gray-600">
+                        <p class="mt-[var(--sp-1)] text-xs sm:text-sm text-[var(--color-muted)]">
                             Total Pendaftaran
                         </p>
                     </div>
-                    <div class="rounded-[var(--radius-card)] border border-gray-200 bg-[var(--color-surface)] p-[var(--sp-4)] shadow-[var(--shadow-card)] text-center">
+                    <div class="rounded-[var(--radius-card)] border border-[var(--color-line)] bg-[var(--color-surface)] p-[var(--sp-4)] shadow-[var(--shadow-card)] text-center">
                         <div class="text-2xl sm:text-3xl font-bold text-[var(--color-warning)]">
                             {{ $menungguVerifikasi }}
                         </div>
-                        <p class="mt-[var(--sp-1)] text-xs sm:text-sm text-gray-600">
+                        <p class="mt-[var(--sp-1)] text-xs sm:text-sm text-[var(--color-muted)]">
                             Menunggu Verifikasi
                         </p>
                     </div>
-                    <div class="rounded-[var(--radius-card)] border border-gray-200 bg-[var(--color-surface)] p-[var(--sp-4)] shadow-[var(--shadow-card)] text-center">
+                    <div class="rounded-[var(--radius-card)] border border-[var(--color-line)] bg-[var(--color-surface)] p-[var(--sp-4)] shadow-[var(--shadow-card)] text-center">
                         <div class="text-2xl sm:text-3xl font-bold text-[var(--color-success)]">
                             {{ $terverifikasi }}
                         </div>
-                        <p class="mt-[var(--sp-1)] text-xs sm:text-sm text-gray-600">
+                        <p class="mt-[var(--sp-1)] text-xs sm:text-sm text-[var(--color-muted)]">
                             Terverifikasi
                         </p>
                     </div>
@@ -98,7 +98,7 @@
                                     default => 'border-l-gray-400',
                                 };
                             @endphp
-                            <div class="rounded-[var(--radius-card)] border border-gray-200 border-l-4 {{ $borderLeftColor }} bg-[var(--color-surface)] p-[var(--sp-4)] shadow-[var(--shadow-card)]">
+                            <div class="rounded-[var(--radius-card)] border border-[var(--color-line)] border-l-4 {{ $borderLeftColor }} bg-[var(--color-surface)] p-[var(--sp-4)] shadow-[var(--shadow-card)]">
                                 <div class="flex items-start justify-between gap-[var(--sp-4)]">
                                     <div class="flex-1">
                                         <h3 class="font-semibold text-[var(--color-text)]">
@@ -110,7 +110,7 @@
                                         <h4 class="mt-[var(--sp-3)] text-sm font-semibold text-[var(--color-text)]">
                                             {{ $langkah['judul'] }}
                                         </h4>
-                                        <p class="mt-[var(--sp-1)] text-xs sm:text-sm text-gray-600">
+                                        <p class="mt-[var(--sp-1)] text-xs sm:text-sm text-[var(--color-muted)]">
                                             {{ $langkah['deskripsi'] }}
                                         </p>
                                     </div>
@@ -124,7 +124,7 @@
                                                     {{ $tombol['label'] }}
                                                 </a>
                                             @else
-                                                <a href="{{ $tombol['url'] }}" class="inline-flex items-center px-4 py-2 bg-[var(--color-surface)] border border-[var(--color-primary)] rounded-[var(--radius-btn)] font-semibold text-xs text-[var(--color-primary)] uppercase tracking-widest hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-2 transition ease-in-out duration-150">
+                                                <a href="{{ $tombol['url'] }}" class="inline-flex items-center px-4 py-2 bg-[var(--color-surface)] border border-[var(--color-primary)] rounded-[var(--radius-btn)] font-semibold text-xs text-[var(--color-primary)] uppercase tracking-widest hover:bg-[var(--color-bg)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-2 transition ease-in-out duration-150">
                                                     {{ $tombol['label'] }}
                                                 </a>
                                             @endif
@@ -133,7 +133,7 @@
                                 @endif
                             </div>
                         @empty
-                            <p class="text-sm text-gray-600">Tidak ada pendaftaran untuk ditampilkan.</p>
+                            <p class="text-sm text-[var(--color-muted)]">Tidak ada pendaftaran untuk ditampilkan.</p>
                         @endforelse
                     </div>
                 </div>
@@ -154,7 +154,7 @@
                                         default => 'border-l-[var(--color-accent)]',
                                     };
                                 @endphp
-                                <div class="rounded-[var(--radius-card)] border border-gray-200 border-l-4 {{ $urgensiColor }} bg-[var(--color-surface)] p-[var(--sp-4)] shadow-[var(--shadow-card)]">
+                                <div class="rounded-[var(--radius-card)] border border-[var(--color-line)] border-l-4 {{ $urgensiColor }} bg-[var(--color-surface)] p-[var(--sp-4)] shadow-[var(--shadow-card)]">
                                     <div class="flex items-start justify-between gap-[var(--sp-4)]">
                                         <div class="flex-1">
                                             <h3 class="font-semibold text-[var(--color-text)]">
@@ -163,14 +163,14 @@
                                             <p class="mt-[var(--sp-1)] text-sm font-semibold text-[var(--color-accent)]">
                                                 {{ $item['label'] }}
                                             </p>
-                                            <p class="mt-[var(--sp-2)] text-xs text-gray-600">
+                                            <p class="mt-[var(--sp-2)] text-xs text-[var(--color-muted)]">
                                                 <span class="font-semibold">Tanggal Mulai:</span> {{ $pendaftaran->pelatihan->tanggal_mulai->translatedFormat('d M Y') }}
                                             </p>
-                                            <p class="mt-[var(--sp-1)] text-xs text-gray-600">
+                                            <p class="mt-[var(--sp-1)] text-xs text-[var(--color-muted)]">
                                                 <span class="font-semibold">Lokasi:</span> {{ $pendaftaran->pelatihan->lokasi }}
                                             </p>
                                             @if ($pendaftaran->butuh_asrama)
-                                                <p class="mt-[var(--sp-1)] text-xs text-gray-600">
+                                                <p class="mt-[var(--sp-1)] text-xs text-[var(--color-muted)]">
                                                     <span class="font-semibold">Kamar:</span> 
                                                     @if ($pendaftaran->kamar)
                                                         {{ $pendaftaran->kamar->nomor_kamar }}
@@ -178,7 +178,7 @@
                                                         Belum ditugaskan
                                                     @endif
                                                 </p>
-                                                <p class="mt-[var(--sp-1)] text-xs text-gray-600">
+                                                <p class="mt-[var(--sp-1)] text-xs text-[var(--color-muted)]">
                                                     <span class="font-semibold">Check-in:</span> 
                                                     @if ($pendaftaran->check_in)
                                                         {{ $pendaftaran->check_in->translatedFormat('d M Y') }}
@@ -206,22 +206,22 @@
                         Pelatihan yang Dibuka
                     </h2>
                     @if ($pelatihansNew->isEmpty())
-                        <div class="rounded-[var(--radius-card)] border border-gray-200 bg-[var(--color-surface)] p-[var(--sp-4)] shadow-[var(--shadow-card)] text-center">
-                            <p class="text-sm text-gray-600">
+                        <div class="rounded-[var(--radius-card)] border border-[var(--color-line)] bg-[var(--color-surface)] p-[var(--sp-4)] shadow-[var(--shadow-card)] text-center">
+                            <p class="text-sm text-[var(--color-muted)]">
                                 Belum ada pelatihan lain yang dibuka.
                             </p>
                         </div>
                     @else
                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-[var(--sp-4)]">
                             @foreach ($pelatihansNew as $pelatihan)
-                                <div class="rounded-[var(--radius-card)] border border-gray-200 bg-[var(--color-surface)] p-[var(--sp-4)] shadow-[var(--shadow-card)]">
+                                <div class="rounded-[var(--radius-card)] border border-[var(--color-line)] bg-[var(--color-surface)] p-[var(--sp-4)] shadow-[var(--shadow-card)]">
                                     <h3 class="font-semibold text-[var(--color-text)] line-clamp-2">
                                         {{ $pelatihan->nama }}
                                     </h3>
-                                    <p class="mt-[var(--sp-2)] text-xs text-gray-600">
+                                    <p class="mt-[var(--sp-2)] text-xs text-[var(--color-muted)]">
                                         <span class="font-semibold">Mulai:</span> {{ $pelatihan->tanggal_mulai->translatedFormat('d M Y') }}
                                     </p>
-                                    <p class="mt-[var(--sp-1)] text-xs text-gray-600">
+                                    <p class="mt-[var(--sp-1)] text-xs text-[var(--color-muted)]">
                                         <span class="font-semibold">Sisa Kuota:</span>
                                         @if ($pelatihan->sisaKuota() <= 0)
                                             <span class="text-[var(--color-danger)]">Penuh</span>
@@ -229,7 +229,7 @@
                                             {{ $pelatihan->sisaKuota() }} peserta
                                         @endif
                                     </p>
-                                    <a href="{{ route('pelatihan.detail', $pelatihan) }}" class="mt-[var(--sp-4)] inline-flex items-center px-4 py-2 bg-[var(--color-surface)] border border-[var(--color-primary)] rounded-[var(--radius-btn)] font-semibold text-xs text-[var(--color-primary)] uppercase tracking-widest hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-2 transition ease-in-out duration-150">
+                                    <a href="{{ route('pelatihan.detail', $pelatihan) }}" class="mt-[var(--sp-4)] inline-flex items-center px-4 py-2 bg-[var(--color-surface)] border border-[var(--color-primary)] rounded-[var(--radius-btn)] font-semibold text-xs text-[var(--color-primary)] uppercase tracking-widest hover:bg-[var(--color-bg)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-2 transition ease-in-out duration-150">
                                         Lihat detail
                                     </a>
                                 </div>

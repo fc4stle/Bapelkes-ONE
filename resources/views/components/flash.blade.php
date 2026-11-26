@@ -22,12 +22,12 @@
 
             <!-- Pesan -->
             <div class="flex-1 min-w-0">
-                <p class="text-sm font-medium text-gray-900">{{ session('success') }}</p>
+                <p class="text-sm font-medium text-[var(--color-text)]">{{ session('success') }}</p>
             </div>
 
             <!-- Tombol Tutup -->
             @if($dismissible)
-                <button @click="show = false" class="flex-shrink-0 text-gray-400 hover:text-gray-600 transition-colors">
+                <button @click="show = false" class="flex-shrink-0 text-[var(--color-muted)] hover:text-[var(--color-muted)] transition-colors">
                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
                     </svg>
@@ -56,11 +56,11 @@
 
             <!-- Pesan -->
             <div class="flex-1 min-w-0">
-                <p class="text-sm font-medium text-gray-900">Terjadi kesalahan validasi</p>
+                <p class="text-sm font-medium text-[var(--color-text)]">Terjadi kesalahan validasi</p>
                 @if($errors->count() === 1)
-                    <p class="text-sm text-gray-600 mt-1">{{ $errors->first() }}</p>
+                    <p class="text-sm text-[var(--color-muted)] mt-1">{{ $errors->first() }}</p>
                 @else
-                    <ul class="text-sm text-gray-600 mt-2 list-disc list-inside">
+                    <ul class="text-sm text-[var(--color-muted)] mt-2 list-disc list-inside">
                         @foreach($errors->all() as $error)
                             <li>{{ $error }}</li>
                         @endforeach
@@ -70,7 +70,7 @@
 
             <!-- Tombol Tutup -->
             @if($dismissible)
-                <button @click="show = false" class="flex-shrink-0 text-gray-400 hover:text-gray-600 transition-colors">
+                <button @click="show = false" class="flex-shrink-0 text-[var(--color-muted)] hover:text-[var(--color-muted)] transition-colors">
                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
                     </svg>

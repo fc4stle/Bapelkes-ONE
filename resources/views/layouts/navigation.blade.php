@@ -1,4 +1,4 @@
-<nav x-data="{ open: false }" style="background-color: var(--color-bg); border-bottom: 1px solid #e5e7eb;">
+<nav x-data="{ open: false }" style="background-color: var(--color-bg); border-bottom: 1px solid var(--color-line);">
     <!-- Primary Navigation Menu -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
@@ -95,10 +95,10 @@
                             x-show="notifOpen"
                             @click.outside="notifOpen = false"
                             class="absolute right-0 mt-2 w-80 rounded-lg shadow-lg z-50"
-                            style="background-color: var(--color-surface); border: 1px solid #e5e7eb; display: none;"
+                            style="background-color: var(--color-surface); border: 1px solid var(--color-line); display: none;"
                             x-transition
                         >
-                            <div class="p-4 border-b" style="border-color: #e5e7eb;">
+                            <div class="p-4 border-b" style="border-color: var(--color-line);">
                                 <h3 class="text-lg font-semibold" style="color: var(--color-text);">Notifikasi</h3>
                             </div>
 
@@ -111,8 +111,8 @@
                                     @foreach ($recentNotif as $notif)
                                         <a 
                                             href="{{ route('notifikasi.buka', $notif->id) }}"
-                                            class="block p-3 hover:bg-gray-50 border-b transition-colors"
-                                            style="border-color: #e5e7eb; text-decoration: none;"
+                                            class="block p-3 hover:bg-[var(--color-bg)] border-b transition-colors"
+                                            style="border-color: var(--color-line); text-decoration: none;"
                                         >
                                             <div class="flex justify-between items-start">
                                                 <div>
@@ -142,7 +142,7 @@
                                 @endif
                             </div>
 
-                            <div class="p-3 border-t" style="border-color: #e5e7eb;">
+                            <div class="p-3 border-t" style="border-color: var(--color-line);">
                                 <a 
                                     href="{{ route('notifikasi.index') }}"
                                     class="block text-center py-2 text-sm font-semibold rounded-lg transition-colors"
@@ -268,15 +268,15 @@
 
         <!-- Responsive Settings Options -->
         @guest
-        <div class="pt-4 pb-1 border-t border-gray-200 space-y-1">
+        <div class="pt-4 pb-1 border-t border-[var(--color-line)] space-y-1">
             <x-responsive-nav-link :href="route('login')">Masuk</x-responsive-nav-link>
             <x-responsive-nav-link :href="route('register')">Daftar</x-responsive-nav-link>
         </div>
         @else
-        <div class="pt-4 pb-1 border-t border-gray-200">
+        <div class="pt-4 pb-1 border-t border-[var(--color-line)]">
             <div class="px-4">
                 <div class="font-medium text-base truncate" style="color: var(--color-text);">{{ Auth::user()->name }}</div>
-                <div class="font-medium text-sm text-gray-500 truncate">{{ Auth::user()->email }}</div>
+                <div class="font-medium text-sm text-[var(--color-muted)] truncate">{{ Auth::user()->email }}</div>
             </div>
 
             <div class="mt-3 space-y-1">
