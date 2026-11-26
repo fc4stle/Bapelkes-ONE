@@ -160,4 +160,15 @@ class KomponenInstitusiTest extends TestCase
         $this->assertStringContainsString('rounded-[var(--radius-card)]', $html);
         $this->assertStringContainsString('color-mix(in srgb, var(--color-text) 50%, transparent)', $html);
     }
+
+    /**
+     * Test modal JS selector tidak rusak — satu backslash per tanda kutip
+     */
+    public function test_modal_selector_js_tidak_rusak()
+    {
+        $html = Blade::render('<x-modal name="test">K</x-modal>');
+
+        $this->assertStringContainsString("input:not([type=\\'hidden\\'])", $html);
+        $this->assertStringNotContainsString("\\\\'hidden", $html);
+    }
 }
