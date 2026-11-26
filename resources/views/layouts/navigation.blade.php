@@ -1,14 +1,20 @@
-<nav x-data="{ open: false }" style="background-color: var(--color-bg); border-bottom: 1px solid var(--color-line);">
+<nav x-data="{ open: false }" style="background-color: var(--color-primary); border-bottom: 4px solid var(--color-accent);">
     <!-- Primary Navigation Menu -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between h-16">
-            <div class="flex">
-                <!-- Logo/Wordmark -->
-                <div class="shrink-0 flex items-center">
-                    <a href="/" class="font-bold text-sm sm:text-base" style="color: var(--color-primary);">
-                        Portal Pelatihan Terpadu
-                    </a>
-                </div>
+        <div class="flex justify-between" style="height: 72px;">
+            <div class="flex items-center">
+                <!-- Brand Circle + App Name -->
+                <a href="/" class="flex items-center gap-3 shrink-0">
+                    <!-- Circle Brand -->
+                    <div class="flex items-center justify-center w-[42px] h-[42px] rounded-full border-2" style="border-color: var(--color-gold-soft);">
+                        <span class="font-serif font-bold text-xl" style="color: var(--color-gold-soft);">B</span>
+                    </div>
+                    <!-- App Name Lines -->
+                    <div class="hidden sm:flex flex-col">
+                        <span class="font-serif font-bold text-lg leading-tight" style="color: white; font-size: 19px;">{{ config('app.name', 'Portal Pelatihan Terpadu') }}</span>
+                        <span class="text-xs uppercase tracking-[0.12em] leading-tight mt-0.5" style="color: var(--color-gold-soft); font-size: 11.5px;">BAPELKES DINKES DIY</span>
+                    </div>
+                </a>
 
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
@@ -68,11 +74,11 @@
                         <button 
                             @click="notifOpen = !notifOpen"
                             class="relative p-2 rounded-lg transition-colors"
-                            style="background-color: transparent; border: none; cursor: pointer;"
-                            onmouseover="this.style.backgroundColor='var(--color-bg)'"
-                            onmouseout="this.style.backgroundColor='transparent'"
+                            style="background-color: transparent; border: none; cursor: pointer; color: white; opacity: 0.8;"
+                            @mouseenter="$el.style.opacity = '1'"
+                            @mouseleave="$el.style.opacity = '0.8'"
                         >
-                            <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="color: var(--color-text);">
+                            <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                             </svg>
                             
@@ -129,7 +135,7 @@
                                                 @if (!$notif->read_at)
                                                     <span 
                                                         class="inline-block w-2 h-2 rounded-full mt-1"
-                                                        style="background-color: var(--color-primary);"
+                                                        style="background-color: var(--color-accent);"
                                                     ></span>
                                                 @endif
                                             </div>
@@ -147,8 +153,8 @@
                                     href="{{ route('notifikasi.index') }}"
                                     class="block text-center py-2 text-sm font-semibold rounded-lg transition-colors"
                                     style="color: white; background-color: var(--color-primary); text-decoration: none;"
-                                    onmouseover="this.style.backgroundColor='var(--color-primary-hover)'"
-                                    onmouseout="this.style.backgroundColor='var(--color-primary)'"
+                                    @mouseenter="this.style.backgroundColor='var(--color-primary-hover)'"
+                                    @mouseleave="this.style.backgroundColor='var(--color-primary)'"
                                 >
                                     Lihat Semua
                                 </a>
@@ -159,21 +165,21 @@
 
                 @guest
                     <div class="space-x-2 text-sm font-medium">
-                        <a href="{{ route('login') }}" class="px-3 py-2 rounded-md" style="color: var(--color-text);">Masuk</a>
-                        <a href="{{ route('register') }}" class="px-4 py-2 rounded-[var(--radius-btn)] text-white font-semibold" style="background-color: var(--color-primary);">Daftar</a>
+                        <a href="{{ route('login') }}" class="px-3 py-2 rounded-md" style="color: white;">Masuk</a>
+                        <a href="{{ route('register') }}" class="px-4 py-2 rounded-[var(--radius-btn)] text-white font-semibold" style="background-color: var(--color-primary-hover);">Daftar</a>
                     </div>
                 @else
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
-                        <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md" style="color: var(--color-text); background-color: var(--color-surface);">
+                        <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-[var(--radius-btn)]" style="color: white; background-color: var(--color-primary-hover);">
                             <div>{{ Auth::user()->name }}</div>
 
                             @if (auth()->user()->isPanitia())
-                                <span class="ms-2 inline-block px-2 py-1 text-xs font-semibold rounded-full" style="background-color: #fdf2f4; color: #7A1F2B;">Panitia</span>
+                                <span class="ms-2 inline-block px-2 py-1 text-xs font-semibold rounded-full" style="background-color: var(--color-primary-soft); color: var(--color-primary);">Panitia</span>
                             @elseif (auth()->user()->isAdmin())
-                                <span class="ms-2 inline-block px-2 py-1 text-xs font-semibold rounded-full" style="background-color: #fdf2f4; color: #7A1F2B;">Admin</span>
+                                <span class="ms-2 inline-block px-2 py-1 text-xs font-semibold rounded-full" style="background-color: var(--color-primary-soft); color: var(--color-primary);">Admin</span>
                             @else
-                                <span class="ms-2 inline-block px-2 py-1 text-xs font-semibold rounded-full" style="background-color: #f0fdf4; color: #15803d;">Peserta</span>
+                                <span class="ms-2 inline-block px-2 py-1 text-xs font-semibold rounded-full" style="background-color: color-mix(in srgb, var(--color-success) 15%, white); color: var(--color-success);">Peserta</span>
                             @endif
 
                             <div class="ms-1">
@@ -206,7 +212,7 @@
 
             <!-- Hamburger -->
             <div class="-me-2 flex items-center sm:hidden">
-                <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-md hover:bg-gray-100 focus:outline-none focus:bg-gray-100 transition duration-150 ease-in-out" style="color: var(--color-text);">
+                <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-md transition duration-150 ease-in-out" style="color: white;" @keydown.escape="open = false">
                     <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
                         <path :class="{'hidden': open, 'inline-flex': ! open }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                         <path :class="{'hidden': ! open, 'inline-flex': open }" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -217,7 +223,7 @@
     </div>
 
     <!-- Responsive Navigation Menu -->
-    <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden overflow-x-hidden">
+    <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden overflow-x-hidden" style="background-color: var(--color-primary-hover);">
         <div class="pt-2 pb-3 space-y-1">
             <x-responsive-nav-link :href="route('pelatihan.katalog')" :active="request()->routeIs('pelatihan.katalog', 'pelatihan.detail')">
                 Katalog
@@ -268,15 +274,15 @@
 
         <!-- Responsive Settings Options -->
         @guest
-        <div class="pt-4 pb-1 border-t border-[var(--color-line)] space-y-1">
+        <div class="pt-4 pb-1" style="border-top: 1px solid color-mix(in srgb, white 15%, transparent); space-y: 1;">
             <x-responsive-nav-link :href="route('login')">Masuk</x-responsive-nav-link>
             <x-responsive-nav-link :href="route('register')">Daftar</x-responsive-nav-link>
         </div>
         @else
-        <div class="pt-4 pb-1 border-t border-[var(--color-line)]">
+        <div class="pt-4 pb-1" style="border-top: 1px solid color-mix(in srgb, white 15%, transparent);">
             <div class="px-4">
-                <div class="font-medium text-base truncate" style="color: var(--color-text);">{{ Auth::user()->name }}</div>
-                <div class="font-medium text-sm text-[var(--color-muted)] truncate">{{ Auth::user()->email }}</div>
+                <div class="font-medium text-base truncate" style="color: white;">{{ Auth::user()->name }}</div>
+                <div class="font-medium text-sm truncate" style="color: color-mix(in srgb, white 60%, transparent);">{{ Auth::user()->email }}</div>
             </div>
 
             <div class="mt-3 space-y-1">

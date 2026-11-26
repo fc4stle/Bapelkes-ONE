@@ -18,11 +18,21 @@
 
         <div class="min-h-screen flex flex-col items-center justify-center px-4 py-8 sm:py-12" style="background-color: var(--color-bg);">
             <div class="w-full max-w-md">
-                <a href="/" class="block text-center mb-6">
-                    <h1 class="text-2xl sm:text-3xl font-bold leading-snug" style="color: var(--color-primary);">{{ config('app.name', 'Sistem Informasi Portal Pelatihan Terpadu') }}</h1>
-                    <p class="text-sm mt-2" style="color: var(--color-text);">Portal terpadu pelatihan dan layanan peserta — studi kasus Bapelkes DIY</p>
+                <!-- Brand Header -->
+                <a href="/" class="block text-center mb-8">
+                    <div class="flex items-center justify-center gap-3 mb-4">
+                        <!-- Circle Brand -->
+                        <div class="flex items-center justify-center w-[42px] h-[42px] rounded-full border-2" style="border-color: var(--color-gold-soft);">
+                            <span class="font-serif font-bold text-xl" style="color: var(--color-gold-soft);">B</span>
+                        </div>
+                    </div>
+                    <h1 class="font-serif font-bold text-2xl sm:text-3xl leading-tight" style="color: var(--color-primary); font-size: 28px;">{{ config('app.name', 'Portal Pelatihan Terpadu') }}</h1>
+                    <p class="text-xs uppercase tracking-[0.12em] leading-tight mt-2" style="color: var(--color-gold-soft); font-size: 11.5px;">BAPELKES DINKES DIY</p>
+                    <p class="text-sm mt-4" style="color: var(--color-text);">Portal terpadu pelatihan dan layanan peserta — studi kasus Bapelkes DIY</p>
                 </a>
-                <div class="p-6 sm:p-8 rounded-[var(--radius-card)] overflow-hidden" style="background-color: var(--color-surface); box-shadow: var(--shadow-card);">
+
+                <!-- Form Card -->
+                <div class="p-6 sm:p-8 rounded-[var(--radius-card)] overflow-hidden" style="background-color: var(--color-surface); border: 1px solid var(--color-line); border-top: 3px solid var(--color-accent);">
                     {{ $slot }}
                 </div>
             </div>
