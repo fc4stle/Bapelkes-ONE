@@ -267,4 +267,76 @@ input[type="radio"] {
   }
 }
 
+/* ========== FORM ELEMENTS GLOBAL ========== */
+
+/* Input text dan textarea styling institusi */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"],
+input[type="search"],
+input[type="tel"],
+input[type="url"],
+textarea {
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-btn);
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  padding: 8px 12px;
+  font-size: var(--fs-body);
+  font-family: var(--font-sans);
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="number"]:focus,
+input[type="date"]:focus,
+input[type="time"]:focus,
+input[type="datetime-local"]:focus,
+input[type="search"]:focus,
+input[type="tel"]:focus,
+input[type="url"]:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 1px var(--color-primary);
+}
+
+/* Select styling institusi (complement @supports block) */
+select {
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-btn);
+  background-color: var(--color-surface);
+  color: var(--color-text);
+}
+
+select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 1px var(--color-primary);
+}
+
+/* ========== TABEL INSTITUSI ========== */
+
+.tabel-institusi th {
+  text-align: left;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-muted);
+  padding: 8px;
+  border-bottom: 2px solid var(--color-primary);
+  font-weight: 600;
+  font-family: var(--font-sans);
+}
+
+.tabel-institusi td {
+  padding: 12px 8px;
+  border-bottom: 1px solid var(--color-line);
+}
+
 /* ========== END INTERAKSI UX ========== */
