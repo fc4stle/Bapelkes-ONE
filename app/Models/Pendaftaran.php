@@ -332,7 +332,7 @@ class Pendaftaran extends Model
             ];
         }
 
-        // d2) diverifikasi, belum hadir, pelatihan SUDAH selesai — tidak boleh akses TIYAS
+        // d2) diverifikasi, belum hadir, pelatihan SUDAH selesai, tidak boleh akses TIYAS
         if ($this->isDiverifikasi() && ! $this->isHadir() && $this->pelatihan->sudahSelesai()) {
             return [
                 'judul' => 'Pelatihan selesai',

@@ -1,7 +1,7 @@
 # Evaluasi Hosting: Koyeb vs SnapDeploy (Kriteria Penggunaan Nyata)
 
 **Tanggal:** 12 September 2026  
-**Fokus:** Dua kriteria utama — "Bisa terus dipakai seperti Vercel" dan "Selalu bisa gratis"
+**Fokus:** Dua kriteria utama, "Bisa terus dipakai seperti Vercel" dan "Selalu bisa gratis"
 
 ---
 
@@ -32,7 +32,7 @@ Berdasarkan `koyeb.com/docs/reference/services`:
 
 4. **Free instance TIDAK dihapus karena tidak aktif deploy.** Deploy sekali, jalan terus (dengan scale-to-zero setelah 1 jam idle).
 
-**Verdict untuk Koyeb:** ✅ **MEMENUHI** — App tidak berhenti total karena tidak aktif. Hanya sleep setelah 1 jam tidak ada traffic.
+**Verdict untuk Koyeb:** ✅ **MEMENUHI**, App tidak berhenti total karena tidak aktif. Hanya sleep setelah 1 jam tidak ada traffic.
 
 ---
 
@@ -44,13 +44,13 @@ Berdasarkan `snapdeploy.dev/terms`:
 
 1. **10 deploys/hari = constraint DEPLOY, bukan UPTIME.** App yang sudah live tetap jalan (dengan auto-sleep/wake) meskipun Anda tidak deploy lagi hari itu.
 
-2. **Auto-sleep behavior:** App sleep setelah idle, auto-wake 10-30 detik saat ada traffic. Ini bukan "berhenti total" — ini cold start.
+2. **Auto-sleep behavior:** App sleep setelah idle, auto-wake 10-30 detik saat ada traffic. Ini bukan "berhenti total", ini cold start.
 
 3. **Tidak ada ketentuan tentang penghapusan karena inactivity** di Terms of Service yang bisa saya temukan. Terms fokus pada Acceptable Use Policy (larangan tunneling, mining, dll), bukan pada penghapusan karena tidak aktif.
 
 4. **Risk:** Karena ini platform kecil/new, kebijakan bisa berubah. Tapi saat ini, tidak ada indikasi app akan dihapus karena tidak aktif.
 
-**Verdict untuk SnapDeploy:** ✅ **MEMENUHI** — App tidak berhenti total karena tidak aktif deploy.
+**Verdict untuk SnapDeploy:** ✅ **MEMENUHI**, App tidak berhenti total karena tidak aktif deploy.
 
 ---
 
@@ -67,7 +67,7 @@ Berdasarkan `snapdeploy.dev/terms`:
 |---------|-----------|---------------------|
 | Okt 2023 | Blog post "Sustaining free compute" | Komitmen mempertahankan free tier |
 | Feb 2024 | Hapus $5.50 credit, ganti dengan `free` Instance | Free tier TETAP ADA (512MB RAM) |
-| Feb 2026 | Diakuisisi Mistral AI ($13.8B valuation, $400M ARR) | Free tier TETAP ADA — dikonfirmasi oleh blog Koyeb dan Mistral |
+| Feb 2026 | Diakuisisi Mistral AI ($13.8B valuation, $400M ARR) | Free tier TETAP ADA, dikonfirmasi oleh blog Koyeb dan Mistral |
 | Sep 2026 | Free Instance masih tersedia | 512MB RAM, 0.1 vCPU, 2GB SSD |
 
 **Mengapa Koyeb TIDAK mungkin hapus free tier:**
@@ -114,7 +114,7 @@ Berdasarkan `snapdeploy.dev/terms`:
 1. **Business model Koyeb:** Free tier adalah funnel untuk menjual AI infrastructure (GPU, managed databases, enterprise features). Selama Mistral menjalankan strategi ini, free tier akan tetap ada.
 
 2. **Exit plan kalau free tier dihapus:**
-   - Dockerfile Anda tetap valid — bisa di-deploy ke platform lain (Railway, Render, Fly.io, bahkan VPS)
+   - Dockerfile Anda tetap valid, bisa di-deploy ke platform lain (Railway, Render, Fly.io, bahkan VPS)
    - Data Anda di Supabase (terpisah), jadi tidak terkunci di Koyeb
    - Migration effort: rendah (ubah deploy target, update DNS)
 
@@ -129,7 +129,7 @@ Berdasarkan `snapdeploy.dev/terms`:
 1. **Business model SnapDeploy:** Tidak jelas. Mungkin mengandalkan upgrade ke Always-On ($12/bulan) atau Sprint Pack ($1/24 jam). Tapi tanpa funding, sustainability dipertanyakan.
 
 2. **Exit plan kalau platform tutup:**
-   - Dockerfile Anda tetap valid — bisa di-deploy ke platform lain
+   - Dockerfile Anda tetap valid, bisa di-deploy ke platform lain
    - Data Anda di Supabase (terpisak), jadi aman
    - Migration effort: rendah (sama seperti Koyeb)
 
@@ -154,7 +154,7 @@ Berdasarkan `snapdeploy.dev/terms`:
 
 ## REKOMENDASI AKHIR
 
-### 🏆 **Koyeb** — Pilihan Terbaik
+### 🏆 **Koyeb**, Pilihan Terbaik
 
 **Alasan berdasarkan kedua kriteria:**
 
@@ -170,7 +170,7 @@ Berdasarkan `snapdeploy.dev/terms`:
 
 ---
 
-### SnapDeploy — Hanya sebagai fallback
+### SnapDeploy, Hanya sebagai fallback
 
 **Kapan memilih SnapDeploy:**
 - Kalau Koyeb gagal verifikasi dan meminta kartu kredit
@@ -185,7 +185,7 @@ Berdasarkan `snapdeploy.dev/terms`:
 
 ## Langkah Selanjutnya
 
-1. **Coba Koyeb dulu** (koyeb.com) — signup dengan email, lihat apakah verifikasi berhasil tanpa CC
+1. **Coba Koyeb dulu** (koyeb.com), signup dengan email, lihat apakah verifikasi berhasil tanpa CC
 2. **Kalau Koyeb minta CC** → pindah ke SnapDeploy (snapdeploy.dev)
 3. **Kalau SnapDeploy tidak cocok** → evaluasi Caasify (4GB RAM, free sampai Des 2026) atau pertimbangkan VPS murah ($3-5/bulan)
 

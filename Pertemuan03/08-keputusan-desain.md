@@ -1,4 +1,4 @@
-# Keputusan Desain — Pertemuan 3
+# Keputusan Desain, Pertemuan 3
 
 BAPELKES ONE &middot; Praktik Aplikasi Web INF60295 &middot; Universitas Negeri Yogyakarta
 
@@ -8,7 +8,7 @@ BAPELKES ONE &middot; Praktik Aplikasi Web INF60295 &middot; Universitas Negeri 
 |---|---|---|---|---|
 | Scope Pertemuan 3 dibatasi ke alur pendaftaran (US-01, US-09) + verifikasi (US-05) | Persona Yuni & Dimas; pendaftaran adalah inti produk BAPELKES ONE, bukan asrama | Memasukkan semua 9 user story sekaligus | Modul mewajibkan sitemap awal maksimal 3 tingkat; scope besar akan mengaburkan alur inti | Tidak |
 | Hierarki sitemap dipisah 3 area: Beranda (publik), Pendaftaran (peserta login), Panitia | Perlu membedakan menu publik, pengguna terautentikasi, dan petugas/admin (prinsip arsitektur informasi modul) | Satu sitemap datar tanpa pemisahan peran | Mencegah peserta tersesat ke halaman panitia dan sebaliknya | Tidak |
-| Wireframe pakai satu warna aksen (kuning/emas) untuk tombol aksi utama, sisanya abu-abu | Aturan wireframe low-fidelity modul: fokus pada struktur, bukan visual rinci | Wireframe berwarna penuh sesuai palet final v5 editorial (indigo-emas-krem) | Wireframe tahap ini untuk validasi struktur & alur, bukan validasi visual; palet penuh menyusul di tahap desain UI | Ya &mdash; disesuaikan dengan mockup v5 editorial pada tahap implementasi UI |
+| Wireframe pakai satu warna aksen (kuning/emas) untuk tombol aksi utama, sisanya abu-abu | Aturan wireframe low-fidelity modul: fokus pada struktur, bukan visual rinci | Wireframe berwarna penuh sesuai palet final v5 editorial (indigo-emas-krem) | Wireframe tahap ini untuk validasi struktur & alur, bukan validasi visual; palet penuh menyusul di tahap desain UI | Ya - disesuaikan dengan mockup v5 editorial pada tahap implementasi UI |
 | State "validasi gagal" digambar eksplisit di Form Pendaftaran (D3/M3) | Acceptance criteria US-09: sistem harus menampilkan pesan error tanpa kehilangan data peserta | Hanya menggambar state sukses (happy path saja) | Modul mewajibkan minimal satu kondisi gagal digambarkan di wireframe & prototipe | Tidak |
 
 ## Ringkasan Kontribusi

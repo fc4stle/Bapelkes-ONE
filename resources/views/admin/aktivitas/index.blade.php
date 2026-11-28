@@ -70,7 +70,7 @@
                                                 {{ $log->created_at->translatedFormat('d M Y H:i') }}
                                             </td>
                                             <td class="px-4 py-2" style="border-right: 1px solid color-mix(in srgb, var(--color-text) 20%, transparent);">
-                                                {{ $log->pelaku?->name ?? '—' }}
+                                                {{ $log->pelaku?->name ?? '-' }}
                                             </td>
                                             <td class="px-4 py-2" style="border-right: 1px solid color-mix(in srgb, var(--color-text) 20%, transparent);">
                                                 <span class="px-2 py-1 rounded text-xs" style="background-color: color-mix(in srgb, var(--color-primary) 10%, transparent); color: var(--color-primary);">
@@ -100,7 +100,7 @@
                                     </div>
                                     <div class="text-sm mb-1">
                                         <span style="color: var(--color-text); opacity: 0.7;">Pelaku:</span>
-                                        {{ $log->pelaku?->name ?? '—' }}
+                                        {{ $log->pelaku?->name ?? '-' }}
                                     </div>
                                     <div class="text-sm">
                                         <span style="color: var(--color-text); opacity: 0.7;">Deskripsi:</span>

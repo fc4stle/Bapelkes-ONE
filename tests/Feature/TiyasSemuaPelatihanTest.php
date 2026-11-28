@@ -176,7 +176,7 @@ class TiyasSemuaPelatihanTest extends TestCase
 
         // Get SVG viewBox untuk menghitung posisi "dibawah plot"
         $viewBox = $chartSvg->getAttribute('viewBox');
-        if (!$viewBox) {
+        if (! $viewBox) {
             $viewBox = '0 0 800 400'; // Default fallback
         }
         $viewBoxParts = array_filter(explode(' ', $viewBox), fn ($v) => trim($v) !== '');
@@ -200,7 +200,7 @@ class TiyasSemuaPelatihanTest extends TestCase
                 $label = '';
                 if ($tspans->length > 0) {
                     foreach ($tspans as $ts) {
-                        $label .= trim($ts->textContent) . ' ';
+                        $label .= trim($ts->textContent).' ';
                     }
                 } else {
                     $label = trim($textEl->textContent);
@@ -214,7 +214,7 @@ class TiyasSemuaPelatihanTest extends TestCase
 
         // B.1: Harus ada minimal 2 label (dari 2 pelatihan)
         $this->assertGreaterThanOrEqual(2, count($axisLabels),
-            'B FAILED: Harus ada minimal 2 label sumbu X. Ditemukan: ' . count($axisLabels) . '. Labels: ' . json_encode($axisLabels));
+            'B FAILED: Harus ada minimal 2 label sumbu X. Ditemukan: '.count($axisLabels).'. Labels: '.json_encode($axisLabels));
 
         // B.2: Label untuk 2 pelatihan harus BERBEDA
         $label1 = $axisLabels[0] ?? '';
@@ -388,7 +388,7 @@ class TiyasSemuaPelatihanTest extends TestCase
             // C: GAGAL jika baris tidak cocok dengan data tes (JANGAN skip dengan continue)
             $this->assertNotNull($matchedPel,
                 "C FAILED: Baris tabel dengan nama '$pelName' tidak cocok dengan pelatihan tes ($pel1->nama atau $pel2->nama). "
-                ."Ini indikasi data tidak cocok atau ada baris berlebih.");
+                .'Ini indikasi data tidak cocok atau ada baris berlebih.');
 
             $actualComposition[$matchedPel->id] = [];
             for ($colIdx = 1; $colIdx <= $numKlasters; $colIdx++) {
@@ -401,7 +401,7 @@ class TiyasSemuaPelatihanTest extends TestCase
         // C: Jumlah baris tabel HARUS SAMA dengan jumlah pelatihan (2)
         $this->assertEquals(2, count($actualComposition),
             'C FAILED: Jumlah baris tabel harus = 2 (2 pelatihan). '
-            .'Ditemukan ' . count($actualComposition) . ' baris. '
+            .'Ditemukan '.count($actualComposition).' baris. '
             .'Tandanya ada baris berlebih atau data tidak cocok.');
 
         // C: STRICT VALIDATION - Cell demi cell
@@ -436,7 +436,7 @@ class TiyasSemuaPelatihanTest extends TestCase
     }
 
     /**
-     * D. TEST: Judul klaster di controller - tanpa "· —" saat kode_profil kosong
+     * D. TEST: Judul klaster di controller - tanpa "· -" saat kode_profil kosong
      */
     public function test_d_klaster_title_labels()
     {
@@ -523,16 +523,16 @@ class TiyasSemuaPelatihanTest extends TestCase
         foreach ($klasterHeaders as $title) {
             if (strpos($title, ' · ') !== false) {
                 // With code: "Klaster N · CODE: Label"
-                $this->assertMatchesRegularExpression('/^Klaster \d+ · [^\—]+: /', $title,
+                $this->assertMatchesRegularExpression('/^Klaster \d+ · [^\-]+: /', $title,
                     "D: Format dengan kode harus 'Klaster N · CODE: ...'. Got: '$title'");
-                $this->assertStringNotContainsString('· —', $title,
-                    "D: Tidak boleh ada '· —'. Got: '$title'");
+                $this->assertStringNotContainsString('· -', $title,
+                    "D: Tidak boleh ada '· -'. Got: '$title'");
             } else {
                 // Without code: "Klaster N: Label"
                 $this->assertMatchesRegularExpression('/^Klaster \d+: /', $title,
                     "D: Format tanpa kode harus 'Klaster N: ...'. Got: '$title'");
-                $this->assertStringNotContainsString('· —', $title,
-                    "D: Tidak boleh ada '· —'. Got: '$title'");
+                $this->assertStringNotContainsString('· -', $title,
+                    "D: Tidak boleh ada '· -'. Got: '$title'");
             }
         }
     }
@@ -634,13 +634,13 @@ class TiyasSemuaPelatihanTest extends TestCase
         // OR find grid lines which also start at plot top
         $lines = $xpath->query('.//line', $scatterSvg);
         $plotTopY = 68; // Default based on current margin setting
-        
+
         foreach ($lines as $line) {
             $x1 = (float) $line->getAttribute('x1');
             $x2 = (float) $line->getAttribute('x2');
             $y1 = (float) $line->getAttribute('y1');
             $y2 = (float) $line->getAttribute('y2');
-            
+
             // Y-axis is a vertical line on the left (x values are equal)
             if (abs($x1 - $x2) < 1) { // Vertical line
                 $minLineY = min($y1, $y2);

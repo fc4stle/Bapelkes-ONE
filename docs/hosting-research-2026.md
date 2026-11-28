@@ -65,7 +65,7 @@ Koyeb diakuisisi oleh Mistral AI (Februari 2026). Beberapa sumber menyatakan:
 TAPI sumber lain (blog resmi Koyeb, freetiers.com) menyatakan:
 > "Koyeb provides a free tier with Database included – no credit card required, never expires, commercial use allowed."
 
-**Status free instance pasca-akuisisi:** TETAP TERSEDIA (512MB RAM, 0.1 vCPU, 2GB SSD) — berdasarkan dokumentasi resmi Koyeb terbaru (September 2026).
+**Status free instance pasca-akuisisi:** TETAP TERSEDIA (512MB RAM, 0.1 vCPU, 2GB SSD), berdasarkan dokumentasi resmi Koyeb terbaru (September 2026).
 
 ---
 
@@ -87,9 +87,9 @@ TAPI sumber lain (blog resmi Koyeb, freetiers.com) menyatakan:
 > "You can deploy by pulling a Docker image by name, connecting a GitHub repo that contains a Dockerfile, uploading an artifact like a JAR or ZIP file, or spinning up a preconfigured app through 1-click templates."
 
 **Docker multi-stage build support:**
-> "SnapDeploy was built from the ground up around Docker containers. That distinction shapes the entire experience — deployment starts with your container, not with a framework-specific buildpack that happens to support Dockerfiles."
+> "SnapDeploy was built from the ground up around Docker containers. That distinction shapes the entire experience, deployment starts with your container, not with a framework-specific buildpack that happens to support Dockerfiles."
 
-Karena SnapDeploy deploy dari GitHub repo yang berisi Dockerfile, **multi-stage builds seharusnya didukung** — SnapDeploy hanya menjalankan `docker build` pada Dockerfile yang ada di repo.
+Karena SnapDeploy deploy dari GitHub repo yang berisi Dockerfile, **multi-stage builds seharusnya didukung**, SnapDeploy hanya menjalankan `docker build` pada Dockerfile yang ada di repo.
 
 ### Apakah 10 deploys/hari cukup untuk development aktif?
 
@@ -147,27 +147,27 @@ Karena SnapDeploy deploy dari GitHub repo yang berisi Dockerfile, **multi-stage 
 | **Caasify** | ❌ Tidak | 4 GB | ❌ Hingga 31 Des 2026 | EU | Sangat generus tapi hanya ~3.5 bulan |
 | **Northflank** | ⚠️ Ya | 2 service always-on | ✅ Permanen | EU/US | Payment method wajib (dikonfirmasi Railway docs) |
 | **Back4App** | ❌ Tidak | 256 MB | ✅ Permanen | US | Terlalu kecil |
-| **Fly.io** | ⚠️ Wajib | 256 MB | ❌ 2 jam trial | — | Free tier dihapus 2024 |
+| **Fly.io** | ⚠️ Wajib | 256 MB | ❌ 2 jam trial |, | Free tier dihapus 2024 |
 | **Railway** | ❌ Tidak | 512 MB | ❌ 30 hari trial | US/EU/Asia | Setelah trial, $1/bln tidak cukup |
 | **Oracle Cloud** | ⚠️ Wajib | 12 GB | ✅ Permanen | Singapore | CC wajib untuk verifikasi |
 | **Laravel Cloud** | ❌ Tidak | 256 MB | ❌ $5/bln minimum | US/EU | - |
 | **DigitalOcean** | ❌ Tidak | 0 (hanya static) | ✅ Permanen (static only) | Singapore | Free tier hanya static sites |
-| **Sevalla** | ❌ Tidak ($20 trial) | — | ❌ Trial credit saja | US/EU | Tidak ada free tier permanen |
-| **Render** | ⚠️ **Ya (untuk Web Service)** | 512 MB | ✅ Permanen | Singapore | **GUGUR** — CC diperlukan untuk compute services. |
+| **Sevalla** | ❌ Tidak ($20 trial) |, | ❌ Trial credit saja | US/EU | Tidak ada free tier permanen |
+| **Render** | ⚠️ **Ya (untuk Web Service)** | 512 MB | ✅ Permanen | Singapore | **GUGUR**, CC diperlukan untuk compute services. |
 
 ---
 
 ## Rekomendasi
 
-### 🏆 **Koyeb** — Pilihan Terbaik Setelah Render GUGUR
+### 🏆 **Koyeb**, Pilihan Terbaik Setelah Render GUGUR
 
 **Alasan:**
-1. **512 MB RAM** — cukup untuk PHP-FPM + Nginx dalam satu container Laravel
-2. **Tidak perlu kartu kredit** — signup cukup email (mungkin hanya diminta jika gagal verifikasi otomatis)
-3. **Permanen** — free tier tidak expire, bisa jalan 3-4 bulan sepanjang semester
-4. **Support custom Dockerfile** — Dockerfile multi-stage (node+php-alpine) bisa langsung dipakai
-5. **Always-on** — meski scale-to-zero setelah 1 jam idle, ini lebih baik dari Render (15 menit) atau SnapDeploy (auto-sleep)
-6. **Custom domain gratis** — 5 custom domain di free tier
+1. **512 MB RAM**, cukup untuk PHP-FPM + Nginx dalam satu container Laravel
+2. **Tidak perlu kartu kredit**, signup cukup email (mungkin hanya diminta jika gagal verifikasi otomatis)
+3. **Permanen**, free tier tidak expire, bisa jalan 3-4 bulan sepanjang semester
+4. **Support custom Dockerfile**, Dockerfile multi-stage (node+php-alpine) bisa langsung dipakai
+5. **Always-on**, meski scale-to-zero setelah 1 jam idle, ini lebih baik dari Render (15 menit) atau SnapDeploy (auto-sleep)
+6. **Custom domain gratis**, 5 custom domain di free tier
 
 **Trade-off:**
 - Region free hanya **Frankfurt** atau **Washington, D.C.** (latensi ~200-300ms dari Indonesia)
@@ -214,7 +214,7 @@ Karena SnapDeploy deploy dari GitHub repo yang berisi Dockerfile, **multi-stage 
 
 1. **Supabase region Singapore** + **Koyeb region Frankfurt** = latency antar service ~200ms (acceptable untuk admin panel).
 2. **Cloudflare CDN gratis** bisa dipakai di depan Koyeb untuk cache asset statis dan mengurangi perceived latency.
-3. **Database sudah di Supabase** (terpisah), jadi Koyeb hanya untuk app — ini ideal karena free DB di platform lain biasanya expire (Render: 30 hari, Railway: 30 hari trial).
+3. **Database sudah di Supabase** (terpisah), jadi Koyeb hanya untuk app, ini ideal karena free DB di platform lain biasanya expire (Render: 30 hari, Railway: 30 hari trial).
 4. **Backup strategy:** Karena free tier tidak ada backup, pastikan ada mekanisme backup DB Supabase secara manual (Supabase free tier punya backup harian).
 5. **Koyeb's scale-to-zero:** Setelah 1 jam tidak ada traffic, app akan sleep. Request berikutnya akan membangunkan app (cold start beberapa detik). Untuk admin panel yang dipakai periodik, ini acceptable.
 

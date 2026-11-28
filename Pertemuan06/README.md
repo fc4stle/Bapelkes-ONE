@@ -131,7 +131,7 @@ Gunakan akun ini untuk login manual di http://localhost:8000/login:
 | `tests/Feature/AccessTest.php` | New | 23 feature test scenarios (6 panitia, 8 peserta, 5 guest, 3 logout, 1 kuota) |
 | `Pertemuan06/01-matriks-akses.md` | New | Access matrix dokumentasi |
 | `Pertemuan06/06-test-checklist.md` | New | Test results checklist |
-| `Pertemuan06/README.md` | New | File ini — dokumentasi lengkap |
+| `Pertemuan06/README.md` | New | File ini, dokumentasi lengkap |
 
 ## Git Commit Plan
 

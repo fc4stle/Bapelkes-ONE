@@ -1,11 +1,11 @@
-# Pemetaan Antarmuka ke Model Data — Pertemuan 5
+# Pemetaan Antarmuka ke Model Data, Pertemuan 5
 
 BAPELKES ONE · Praktik Aplikasi Web INF60295 · Universitas Negeri Yogyakarta
 
 ## Catatan penting: studi kasus jobsheet vs. proyek nyata
 
 Jobsheet Pertemuan 5 menggunakan studi kasus generik "peminjaman ruang kampus" (`Room` dan `Booking`)
-sebagai contoh. Proyek kelompok ini **bukan** aplikasi greenfield — sejak Pertemuan 2–3, BAPELKES ONE
+sebagai contoh. Proyek kelompok ini **bukan** aplikasi greenfield, sejak Pertemuan 2–3, BAPELKES ONE
 sudah punya domain nyata (pendaftaran pelatihan Bapelkes DIY), dan sejak Pertemuan 4 modelnya sudah
 sebagian terbentuk (dari pekerjaan pertemuan-pertemuan sebelumnya, di luar kerja Pertemuan 4 kami).
 Supaya tugas tetap relevan dan tidak duplikat, field/konsep pada jobsheet dipetakan ke entitas yang
@@ -18,7 +18,7 @@ sudah ada di proyek, bukan dibuat ulang dari nol:
 
 ## Pemetaan field antarmuka → kolom database
 
-### Entitas "Room" #1 — Pelatihan (CRUD oleh panitia)
+### Entitas "Room" #1, Pelatihan (CRUD oleh panitia)
 
 | Antarmuka | Field | Kolom Database | Tipe |
 |---|---|---|---|
@@ -30,7 +30,7 @@ sudah ada di proyek, bukan dibuat ulang dari nol:
 | Detail Pelatihan | Metode | `pelatihans.metode` | enum (luring/daring/blended) |
 | Detail Pelatihan | Status | `pelatihans.status` | enum (draft/dibuka/ditutup/selesai) |
 
-### Entitas "Room" #2 — Kamar & Asrama (resource yang bisa bentrok jadwal)
+### Entitas "Room" #2, Kamar & Asrama (resource yang bisa bentrok jadwal)
 
 | Antarmuka | Field | Kolom Database | Tipe |
 |---|---|---|---|
@@ -39,7 +39,7 @@ sudah ada di proyek, bukan dibuat ulang dari nol:
 | Kartu peserta / status pendaftaran | Nomor kamar | `kamars.nomor_kamar` | varchar |
 | Kartu peserta / status pendaftaran | Kapasitas kamar | `kamars.kapasitas` | integer |
 
-### Entitas "Booking" — Pendaftaran
+### Entitas "Booking", Pendaftaran
 
 | Antarmuka | Field | Kolom Database | Tipe |
 |---|---|---|---|
@@ -92,6 +92,6 @@ Relasi:
 ## Hasil pekerjaan
 
 - Seluruh field pada form Pendaftaran dan halaman Detail Pelatihan Pertemuan 4 sudah punya tempat
-  penyimpanan di database — tidak ada field yang belum dipetakan.
-- Relasi `Pelatihan` (1) — (N) `Pendaftaran`, `Asrama` (1) — (N) `Kamar`, dan `Kamar` (1) — (N)
+  penyimpanan di database, tidak ada field yang belum dipetakan.
+- Relasi `Pelatihan` (1), (N) `Pendaftaran`, `Asrama` (1), (N) `Kamar`, dan `Kamar` (1), (N)
   `Pendaftaran` sudah jelas dan konsisten dengan model Eloquent di `app/Models/`.

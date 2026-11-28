@@ -1,4 +1,4 @@
-# TAHAP 1 — Riset & Persiapan: Deploy Bapelkes-ONE ke Vercel
+# TAHAP 1, Riset & Persiapan: Deploy Bapelkes-ONE ke Vercel
 
 **Tanggal:** 12 September 2026  
 **Sumber:** https://vercel.com/kb/guide/laravel-php-with-docker (Vercel KB resmi)
@@ -157,16 +157,16 @@ $kamars = Kamar::lockForUpdate()->get();
   - Lock di-handle oleh PostgreSQL, bukan oleh PHP
   - Selama transaksi, row terkunci untuk instance lain
 
-**Verdict:** ✅ **AMAN** — Tidak perlu penyesuaian. Mekanisme ini tetap berfungsi di Vercel.
+**Verdict:** ✅ **AMAN**, Tidak perlu penyesuaian. Mekanisme ini tetap berfungsi di Vercel.
 
 ---
 
 ### 🟢 QUEUE WORKER / SCHEDULER (Tidak Ada)
 
 **Pencarian:**
-- `app/Jobs/` — tidak ada file
-- `app/Console/Kernel.php` — tidak ada file
-- `routes/console.php` — hanya default Laravel
+- `app/Jobs/`, tidak ada file
+- `app/Console/Kernel.php`, tidak ada file
+- `routes/console.php`, hanya default Laravel
 - `QUEUE_CONNECTION` default = `database` (di `config/queue.php`)
 
 **Analisis:**
@@ -174,7 +174,7 @@ $kamars = Kamar::lockForUpdate()->get();
 - Tidak ada scheduler/cron yang terdaftar
 - `QUEUE_CONNECTION=sync` (di Vercel) berarti job dijalankan langsung di request
 
-**Verdict:** ✅ **AMAN** — Tidak ada queue/scheduler yang perlu diubah.
+**Verdict:** ✅ **AMAN**, Tidak ada queue/scheduler yang perlu diubah.
 
 ---
 
@@ -193,11 +193,11 @@ $kamars = Kamar::lockForUpdate()->get();
 
 ## Langkah Selanjutnya (Setelah Konfirmasi)
 
-**Tahap 2 — Setup Storage:**
+**Tahap 2, Setup Storage:**
 1. Cek kompatibilitas Supabase Storage dengan S3 driver Laravel
 2. Siapkan konfigurasi `filesystems.php` untuk Supabase Storage
 
-**Tahap 3 — Buat File Vercel:**
+**Tahap 3, Buat File Vercel:**
 1. Generate `Dockerfile.vercel` (multi-stage: composer + FrankenPHP)
 2. Generate `Caddyfile` (serve `public/`, route ke `index.php`)
 3. Generate `vercel.json` (container service + routing)

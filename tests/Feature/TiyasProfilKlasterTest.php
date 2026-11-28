@@ -196,7 +196,7 @@ class TiyasProfilKlasterTest extends TestCase
     }
 
     /**
-     * NEW TEST 5: Unit test deskriptif—hitung rerata, simpangan baku, min, maks benar untuk data kecil manual
+     * NEW TEST 5: Unit test deskriptif-hitung rerata, simpangan baku, min, maks benar untuk data kecil manual
      */
     public function test_deskriptif_calculates_statistics_correctly()
     {
@@ -264,30 +264,30 @@ class TiyasProfilKlasterTest extends TestCase
         $reflection = new \ReflectionMethod($service, 'determineProfil');
         $reflection->setAccessible(true);
 
-        // Test Case 1: Centroid A — [3.8, 3.8, 3.8, 3.8] => Optimal Transfer
+        // Test Case 1: Centroid A, [3.8, 3.8, 3.8, 3.8] => Optimal Transfer
         // TC, TE, ITT, YB semuanya Tinggi (> 3.0)
         $result_a = $reflection->invoke($service, [3.8, 3.8, 3.8, 3.8]);
         $this->assertIsArray($result_a);
         $this->assertArrayHasKey('label', $result_a);
         $this->assertEquals('Optimal Transfer', $result_a['label']);
 
-        // Test Case 2: Centroid B — [3.5, 3.5, 3.5, 2.0] => Developing Transfer
+        // Test Case 2: Centroid B, [3.5, 3.5, 3.5, 2.0] => Developing Transfer
         // TC, TE, ITT Tinggi; YB Sedang (2.0-3.0)
         $result_b = $reflection->invoke($service, [3.5, 3.5, 3.5, 2.0]);
         $this->assertEquals('Developing Transfer', $result_b['label']);
 
-        // Test Case 3: Centroid C — [2.0, 2.0, 3.8, 2.0] => Constrained Transfer
+        // Test Case 3: Centroid C, [2.0, 2.0, 3.8, 2.0] => Constrained Transfer
         // TC, TE Rendah/Sedang; ITT Tinggi; YB Rendah/Sedang
         $result_c = $reflection->invoke($service, [2.0, 2.0, 3.8, 2.0]);
         $this->assertEquals('Constrained Transfer', $result_c['label']);
 
-        // Test Case 4: Centroid D — [1.2, 1.2, 1.2, 1.2] => At-Risk Transfer
+        // Test Case 4: Centroid D, [1.2, 1.2, 1.2, 1.2] => At-Risk Transfer
         // Semuanya Rendah (< 2.0)
         $result_d = $reflection->invoke($service, [1.2, 1.2, 1.2, 1.2]);
         $this->assertEquals('At-Risk Transfer', $result_d['label']);
 
-        // Test Case 5: Unmatched — [2.5, 3.5, 2.5, 2.5] => Belum cocok dengan 4 profil konseptual
-        // TC Sedang, TE Tinggi, ITT Sedang, YB Sedang — tidak match profil manapun
+        // Test Case 5: Unmatched, [2.5, 3.5, 2.5, 2.5] => Belum cocok dengan 4 profil konseptual
+        // TC Sedang, TE Tinggi, ITT Sedang, YB Sedang, tidak match profil manapun
         $result_unmatched = $reflection->invoke($service, [2.5, 3.5, 2.5, 2.5]);
         $this->assertEquals('Belum cocok dengan 4 profil konseptual', $result_unmatched['label']);
     }

@@ -1,9 +1,9 @@
-# Pertemuan 4 — Design System, Struktur Proyek, Komponen UI, dan Implementasi Antarmuka Awal
+# Pertemuan 4, Design System, Struktur Proyek, Komponen UI, dan Implementasi Antarmuka Awal
 
 **Mata Kuliah:** Praktik Aplikasi Web (INF60295)
 **Program Studi:** Teknologi Informasi S1, Fakultas Teknik, Universitas Negeri Yogyakarta
 **Dosen Pengampu:** Zaenal Mustofa, M.Kom.
-**Proyek:** BAPELKES ONE — portal terpadu pendaftaran pelatihan Bapelkes DIY
+**Proyek:** BAPELKES ONE, portal terpadu pendaftaran pelatihan Bapelkes DIY
 **Branch:** `feature/ui-pertemuan-4`
 
 ## Anggota Kelompok
@@ -17,8 +17,8 @@
 
 | Berkas | Isi |
 |---|---|
-| `01-design-tokens.md` | Praktikum 1 — warna, tipografi, jarak, radius, bayangan (disimpan juga sebagai CSS variables di `resources/css/app.css`) |
-| `02-component-inventory.md` | Praktikum 2–3 — struktur proyek Laravel yang dipakai, inventori komponen (Button, Card, Status Badge), dan selisih dengan wireframe Pertemuan 3 |
+| `01-design-tokens.md` | Praktikum 1, warna, tipografi, jarak, radius, bayangan (disimpan juga sebagai CSS variables di `resources/css/app.css`) |
+| `02-component-inventory.md` | Praktikum 2–3, struktur proyek Laravel yang dipakai, inventori komponen (Button, Card, Status Badge), dan selisih dengan wireframe Pertemuan 3 |
 | `03-ui-screenshots.pdf` | Bukti uji tampilan desktop (1440×900) dan mobile (390×844) untuk tiap halaman/state |
 | `04-test-checklist.md` | Checklist uji antarmuka 10 poin |
 | `05-keputusan-implementasi.md` | Keputusan implementasi: pemetaan halaman, state kosong/tidak tersedia, navigasi, breakpoint mobile, keterbatasan yang diketahui |
@@ -27,8 +27,8 @@
 ## Studi Kasus
 
 Melanjutkan Pertemuan 3: wireframe dan prototipe klik diubah menjadi halaman Laravel Blade yang benar-benar
-dapat dijalankan di browser — Beranda, Katalog Pelatihan (kartu), Detail Pelatihan, Form Pendaftaran, dan
-Status Pendaftaran — memakai design token dan komponen yang konsisten.
+dapat dijalankan di browser, Beranda, Katalog Pelatihan (kartu), Detail Pelatihan, Form Pendaftaran, dan
+Status Pendaftaran, memakai design token dan komponen yang konsisten.
 
 ## Pembagian Kerja
 
@@ -39,13 +39,13 @@ Status Pendaftaran — memakai design token dan komponen yang konsisten.
 
 Tautan commit: lihat tabel kontribusi di [README.md root](../README.md#kontribusi-pertemuan-4-design-system--implementasi-antarmuka-awal).
 
-## Refleksi Individu — Alysa Salsabila Irfan Putri
+## Refleksi Individu, Alysa Salsabila Irfan Putri
 
 **Komponen apa yang paling banyak mengurangi pengulangan kode?**
 Komponen Status Badge dan Button. Status Badge dipakai di tiga tempat berbeda (halaman uji komponen,
 kartu pelatihan, dan tabel/kartu status pendaftaran) dengan satu sumber logika warna+teks per status,
 jadi kalau aturan visual status berubah, cukup ubah satu file. Button (primary/secondary/danger) juga
-dipakai di hampir semua halaman — tanpa komponen ini, warna dan ukuran tombol gampang jadi tidak
+dipakai di hampir semua halaman, tanpa komponen ini, warna dan ukuran tombol gampang jadi tidak
 konsisten karena ditulis manual di tiap Blade.
 
 **Bagian prototype mana yang berubah setelah diimplementasikan?**
@@ -66,7 +66,7 @@ khusus untuk layar sempit (tabel asli tetap dipakai di layar ≥ 640px), dan bar
 **Bagaimana design token membantu kerja kolaboratif?**
 Karena warna, jarak, dan radius sudah didefinisikan sebagai CSS variables di satu tempat
 (`resources/css/app.css`), saya bisa menambah tampilan kartu alternatif untuk tabel pendaftaran tanpa
-perlu menebak kode warna atau ukuran yang dipakai Marshall di bagian lain — tinggal pakai token yang
+perlu menebak kode warna atau ukuran yang dipakai Marshall di bagian lain, tinggal pakai token yang
 sama (`--color-danger`, `--radius-card`, `--sp-*`) dan hasilnya otomatis konsisten dengan halaman yang
 sudah ada.
 

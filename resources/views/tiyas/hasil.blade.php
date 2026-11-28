@@ -1040,7 +1040,7 @@
                                 @foreach ($klasters as $klIdx => $klaster)
                                     <div style="border: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent); border-radius: var(--radius-card); padding: 1rem;">
                                         <h3 class="font-bold mb-2" style="color: var(--color-text);">
-                                            Klaster {{ $klIdx + 1 }} · {{ $klaster['kode_profil'] ?? '—' }}: {{ $klaster['profil'] }}
+                                            Klaster {{ $klIdx + 1 }} · {{ $klaster['kode_profil'] ?? '-' }}: {{ $klaster['profil'] }}
                                         </h3>
                                         <p class="text-sm mb-2" style="color: var(--color-text);"><strong>Jumlah Peserta:</strong> {{ $klaster['jumlah_peserta'] }}</p>
                                         <p class="text-sm mb-2" style="color: var(--color-text);"><strong>Karakteristik:</strong> {{ $klaster['karakteristik'] }}</p>

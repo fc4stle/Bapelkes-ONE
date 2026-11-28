@@ -17,4 +17,4 @@ Before working on application code, read `CLAUDE.md` first.
 
 ## Skills
 
-The skill `infer-conventions` will infer project-specific conventions from the codebase once real code exists. Do not run it now — defer until there is actual application code (models, controllers, routes) to analyze.
+The skill `infer-conventions` will infer project-specific conventions from the codebase once real code exists. Do not run it now, defer until there is actual application code (models, controllers, routes) to analyze.

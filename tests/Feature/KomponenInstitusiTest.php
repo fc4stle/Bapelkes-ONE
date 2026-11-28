@@ -162,7 +162,7 @@ class KomponenInstitusiTest extends TestCase
     }
 
     /**
-     * Test modal JS selector tidak rusak — satu backslash per tanda kutip
+     * Test modal JS selector tidak rusak, satu backslash per tanda kutip
      */
     public function test_modal_selector_js_tidak_rusak()
     {

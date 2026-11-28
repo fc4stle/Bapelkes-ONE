@@ -190,7 +190,7 @@ class TiyasController extends Controller
             foreach ($klasterResult['tabel_klaster'] as $klaster) {
                 // Format bergantung pada kode_profil
                 $kode = $klaster['kode_profil'] ?? null;
-                if (empty($kode) || $kode === '—') {
+                if (empty($kode) || $kode === '-') {
                     // Tanpa kode: "Klaster N: {label}"
                     $klasterLabels[] = "Klaster {$klaster['klaster']}: {$klaster['profil']}";
                 } else {

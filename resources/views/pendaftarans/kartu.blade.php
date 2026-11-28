@@ -144,7 +144,7 @@
                                     Diverifikasi oleh: {{ $pendaftaran->verifier->name ?? 'Panitia' }} pada {{ $pendaftaran->verified_at->format('d M Y H:i') }}
                                 </p>
                                 <p class="text-xs text-[var(--color-muted)]">
-                                    Dokumen simulasi proyek akademik UNY — bukan dokumen resmi.
+                                    Dokumen simulasi proyek akademik UNY, bukan dokumen resmi.
                                 </p>
                             </div>
                             <button onclick="window.print()" class="print:hidden w-full sm:w-auto inline-flex items-center justify-center px-3 py-1.5 border border-[var(--color-line)] text-xs font-medium rounded-md text-[var(--color-text)] bg-white hover:bg-[var(--color-bg)]">

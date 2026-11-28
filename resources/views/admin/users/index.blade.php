@@ -130,7 +130,7 @@
                                                     </form>
                                                 @endif
                                             @else
-                                                <span class="text-xs text-[var(--color-muted)]">—</span>
+                                                <span class="text-xs text-[var(--color-muted)]">-</span>
                                             @endif
                                         </div>
 

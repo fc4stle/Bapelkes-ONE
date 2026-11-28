@@ -1,9 +1,9 @@
-# Pertemuan 3 — Arsitektur Informasi, User Flow, Wireframe, dan Prototipe Awal
+# Pertemuan 3, Arsitektur Informasi, User Flow, Wireframe, dan Prototipe Awal
 
 **Mata Kuliah:** Praktik Aplikasi Web (INF60295)
 **Program Studi:** Teknologi Informasi S1, Fakultas Teknik, Universitas Negeri Yogyakarta
 **Dosen Pengampu:** Zaenal Mustofa, M.Kom.
-**Proyek:** BAPELKES ONE &mdash; portal terpadu pendaftaran pelatihan Bapelkes DIY
+**Proyek:** BAPELKES ONE - portal terpadu pendaftaran pelatihan Bapelkes DIY
 
 ## Anggota Kelompok
 
@@ -16,20 +16,20 @@
 
 | Berkas | Isi |
 |---|---|
-| `01-scope-canvas.pdf` | Praktikum 1 &mdash; pemilihan ruang lingkup desain dari backlog Pertemuan 2 |
-| `02-sitemap.pdf` | Praktikum 2 &mdash; arsitektur informasi, sitemap, dan daftar halaman |
-| `03-user-flow-pengguna.pdf` | Praktikum 3 &mdash; user flow peserta mendaftar pelatihan |
-| `04-user-flow-admin.pdf` | Praktikum 3 &mdash; user flow panitia memverifikasi peserta |
-| `05-wireframe-desktop.pdf` | Praktikum 4 &mdash; wireframe desktop (4 layar) |
-| `06-wireframe-mobile.pdf` | Praktikum 4 &mdash; wireframe mobile (4 layar berpasangan) |
-| `07-usability-walkthrough.pdf` | Praktikum 5 &mdash; template hasil uji (isi setelah pengujian nyata) |
-| `08-keputusan-desain.md` | Praktikum 6 &mdash; format keputusan desain dan alasannya |
-| `09-revisi-job3-flow-institusional.pdf` | Revisi — scope canvas, sitemap, user flow, dan wireframe tambahan untuk alur institusional (Dinkes): pemesanan kolektif, MOU, dan info asrama |
-| `10-prototipe-klik.pdf` | Praktikum 5 — prototipe klik (low-fidelity, dibuat sebagai halaman-halaman tertaut mengikuti wireframe & user flow) |
+| `01-scope-canvas.pdf` | Praktikum 1 - pemilihan ruang lingkup desain dari backlog Pertemuan 2 |
+| `02-sitemap.pdf` | Praktikum 2 - arsitektur informasi, sitemap, dan daftar halaman |
+| `03-user-flow-pengguna.pdf` | Praktikum 3 - user flow peserta mendaftar pelatihan |
+| `04-user-flow-admin.pdf` | Praktikum 3 - user flow panitia memverifikasi peserta |
+| `05-wireframe-desktop.pdf` | Praktikum 4 - wireframe desktop (4 layar) |
+| `06-wireframe-mobile.pdf` | Praktikum 4 - wireframe mobile (4 layar berpasangan) |
+| `07-usability-walkthrough.pdf` | Praktikum 5 - template hasil uji (isi setelah pengujian nyata) |
+| `08-keputusan-desain.md` | Praktikum 6 - format keputusan desain dan alasannya |
+| `09-revisi-job3-flow-institusional.pdf` | Revisi, scope canvas, sitemap, user flow, dan wireframe tambahan untuk alur institusional (Dinkes): pemesanan kolektif, MOU, dan info asrama |
+| `10-prototipe-klik.pdf` | Praktikum 5, prototipe klik (low-fidelity, dibuat sebagai halaman-halaman tertaut mengikuti wireframe & user flow) |
 
 ## Studi Kasus
 
-BAPELKES ONE &mdash; portal terpadu pendaftaran pelatihan untuk Bapelkes DIY. Ruang lingkup Pertemuan 3
+BAPELKES ONE - portal terpadu pendaftaran pelatihan untuk Bapelkes DIY. Ruang lingkup Pertemuan 3
 dibatasi ke alur inti: peserta mencari & mendaftar pelatihan, panitia memverifikasi pendaftar. Lihat
 `08-keputusan-desain.md` untuk alasan lengkap pemilihan scope.
 

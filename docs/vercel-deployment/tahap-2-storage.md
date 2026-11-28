@@ -1,4 +1,4 @@
-# TAHAP 2 — Setup Storage & Konfigurasi Vercel
+# TAHAP 2, Setup Storage & Konfigurasi Vercel
 
 **Tanggal:** 12 September 2026  
 **Fokus:** Session/Cache driver + Supabase Storage S3 compatibility
@@ -26,7 +26,7 @@ QUEUE_CONNECTION=database  ⚠️  Perlu diubah ke 'sync' untuk Vercel
 | `cache` | `0001_01_01_000001_create_cache_table.php` | ✅ Sudah ada |
 | `cache_locks` | (sama dengan cache) | ✅ Sudah ada |
 | `jobs` | `0001_01_01_000002_create_jobs_table.php` | ✅ Sudah ada |
-| `sessions` | — | ❌ **BELUM ADA** |
+| `sessions` |, | ❌ **BELUM ADA** |
 
 **Aksi:** Perlu buat migration untuk `sessions` table:
 
@@ -48,7 +48,7 @@ Schema::create('sessions', function (Blueprint $table) {
 
 ---
 
-## 3. Supabase Storage S3 — Kompatibilitas & Konfigurasi
+## 3. Supabase Storage S3, Kompatibilitas & Konfigurasi
 
 ### Bukti Kompatibilitas
 
@@ -101,13 +101,13 @@ Tambah disk `supabase`:
 
 ### Catatan Penting dari Community Reports
 
-1. **`AWS_USE_PATH_STYLE_ENDPOINT=true` WAJIB** — Supabase menggunakan path-style URLs (`https://<project-ref>.supabase.co/storage/v1/s3/bucket/...`), bukan virtual-hosted-style.
+1. **`AWS_USE_PATH_STYLE_ENDPOINT=true` WAJIB**, Supabase menggunakan path-style URLs (`https://<project-ref>.supabase.co/storage/v1/s3/bucket/...`), bukan virtual-hosted-style.
 
-2. **Generate S3 credentials dari Dashboard** — Supabase Dashboard > Storage > Settings > S3 > "Generate new credentials". Access Key dan Secret Key berbeda dari service_role key biasa.
+2. **Generate S3 credentials dari Dashboard**, Supabase Dashboard > Storage > Settings > S3 > "Generate new credentials". Access Key dan Secret Key berbeda dari service_role key biasa.
 
-3. **Region harus sesuai** — Region harus match dengan region Supabase project (contoh: `ap-southeast-1` untuk Singapore).
+3. **Region harus sesuai**, Region harus match dengan region Supabase project (contoh: `ap-southeast-1` untuk Singapore).
 
-4. **Bucket harus public atau policy sesuai** — Untuk file yang perlu diakses publik (surat tugas, dokumen), bucket perlu di-set public atau attach policy yang mengizinkan read.
+4. **Bucket harus public atau policy sesuai**, Untuk file yang perlu diakses publik (surat tugas, dokumen), bucket perlu di-set public atau attach policy yang mengizinkan read.
 
 ---
 
@@ -198,13 +198,13 @@ Route::get('/test-supabase-s3', function () {
 
 Setelah konfirmasi, Tahap 3 akan:
 
-1. **Generate `Dockerfile.vercel`** — multi-stage: composer + FrankenPHP
-2. **Generate `Caddyfile`** — serve `public/`, route ke `index.php`
-3. **Generate `vercel.json`** — container service + routing
-4. **Buat migration `sessions` table** — `php artisan make:session-table`
-5. **Update `filesystems.php`** — tambah disk `supabase`
-6. **Update `PendaftaranController.php`** — ganti `'public'` ke `'supabase'`
-7. **Commit ke branch `vercel-deploy`** — jangan sentuh `main`
+1. **Generate `Dockerfile.vercel`**, multi-stage: composer + FrankenPHP
+2. **Generate `Caddyfile`**, serve `public/`, route ke `index.php`
+3. **Generate `vercel.json`**, container service + routing
+4. **Buat migration `sessions` table**, `php artisan make:session-table`
+5. **Update `filesystems.php`**, tambah disk `supabase`
+6. **Update `PendaftaranController.php`**, ganti `'public'` ke `'supabase'`
+7. **Commit ke branch `vercel-deploy`**, jangan sentuh `main`
 
 ---
 

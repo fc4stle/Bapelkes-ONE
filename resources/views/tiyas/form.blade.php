@@ -5,7 +5,7 @@
             <div class="mb-6 p-4 rounded-lg" style="background-color: var(--color-surface); border: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent);">
                 <div class="mb-3">
                     <p class="font-semibold" style="color: var(--color-text);">
-                        <span x-text="'Langkah ' + currentStep + ' dari 5'"></span> — <span x-text="stepTitle"></span>
+                        <span x-text="'Langkah ' + currentStep + ' dari 5'"></span>, <span x-text="stepTitle"></span>
                     </p>
                 </div>
                 <div class="flex justify-between items-center mb-3 text-sm" style="color: var(--color-text); opacity: 0.7;">

@@ -1,4 +1,4 @@
-# Test Checklist — Pertemuan 6: Autentikasi, Otorisasi, Role, Middleware, Policy
+# Test Checklist, Pertemuan 6: Autentikasi, Otorisasi, Role, Middleware, Policy
 
 Skenario pengujian untuk Bapelkes-ONE role-based access control (RBAC).
 

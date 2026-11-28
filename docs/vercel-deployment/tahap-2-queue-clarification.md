@@ -1,4 +1,4 @@
-# TAHAP 2 (Lanjutan) — Klarifikasi Queue & Rencana Test Supabase S3
+# TAHAP 2 (Lanjutan), Klarifikasi Queue & Rencana Test Supabase S3
 
 **Tanggal:** 12 September 2026
 
@@ -19,7 +19,7 @@ Setelah pencarian ulang exhaustive di seluruh kode project:
 | `Bus::batch()` atau `Bus::chain()` | ❌ **Tidak ada** |
 | `queue` atau `queued` method calls | ❌ **Tidak ada** |
 
-### Fitur Sertifikat (US-04) — Analisis Detail
+### Fitur Sertifikat (US-04), Analisis Detail
 
 ```php
 // PendaftaranController.php baris 266-271
@@ -30,7 +30,7 @@ return $pdf->download($filename);
 
 **Proses:** Generate PDF langsung (synchronous) → download response. **Tidak ada queue.**
 
-### Fitur Notifikasi/Email — Analisis Detail
+### Fitur Notifikasi/Email, Analisis Detail
 
 Satu-satunya "notifikasi" yang ada adalah:
 
@@ -150,7 +150,7 @@ Jalankan `php artisan serve` dan buka `/test-supabase-s3`.
 
 | Item | Status |
 |------|--------|
-| Queue usage di project | ✅ TIDAK ADA — aman untuk `QUEUE_CONNECTION=sync` |
+| Queue usage di project | ✅ TIDAK ADA, aman untuk `QUEUE_CONNECTION=sync` |
 | Session driver (`database`) | ✅ Siap |
 | Cache store (`database`) | ✅ Siap |
 | Migration `sessions` table | ❌ Perlu dibuat |
@@ -162,7 +162,7 @@ Jalankan `php artisan serve` dan buka `/test-supabase-s3`.
 
 ## Menunggu
 
-1. **Konfirmasi queue** — apakah penjelasan di atas cukup?
-2. **S3 Credentials** — untuk test koneksi nyata (atau konfirmasi Anda mau test sendiri)
+1. **Konfirmasi queue**, apakah penjelasan di atas cukup?
+2. **S3 Credentials**, untuk test koneksi nyata (atau konfirmasi Anda mau test sendiri)
 
 Setelah dua hal ini clear, saya lanjut ke Tahap 3.

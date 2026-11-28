@@ -1,4 +1,4 @@
-# CRUD "Booking" — Pertemuan 5
+# CRUD "Booking", Pertemuan 5
 
 BAPELKES ONE · Praktik Aplikasi Web INF60295 · Universitas Negeri Yogyakarta
 
@@ -11,10 +11,10 @@ asrama). Sebelum Pertemuan 5, CRUD-nya **belum lengkap**: create/read/delete sud
 
 | Operasi jobsheet | Status sebelum Pertemuan 5 | Pekerjaan Pertemuan 5 |
 |---|---|---|
-| `create()`/`store()` — form pengajuan, validasi, simpan status `pending` | Sudah ada (`PendaftaranController::create`/`store`) | Tidak diubah |
+| `create()`/`store()`, form pengajuan, validasi, simpan status `pending` | Sudah ada (`PendaftaranController::create`/`store`) | Tidak diubah |
 | Tampilkan daftar pengajuan + nama ruang via relasi Eloquent | Sudah ada (`index()`, `$pendaftaran->pelatihan->nama`) | Tidak diubah |
-| `edit()`/`update()` — ubah data pengajuan milik sendiri | **Belum ada** | **Baru**: `PendaftaranController::edit()` + `updateSelf()`, route `pendaftarans.edit` (GET) dan `pendaftarans.updateSelf` (PUT) |
-| `destroy()` — hapus pengajuan | Sudah ada (`destroy()`, hanya pemilik) | Tidak diubah |
+| `edit()`/`update()`, ubah data pengajuan milik sendiri | **Belum ada** | **Baru**: `PendaftaranController::edit()` + `updateSelf()`, route `pendaftarans.edit` (GET) dan `pendaftarans.updateSelf` (PUT) |
+| `destroy()`, hapus pengajuan | Sudah ada (`destroy()`, hanya pemilik) | Tidak diubah |
 | Pesan sukses/error setiap operasi | Sudah ada untuk create/delete | **Baru** untuk update: pesan berbeda untuk berhasil-dapat-kamar, berhasil-tanpa-kamar, dan berhasil-tanpa-asrama |
 
 ## Detail implementasi baru
@@ -34,10 +34,10 @@ HTTP yang berbeda mencegah peserta memanggil endpoint verifikasi panitia atau se
 
 ### Controller (`app/Http/Controllers/PendaftaranController.php`)
 
-- `edit(Pendaftaran $pendaftaran)` — menolak (403) jika bukan pemilik; menolak dengan pesan error jika
+- `edit(Pendaftaran $pendaftaran)`, menolak (403) jika bukan pemilik; menolak dengan pesan error jika
   status pengajuan sudah `diverifikasi`/`ditolak` (pengajuan yang sudah diproses panitia tidak boleh
   diubah peserta); jika lolos, tampilkan form terisi data lama (`resources/views/pendaftarans/edit.blade.php`).
-- `updateSelf(Request $request, Pendaftaran $pendaftaran)` — validasi sama seperti `store()` (nama, NIK,
+- `updateSelf(Request $request, Pendaftaran $pendaftaran)`, validasi sama seperti `store()` (nama, NIK,
   kontak, profesi, instansi, dokumen opsional, kebutuhan asrama); jika peserta tetap butuh asrama, kamar
   lama dilepas dulu lalu dialokasikan ulang via `KamarService` (lihat bagian validasi bentrok di bawah).
 - Logika alokasi kamar diekstrak ke method privat `alokasikanKamarJikaPerlu()` supaya `store()` dan
@@ -45,7 +45,7 @@ HTTP yang berbeda mencegah peserta memanggil endpoint verifikasi panitia atau se
 
 ### View baru
 
-`resources/views/pendaftarans/edit.blade.php` — form yang sama strukturnya dengan `create.blade.php`
+`resources/views/pendaftarans/edit.blade.php`, form yang sama strukturnya dengan `create.blade.php`
 (4 fieldset: data diri, dokumen, asrama, konfirmasi), tapi field terisi data pengajuan yang sedang
 diubah, dan dokumen lama tetap dipakai jika peserta tidak mengunggah berkas baru.
 
@@ -59,18 +59,18 @@ baru tumpang tindih dengan booking lain yang `pending`/`approved`; jika bentrok,
 dekat field.
 
 BAPELKES ONE sudah punya mekanisme setara sejak sebelum Pertemuan 5, lewat `KamarService::alokasikanKamar()`
-dan `Kamar::tersediaUntukTanggal()` — bedanya, granularitasnya rentang tanggal (check-in/check-out),
+dan `Kamar::tersediaUntukTanggal()`, bedanya, granularitasnya rentang tanggal (check-in/check-out),
 bukan jam (karena menginap di asrama, bukan meminjam ruang per jam), dan skema reaksinya **berbeda
 secara sengaja**: alih-alih menolak seluruh pengajuan pelatihan hanya karena asrama penuh, sistem tetap
 menyimpan pengajuan (`butuh_asrama = true`, `kamar_id = null`) dan menampilkan pesan yang jelas bahwa
 asrama penuh untuk tanggal tersebut. Keputusan produk ini diambil karena pendaftaran pelatihan adalah
-transaksi utama peserta — kebutuhan menginap adalah fasilitas tambahan yang semestinya tidak
+transaksi utama peserta, kebutuhan menginap adalah fasilitas tambahan yang semestinya tidak
 menggagalkan pendaftaran pelatihannya.
 
 Pekerjaan baru Pertemuan 5 memastikan validasi ini juga berlaku konsisten pada **jalur edit**, bukan
 cuma saat pendaftaran pertama kali dibuat: saat peserta mengubah tanggal check-in/check-out lewat form
 edit, kamar lama dilepas lebih dulu (supaya tidak dihitung bentrok dengan dirinya sendiri), lalu
-dicari ulang kamar yang tersedia untuk rentang tanggal baru — persis logika `store()`. Jika semua kamar
+dicari ulang kamar yang tersedia untuk rentang tanggal baru, persis logika `store()`. Jika semua kamar
 penuh untuk rentang baru, peserta mendapat pesan "asrama sudah penuh untuk tanggal tersebut" (lihat
 skenario C pada `06-test-checklist.md`, dan bukti tangkapan layar `08-pesan-bentrok` pada
 `07-screenshots.pdf`).
