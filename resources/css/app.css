@@ -79,6 +79,38 @@ h6.font-sans {
   --radius-btn: 9999px;
   --radius-card: 12px;
   --shadow-card: none;
+
+  /* durasi & easing (Interaksi UX Tahap A) */
+  --dur-fast: 150ms;
+  --dur-base: 200ms;
+  --ease: cubic-bezier(.2,.7,.2,1);
+}
+
+/* ========== GLOBAL FOCUS VISIBLE ========== */
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* Focus visible di dalam band hijau: gunakan warna emas lembut */
+[data-brand="band"] :focus-visible,
+.band-section :focus-visible {
+  outline: 2px solid var(--color-gold-soft);
+  outline-offset: 2px;
+}
+
+/* ========== PREFERS-REDUCED-MOTION GLOBAL ========== */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* ========== INTERAKSI UX ========== */
@@ -87,14 +119,16 @@ h6.font-sans {
 @media (prefers-reduced-motion: no-preference) {
   .primary-button,
   .secondary-button,
+  .danger-button,
   button,
   a[class*="button"],
   .btn {
-    transition: color 150ms ease, background-color 150ms ease, box-shadow 150ms ease, transform 150ms ease;
+    transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
   }
 
   .primary-button:hover,
   .secondary-button:hover,
+  .danger-button:hover,
   button:not(:disabled):hover,
   a[class*="button"]:hover,
   .btn:not(:disabled):hover {
@@ -104,18 +138,20 @@ h6.font-sans {
 
   .primary-button:active,
   .secondary-button:active,
+  .danger-button:active,
   button:not(:disabled):active,
   a[class*="button"]:active,
   .btn:not(:disabled):active {
-    transform: scale(0.97);
+    transform: scale(0.98);
   }
 
   .primary-button:focus-visible,
   .secondary-button:focus-visible,
+  .danger-button:focus-visible,
   button:focus-visible,
   a[class*="button"]:focus-visible,
   .btn:focus-visible {
-    outline: 2px solid var(--color-primary);
+    outline: 2px solid var(--color-accent);
     outline-offset: 2px;
   }
 }
@@ -123,8 +159,9 @@ h6.font-sans {
 /* Tombol disabled */
 button:disabled,
 .primary-button:disabled,
-.secondary-button:disabled {
-  opacity: 0.6;
+.secondary-button:disabled,
+.danger-button:disabled {
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
@@ -133,7 +170,7 @@ button:disabled,
   x-card,
   .card,
   [class*="card"] {
-    transition: transform 200ms ease, box-shadow 200ms ease;
+    transition: transform var(--dur-base) var(--ease), box-shadow var(--dur-base) var(--ease);
   }
 
   /* Hover hanya di perangkat dengan hover capability */
@@ -158,7 +195,7 @@ button:disabled,
 @media (prefers-reduced-motion: no-preference) {
   /* Radio button label pill styling */
   label:has(input[type="radio"]) {
-    transition: background-color 150ms ease-in-out, color 150ms ease-in-out, border-color 150ms ease-in-out, transform 150ms ease-in-out;
+    transition: background-color var(--dur-fast) ease-in-out, color var(--dur-fast) ease-in-out, border-color var(--dur-fast) ease-in-out, transform var(--dur-fast) ease-in-out;
   }
 
   /* Radio label hover */
@@ -322,6 +359,14 @@ textarea):focus {
 
 /* ========== TABEL INSTITUSI ========== */
 
+.tabel-institusi tbody tr {
+  transition: background-color var(--dur-base) var(--ease);
+}
+
+.tabel-institusi tbody tr:hover {
+  background-color: color-mix(in srgb, var(--color-primary) 6%, white);
+}
+
 .tabel-institusi th {
   text-align: left;
   font-size: 11px;
@@ -337,6 +382,24 @@ textarea):focus {
 .tabel-institusi td {
   padding: 12px 8px;
   border-bottom: 1px solid var(--color-line);
+}
+
+/* ========== TAUTAN DI ISI HALAMAN ========== */
+
+@media (prefers-reduced-motion: no-preference) {
+  main a {
+    transition: text-decoration-color var(--dur-fast) var(--ease);
+  }
+
+  main a:hover {
+    text-decoration: underline;
+    text-decoration-offset: 4px;
+  }
+}
+
+main a:hover {
+  text-decoration: underline;
+  text-decoration-offset: 4px;
 }
 
 /* ========== END INTERAKSI UX ========== */
