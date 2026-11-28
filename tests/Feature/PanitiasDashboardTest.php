@@ -37,8 +37,45 @@ class PanitiasDashboardTest extends TestCase
 
         $response->assertOk();
 
-        // Should have divide-x or xl:divide-x for grid columns
-        $response->assertSee('divide-x', false);
+        $html = $response->getContent();
+
+        // Parse HTML to find metric grid panel
+        $dom = new \DOMDocument;
+        libxml_use_internal_errors(true);
+        $dom->loadHTML($html);
+        libxml_use_internal_errors(false);
+
+        $xpath = new \DOMXPath($dom);
+
+        // Find first grid with grid-cols-1 class (metric grid)
+        $grids = $xpath->query("//div[contains(@class, 'grid-cols-1') and contains(@class, 'gap-px')]");
+
+        $this->assertGreaterThan(0, $grids->length, 'Should have metric grid with gap-px class');
+
+        $metricGrid = $grids->item(0);
+
+        // Assert metric grid has gap-px and bg-[var(--color-line)]
+        $gridClass = $metricGrid->getAttribute('class');
+
+        $this->assertStringContainsString('gap-px', $gridClass, 'Metric grid should have gap-px class');
+        $this->assertStringContainsString('bg-[var(--color-line)]', $gridClass, 'Metric grid should have bg-[var(--color-line)] class');
+
+        // Assert metric grid does NOT have divide-x or divide-y
+        $this->assertStringNotContainsString('divide-x', $gridClass, 'Metric grid should not have divide-x class');
+        $this->assertStringNotContainsString('divide-y', $gridClass, 'Metric grid should not have divide-y class');
+
+        // Count and verify cells in grid
+        $cells = $xpath->query('./div', $metricGrid);
+
+        $this->assertEquals(4, $cells->length, 'Metric grid should have exactly 4 cells');
+
+        // Verify all cells have bg-white
+        for ($i = 0; $i < $cells->length; $i++) {
+            $cell = $cells->item($i);
+            $cellClass = $cell->getAttribute('class');
+
+            $this->assertStringContainsString('bg-white', $cellClass, "Cell $i should have bg-white class");
+        }
     }
 
     public function test_dashboard_has_page_header_subtitle(): void

@@ -7,9 +7,9 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <!-- Bagian 1: Panel Metrik Perlu Tindakan -->
             <div class="rounded-xl border bg-white mb-8" style="border-color: var(--color-line);">
-                <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 divide-y sm:divide-x sm:divide-y-0 xl:divide-x xl:divide-y divide-[var(--color-line)]">
+                <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-px overflow-hidden rounded-xl bg-[var(--color-line)]">
                     <!-- Menunggu Verifikasi -->
-                    <div class="p-5">
+                    <div class="p-5 bg-white">
                         <p class="text-xs font-medium text-[var(--color-muted)]">Menunggu Verifikasi</p>
                         <p class="text-3xl font-semibold text-[var(--color-text)] mt-2">{{ $total_pending }}</p>
                         <div class="mt-3">
@@ -24,7 +24,7 @@
                     </div>
 
                     <!-- Perhatian Kuota -->
-                    <div class="p-5">
+                    <div class="p-5 bg-white">
                         <div class="flex items-center gap-2">
                             <p class="text-xs font-medium text-[var(--color-muted)]">Perhatian Kuota</p>
                             @if ($pelatihan_perhatian > 0)
@@ -44,7 +44,7 @@
                     </div>
 
                     <!-- Tanpa TIYAS -->
-                    <div class="p-5">
+                    <div class="p-5 bg-white">
                         <p class="text-xs font-medium text-[var(--color-muted)]">Tanpa TIYAS</p>
                         <p class="text-3xl font-semibold text-[var(--color-text)] mt-2">{{ $pelatihan_tanpa_tiyas }}</p>
                         <div class="mt-3">
@@ -59,7 +59,7 @@
                     </div>
 
                     <!-- Asrama Pending -->
-                    <div class="p-5">
+                    <div class="p-5 bg-white">
                         <p class="text-xs font-medium text-[var(--color-muted)]">Asrama Pending</p>
                         <p class="text-3xl font-semibold text-[var(--color-text)] mt-2">{{ $asrama_pending }}</p>
                         <div class="mt-3">
