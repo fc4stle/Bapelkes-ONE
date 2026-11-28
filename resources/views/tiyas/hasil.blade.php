@@ -159,8 +159,7 @@
                                     <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style="color: var(--color-text);">Aksi</th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y" style="border-color: color-mix(in srgb, var(--color-text) 15%, transparent);">
-                                @foreach ($dataPerPeserta as $data)
+                            <tbody class="tabel-institusi divide-y" style="border-color: color-mix(in srgb, var(--color-text) 15%, transparent);">\n                                @foreach ($dataPerPeserta as $data)
                                     <tr style="background-color: transparent;" class="hover:opacity-75">
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium" style="color: var(--color-text);">{{ $data['nama'] }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap text-center text-sm" style="color: var(--color-text);">
@@ -220,8 +219,7 @@
                                     <th class="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider" style="color: var(--color-text);">Rata-rata</th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y" style="border-color: color-mix(in srgb, var(--color-text) 15%, transparent);">
-                                @foreach (config('tiyas.konstruk') as $kodeKonstruk => $konstruk)
+                            <tbody class="tabel-institusi divide-y" style="border-color: color-mix(in srgb, var(--color-text) 15%, transparent);">\n                                @foreach (config('tiyas.konstruk') as $kodeKonstruk => $konstruk)
                                     @php
                                         $dimensiCount = count($konstruk['dimensi']);
                                     @endphp
@@ -269,8 +267,7 @@
                                             <th class="text-center px-4 py-2" style="color: var(--color-text);">Maks</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
-                                        @foreach (config('tiyas')['konstruk'] as $kode => $konstruk)
+                                    <tbody class="tabel-institusi">\n                                        @foreach (config('tiyas')['konstruk'] as $kode => $konstruk)
                                             @php $label = $konstruk['judul']; @endphp
                                             @if (isset($deskriptif[$kode]))
                                                 <tr style="border-bottom: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);">
@@ -452,8 +449,7 @@
                                         <th class="px-4 py-2 text-center" style="color: var(--color-text);">Tinggi</th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                    @foreach (['TC', 'TE', 'ITT', 'YB'] as $kode)
+                                <tbody class="tabel-institusi">\n                                    @foreach (['TC', 'TE', 'ITT', 'YB'] as $kode)
                                         @if (isset($deskriptif[$kode]['kategori']))
                                             <tr style="border-bottom: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);">
                                                 <td class="px-4 py-2 font-medium" style="color: var(--color-text);">{{ $kode }}</td>
@@ -509,8 +505,7 @@
                                             <th class="text-center px-2 py-2" style="color: var(--color-text);">Silhouette</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
-                                        @foreach ($klasterResult['validity_table'] as $row)
+                                    <tbody class="tabel-institusi">\n                                        @foreach ($klasterResult['validity_table'] as $row)
                                             <tr style="border-bottom: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);" class="hover:opacity-75">
                                                 <td class="px-2 py-2" style="color: var(--color-text);">
                                                     <strong>{{ $row['c'] }}</strong>

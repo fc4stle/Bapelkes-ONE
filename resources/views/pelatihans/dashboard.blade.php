@@ -177,7 +177,7 @@
                                         <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-[var(--color-muted)] uppercase tracking-wider">Sertifikat</th>
                                     </tr>
                                 </thead>
-                                <tbody class="bg-white divide-y divide-gray-200">
+                                <tbody class="tabel-institusi bg-white divide-y divide-gray-200">
                                     @foreach ($pelatihans as $pelatihan)
                                         <tr>
                                             <td class="px-4 py-4">
