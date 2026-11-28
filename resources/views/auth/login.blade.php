@@ -4,9 +4,6 @@
         <p class="text-sm" style="color: var(--color-muted);">
             Peserta, panitia, dan admin masuk dari halaman ini.
         </p>
-        <p class="text-xs mt-4" style="color: var(--color-muted);">
-            Portal terpadu pelatihan dan layanan peserta, studi kasus Bapelkes DIY
-        </p>
     </div>
 
     <!-- Error Alert -->
@@ -47,15 +44,20 @@
         </div>
 
         <!-- Remember Me -->
-        <div class="block mb-4">
+        <div class="flex items-center justify-between mb-4">
             <label for="remember_me" class="inline-flex items-center">
-                <input id="remember_me" type="checkbox" class="rounded" style="border-color: #d1d5db;" name="remember">
+                <input id="remember_me" type="checkbox" class="rounded" style="border-color: var(--color-line);" name="remember">
                 <span class="ms-2 text-sm" style="color: var(--color-text);">Ingat saya</span>
             </label>
+            @if (Route::has('password.request'))
+                <a class="text-sm" style="color: var(--color-primary);" href="{{ route('password.request') }}">
+                    Lupa kata sandi?
+                </a>
+            @endif
         </div>
 
-        <div class="flex flex-col gap-4 justify-between mt-6">
-            <button type="submit" class="inline-flex items-center justify-center px-4 py-3 bg-[var(--color-primary)] border border-transparent rounded-[var(--radius-btn)] font-semibold text-sm text-white uppercase tracking-widest hover:opacity-90 focus:outline-none transition ease-in-out duration-150 w-full disabled:opacity-50 disabled:cursor-not-allowed" style="border-radius: 9999px;" x-bind:disabled="submitting">
+        <div class="flex flex-col gap-4 mt-6">
+            <button type="submit" class="inline-flex items-center justify-center px-4 py-3 bg-[var(--color-primary)] border border-transparent rounded-[var(--radius-btn)] font-semibold text-sm text-white hover:opacity-90 focus:outline-none transition ease-in-out duration-150 w-full disabled:opacity-50 disabled:cursor-not-allowed" style="border-radius: 9999px;" x-bind:disabled="submitting">
                 <span x-show="!submitting">Masuk</span>
                 <span x-show="submitting" class="inline-flex items-center gap-2">
                     <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -70,14 +72,6 @@
                 <span style="color: var(--color-text);">Belum punya akun?</span>
                 <a class="font-semibold" style="color: var(--color-primary);" href="{{ route('register') }}">Daftar sebagai peserta</a>
             </div>
-
-            @if (Route::has('password.request'))
-                <div class="text-center">
-                    <a class="text-sm" style="color: var(--color-primary);" href="{{ route('password.request') }}">
-                        Lupa kata sandi?
-                    </a>
-                </div>
-            @endif
         </div>
     </form>
 </x-guest-layout>

@@ -4,9 +4,6 @@
         <p class="text-sm" style="color: var(--color-muted);">
             Buat akun peserta pelatihan baru.
         </p>
-        <p class="text-xs mt-4" style="color: var(--color-muted);">
-            Portal terpadu pelatihan dan layanan peserta, studi kasus Bapelkes DIY
-        </p>
     </div>
 
     <p class="text-sm mb-4 p-3 rounded-[var(--radius-card)]" style="background-color: #f0fdf4; color: #15803d;">
@@ -56,7 +53,7 @@
         </div>
 
         <div class="flex flex-col gap-4 justify-between mt-6">
-            <button type="submit" class="inline-flex items-center justify-center px-4 py-3 bg-[var(--color-primary)] border border-transparent rounded-[var(--radius-btn)] font-semibold text-sm text-white uppercase tracking-widest hover:opacity-90 focus:outline-none transition ease-in-out duration-150 w-full disabled:opacity-50 disabled:cursor-not-allowed" style="border-radius: 9999px;" x-bind:disabled="submitting">
+            <button type="submit" class="inline-flex items-center justify-center px-4 py-3 bg-[var(--color-primary)] border border-transparent rounded-[var(--radius-btn)] font-semibold text-sm text-white hover:opacity-90 focus:outline-none transition ease-in-out duration-150 w-full disabled:opacity-50 disabled:cursor-not-allowed" style="border-radius: 9999px;" x-bind:disabled="submitting">
                 <span x-show="!submitting">Daftar</span>
                 <span x-show="submitting" class="inline-flex items-center gap-2">
                     <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">

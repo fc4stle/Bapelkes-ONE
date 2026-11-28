@@ -59,7 +59,7 @@
                 <div class="w-full max-w-xs sm:max-w-sm lg:max-w-[460px] mt-32 sm:mt-40 lg:mt-0" style="display: flex; flex-direction: column; gap: 36px;">
                     <!-- Portal Label -->
                     <div style="border-left: 4px solid var(--color-accent); padding-left: 16px;">
-                        <span class="font-semibold text-sm uppercase" style="color: var(--color-primary); letter-spacing: 0.05em;">Portal Pelatihan Terpadu</span>
+                        <span class="font-semibold text-sm" style="color: var(--color-primary);">Portal Pelatihan Terpadu</span>
                     </div>
 
                     <!-- Form Slot -->

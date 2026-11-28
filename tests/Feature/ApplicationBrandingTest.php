@@ -300,24 +300,24 @@ class ApplicationBrandingTest extends TestCase
     }
 
     /**
-     * Halaman login menampilkan tagline studi kasus yang benar
+     * Halaman login menampilkan deskripsi singkat
      */
     public function test_login_page_displays_correct_case_study_tagline(): void
     {
         $response = $this->get(route('login'));
 
         $response->assertStatus(200);
-        $response->assertSee('Portal terpadu pelatihan dan layanan peserta, studi kasus Bapelkes DIY');
+        $response->assertSee('Peserta, panitia, dan admin masuk dari halaman ini.');
     }
 
     /**
-     * Halaman login tidak menampilkan tagline lama tanpa "studi kasus"
+     * Halaman login tidak menampilkan paragraph lama "studi kasus"
      */
     public function test_login_page_does_not_display_old_tagline(): void
     {
         $response = $this->get(route('login'));
 
         $response->assertStatus(200);
-        $response->assertDontSee('Portal terpadu pelatihan dan layanan peserta Bapelkes DIY');
+        $response->assertDontSee('Portal terpadu pelatihan dan layanan peserta, studi kasus Bapelkes DIY');
     }
 }
