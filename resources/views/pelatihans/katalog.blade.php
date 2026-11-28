@@ -9,7 +9,7 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Filter Card -->
         <div class="bg-white shadow rounded-[var(--radius-card)] p-4 sm:p-6 mb-6 border border-[var(--color-line)]">
-            <form method="GET" action="{{ route('pelatihan.katalog') }}" class="grid grid-cols-1 md:grid-cols-5 gap-4 md:items-end">
+            <form method="GET" action="{{ route('pelatihan.katalog') }}" data-katalog-search class="grid grid-cols-1 md:grid-cols-5 gap-4 md:items-end">
                 <!-- Pencarian q -->
                 <div>
                     <x-input-label for="q" value="Cari" />
@@ -49,7 +49,7 @@
 
                 <!-- Tombol Aksi -->
                 <div class="flex items-center gap-[var(--sp-3)]">
-                    <x-primary-button type="submit">Cari</x-primary-button>
+                    <x-primary-button type="submit" data-no-loading>Cari</x-primary-button>
                     @if ($hasCriteria)
                         <a href="{{ route('pelatihan.katalog') }}" class="text-sm font-medium text-[var(--color-muted)] hover:text-[var(--color-text)] px-3 py-2 rounded-[var(--radius-btn)] hover:bg-gray-100">Reset</a>
                     @endif
@@ -64,62 +64,65 @@
             </div>
         @endif
 
-        <!-- Pelatihan Grid -->
-        @if ($pelatihans->isEmpty())
-            @if ($hasCriteria)
-                <!-- Hasil kosong dari pencarian -->
-                <div class="text-center py-12">
-                    <svg class="mx-auto h-12 w-12 text-[var(--color-muted)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                    <h3 class="mt-2 text-sm font-medium text-[var(--color-text)]">Tidak ada pelatihan yang cocok dengan pencarian Anda.</h3>
-                    <p class="mt-1 text-sm text-[var(--color-muted)]">Coba ubah kata kunci atau filter.</p>
-                </div>
+        <!-- Hasil Katalog (diisi oleh live search atau halaman penuh) -->
+        <div id="hasil-katalog" aria-live="polite">
+            <!-- Pelatihan Grid -->
+            @if ($pelatihans->isEmpty())
+                @if ($hasCriteria)
+                    <!-- Hasil kosong dari pencarian -->
+                    <div class="text-center py-12">
+                        <svg class="mx-auto h-12 w-12 text-[var(--color-muted)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <h3 class="mt-2 text-sm font-medium text-[var(--color-text)]">Tidak ada pelatihan yang cocok dengan pencarian Anda.</h3>
+                        <p class="mt-1 text-sm text-[var(--color-muted)]">Coba ubah kata kunci atau filter.</p>
+                    </div>
+                @else
+                    <!-- Empty state awal (belum ada pelatihan sama sekali) -->
+                    <div class="text-center py-12">
+                        <svg class="mx-auto h-12 w-12 text-[var(--color-muted)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <h3 class="mt-2 text-sm font-medium text-[var(--color-text)]">Tidak ada pelatihan ditemukan</h3>
+                        <p class="mt-1 text-sm text-[var(--color-muted)]">Pelatihan akan ditampilkan di sini.</p>
+                    </div>
+                @endif
             @else
-                <!-- Empty state awal (belum ada pelatihan sama sekali) -->
-                <div class="text-center py-12">
-                    <svg class="mx-auto h-12 w-12 text-[var(--color-muted)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                    <h3 class="mt-2 text-sm font-medium text-[var(--color-text)]">Tidak ada pelatihan ditemukan</h3>
-                    <p class="mt-1 text-sm text-[var(--color-muted)]">Pelatihan akan ditampilkan di sini.</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[var(--sp-4)]">
+                    @foreach ($pelatihans as $pelatihan)
+                        <x-card variant="{{ $pelatihan->isFull() ? 'unavailable' : 'normal' }}">
+                            <h3 class="font-semibold text-[var(--color-text)]">{{ $pelatihan->nama }}</h3>
+                            @if ($pelatihan->deskripsi)
+                                <p class="text-[var(--fs-caption)] text-[var(--color-muted)] mt-1">{{ Str::limit($pelatihan->deskripsi, 60) }}</p>
+                            @endif
+                            <div class="text-[var(--fs-caption)] text-[var(--color-muted)] mt-[var(--sp-2)] space-y-1">
+                                <div>{{ $pelatihan->tanggal_mulai->format('d M Y') }} &ndash; {{ $pelatihan->tanggal_selesai->format('d M Y') }}</div>
+                                <div>{{ $pelatihan->lokasi }} &middot; {{ $pelatihan->metode->label() }}</div>
+                                <div>Kuota: {{ $pelatihan->jumlahPendaftar() }} / {{ $pelatihan->kuota }}</div>
+                            </div>
+
+                            <div class="mt-[var(--sp-3)] flex items-center justify-between">
+                                @if ($pelatihan->isFull())
+                                    <span class="inline-flex items-center px-[var(--sp-3)] py-1 rounded-full text-xs font-semibold text-white bg-[var(--color-danger)]">Kuota Penuh</span>
+                                @else
+                                    <span class="inline-flex items-center px-[var(--sp-3)] py-1 rounded-full text-xs font-semibold text-white bg-[var(--color-success)]">Tersedia</span>
+                                @endif
+
+                                @if (! $pelatihan->isFull())
+                                    <a href="{{ route('pelatihan.detail', $pelatihan) }}">
+                                        <x-primary-button type="button">Lihat Detail</x-primary-button>
+                                    </a>
+                                @endif
+                            </div>
+                        </x-card>
+                    @endforeach
+                </div>
+
+                <div class="mt-[var(--sp-6)]">
+                    {{ $pelatihans->links() }}
                 </div>
             @endif
-        @else
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[var(--sp-4)]">
-                @foreach ($pelatihans as $pelatihan)
-                    <x-card variant="{{ $pelatihan->isFull() ? 'unavailable' : 'normal' }}">
-                        <h3 class="font-semibold text-[var(--color-text)]">{{ $pelatihan->nama }}</h3>
-                        @if ($pelatihan->deskripsi)
-                            <p class="text-[var(--fs-caption)] text-[var(--color-muted)] mt-1">{{ Str::limit($pelatihan->deskripsi, 60) }}</p>
-                        @endif
-                        <div class="text-[var(--fs-caption)] text-[var(--color-muted)] mt-[var(--sp-2)] space-y-1">
-                            <div>{{ $pelatihan->tanggal_mulai->format('d M Y') }} &ndash; {{ $pelatihan->tanggal_selesai->format('d M Y') }}</div>
-                            <div>{{ $pelatihan->lokasi }} &middot; {{ $pelatihan->metode->label() }}</div>
-                            <div>Kuota: {{ $pelatihan->jumlahPendaftar() }} / {{ $pelatihan->kuota }}</div>
-                        </div>
-
-                        <div class="mt-[var(--sp-3)] flex items-center justify-between">
-                            @if ($pelatihan->isFull())
-                                <span class="inline-flex items-center px-[var(--sp-3)] py-1 rounded-full text-xs font-semibold text-white bg-[var(--color-danger)]">Kuota Penuh</span>
-                            @else
-                                <span class="inline-flex items-center px-[var(--sp-3)] py-1 rounded-full text-xs font-semibold text-white bg-[var(--color-success)]">Tersedia</span>
-                            @endif
-
-                            @if (! $pelatihan->isFull())
-                                <a href="{{ route('pelatihan.detail', $pelatihan) }}">
-                                    <x-primary-button type="button">Lihat Detail</x-primary-button>
-                                </a>
-                            @endif
-                        </div>
-                    </x-card>
-                @endforeach
-            </div>
-
-            <div class="mt-[var(--sp-6)]">
-                {{ $pelatihans->links() }}
-            </div>
-        @endif
+        </div>
     </div>
     </div>
 </x-app-layout>
