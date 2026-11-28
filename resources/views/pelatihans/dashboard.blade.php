@@ -7,7 +7,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <!-- Bagian 1: Panel Metrik Perlu Tindakan -->
             <div class="rounded-xl border bg-white mb-8" style="border-color: var(--color-line);">
-                <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 divide-y sm:divide-y xl:divide-y-0 xl:divide-x" style="--tw-divide-opacity: 1; border-color: var(--color-line);">
+                <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 divide-y sm:divide-x sm:divide-y-0 xl:divide-x xl:divide-y divide-[var(--color-line)]">
                     <!-- Menunggu Verifikasi -->
                     <div class="p-5">
                         <p class="text-xs font-medium text-[var(--color-muted)]">Menunggu Verifikasi</p>
@@ -158,14 +158,14 @@
                             <table class="min-w-full">
                                 <thead class="border-b" style="border-color: var(--color-line); background-color: var(--color-bg);">
                                     <tr>
-                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-[var(--color-muted)] uppercase tracking-wider">Pelatihan</th>
-                                        <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-[var(--color-muted)] uppercase tracking-wider">Total</th>
-                                        <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-[var(--color-muted)] uppercase tracking-wider">Terverifikasi</th>
-                                        <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-[var(--color-muted)] uppercase tracking-wider">Menunggu</th>
-                                        <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-[var(--color-muted)] uppercase tracking-wider">Ditolak</th>
-                                        <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-[var(--color-muted)] uppercase tracking-wider">Hadir</th>
-                                        <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-[var(--color-muted)] uppercase tracking-wider">Asrama</th>
-                                        <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-[var(--color-muted)] uppercase tracking-wider">Sertifikat</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-[var(--color-muted)]">Pelatihan</th>
+                                        <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-[var(--color-muted)]">Total</th>
+                                        <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-[var(--color-muted)]">Terverifikasi</th>
+                                        <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-[var(--color-muted)]">Menunggu</th>
+                                        <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-[var(--color-muted)]">Ditolak</th>
+                                        <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-[var(--color-muted)]">Hadir</th>
+                                        <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-[var(--color-muted)]">Asrama</th>
+                                        <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-[var(--color-muted)]">Sertifikat</th>
                                     </tr>
                                 </thead>
                                 <tbody class="tabel-institusi divide-y" style="border-color: var(--color-line);">
@@ -176,9 +176,9 @@
                                                 <div class="text-xs text-[var(--color-muted)]">{{ $pelatihan->tanggal_mulai->format('d M Y') }} - {{ $pelatihan->tanggal_selesai->format('d M Y') }}</div>
                                             </td>
                                             <td class="px-4 py-4 text-center text-sm text-[var(--color-text)] font-bold">{{ $pelatihan->total_pendaftar }}</td>
-                                            <td class="px-4 py-4 text-center text-sm text-green-600 font-medium">{{ $pelatihan->terverifikasi }}</td>
-                                            <td class="px-4 py-4 text-center text-sm text-yellow-600 font-medium">{{ $pelatihan->menunggu_verifikasi }}</td>
-                                            <td class="px-4 py-4 text-center text-sm text-red-600 font-medium">{{ $pelatihan->ditolak }}</td>
+                                            <td class="px-4 py-4 text-center text-sm font-medium text-[var(--color-text)]">{{ $pelatihan->terverifikasi }}</td>
+                                            <td class="px-4 py-4 text-center text-sm font-medium text-[var(--color-text)]">{{ $pelatihan->menunggu_verifikasi }}</td>
+                                            <td class="px-4 py-4 text-center text-sm font-medium text-[var(--color-text)]">{{ $pelatihan->ditolak }}</td>
                                             <td class="px-4 py-4 text-center text-sm font-medium" style="color: var(--color-primary);">{{ $pelatihan->hadir }}</td>
                                             <td class="px-4 py-4 text-center text-sm text-[var(--color-muted)]">{{ $pelatihan->butuh_asrama }}</td>
                                             <td class="px-4 py-4 text-center text-sm text-[var(--color-muted)]">{{ $pelatihan->sertifikat_terunduh }}</td>
