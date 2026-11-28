@@ -77,7 +77,7 @@
                                     <th class="px-6 py-3 text-center font-semibold" style="color: var(--color-text);">Keterisian Asrama</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody class="tabel-institusi">
                                 @foreach ($pelatihans as $pelatihan)
                                     <tr style="border-bottom: 1px solid var(--color-line);">
                                         <!-- Nama Pelatihan -->

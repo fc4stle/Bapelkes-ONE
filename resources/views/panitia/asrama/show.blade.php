@@ -155,7 +155,7 @@
                                                             <th class="px-3 py-2 text-center text-xs font-medium text-[var(--color-muted)]">Aksi</th>
                                                         </tr>
                                                     </thead>
-                                                    <tbody class="divide-y divide-gray-200">
+                                                    <tbody class="tabel-institusi divide-y divide-gray-200">
                                                         @foreach ($kamar['penghuni'] as $penghuni)
                                                             <tr>
                                                                 <td class="px-3 py-2">{{ $penghuni['nama_peserta'] }}</td>

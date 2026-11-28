@@ -10,10 +10,8 @@
                             @method('PATCH')
                             <button 
                                 type="submit"
-                                class="px-4 py-2 rounded-lg text-sm font-semibold text-white transition-colors"
+                                class="px-4 py-2 rounded-lg text-sm font-semibold text-white transition-colors hover:opacity-90"
                                 style="background-color: var(--color-primary);"
-                                onmouseover="this.style.backgroundColor='var(--color-primary-hover)'"
-                                onmouseout="this.style.backgroundColor='var(--color-primary)'"
                             >
                                 Tandai Semua Dibaca
                             </button>
@@ -30,7 +28,7 @@
                 @if ($notifikasi->count() > 0)
                     <div class="space-y-3">
                         @foreach ($notifikasi as $notif)
-                            <a href="{{ route('notifikasi.buka', $notif->id) }}" class="block p-4 rounded-lg" style="background-color: var(--color-surface); border: 1px solid var(--color-line); text-decoration: none; transition: all 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
+                            <a href="{{ route('notifikasi.buka', $notif->id) }}" class="block p-4 rounded-lg transition-opacity duration-150 hover:opacity-80" style="background-color: var(--color-surface); border: 1px solid var(--color-line); text-decoration: none;">
                                 <div class="flex justify-between items-start mb-2">
                                     <h3 class="font-semibold" style="color: var(--color-text);">
                                         {{ $notif->data['judul_pelatihan'] ?? 'Notifikasi' }}

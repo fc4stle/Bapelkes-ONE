@@ -69,7 +69,7 @@
                                 <th class="px-4 py-3 text-left text-sm font-semibold" style="color: var(--color-primary);">Aksi</th>
                             </tr>
                         </thead>
-                        <tbody class="block md:table-row-group">
+                        <tbody class="tabel-institusi block md:table-row-group">
                             @foreach ($users as $user)
                                 <tr class="block md:table-row mb-4 md:mb-0 border-b md:border-b rounded-lg md:rounded-none p-4 md:p-0" style="border-color: var(--color-accent);" x-data="{ showResetPasswordModal: {{ (string) old('reset_user_id') === (string) $user->id && $errors->has('password') ? 'true' : 'false' }} }">
                                     <td class="block md:table-cell px-4 py-3 text-sm break-all before:content-[attr(data-label)] before:block before:md:hidden before:font-bold before:text-xs before:mb-1" data-label="Nama">{{ $user->name }}</td>

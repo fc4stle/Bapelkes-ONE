@@ -92,7 +92,7 @@
                                         <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-[var(--color-muted)] uppercase tracking-wider">Aksi</th>
                                     </tr>
                                 </thead>
-                                <tbody class="bg-white divide-y divide-gray-200">
+                                <tbody class="tabel-institusi bg-white divide-y divide-gray-200">
                                     @foreach ($pendaftarans as $pendaftaran)
                                         <tr>
                                             <td class="px-6 py-4 whitespace-nowrap">

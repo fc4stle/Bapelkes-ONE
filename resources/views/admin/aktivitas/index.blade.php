@@ -65,7 +65,7 @@
                                         <th class="px-4 py-2 text-left">Deskripsi</th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody class="tabel-institusi">
                                     @foreach ($aktivitas as $log)
                                         <tr style="border-bottom: 1px solid color-mix(in srgb, var(--color-text) 20%, transparent);">
                                             <td class="px-4 py-2" style="border-right: 1px solid color-mix(in srgb, var(--color-text) 20%, transparent);">
