@@ -86,13 +86,13 @@ class TemaNavigationHeaderTest extends TestCase
     }
 
     /**
-     * Test: navigation.blade.php memiliki gap-8 antara logo dan menu
+     * Test: navigation.blade.php memiliki gap-6 antara logo dan menu
      */
-    public function test_navigation_has_gap_8(): void
+    public function test_navigation_has_gap_6(): void
     {
         $filePath = base_path('resources/views/layouts/navigation.blade.php');
         $content = file_get_contents($filePath);
 
-        $this->assertStringContainsString('gap-8', $content, 'Logo dan menu harus memiliki gap-8');
+        $this->assertStringContainsString('gap-6', $content, 'Logo dan menu harus memiliki gap-6');
     }
 }
