@@ -2,7 +2,7 @@
     <!-- Primary Navigation Menu -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center h-full">
-            <div class="flex items-center gap-8 flex-wrap xl:flex-nowrap">
+            <div class="flex items-center gap-6 flex-wrap xl:flex-nowrap">
                 <!-- Brand Logo + Screen Reader Name -->
                 <a href="/" class="flex items-center shrink-0">
                     <!-- White Logo Image -->
@@ -11,11 +11,11 @@
                     <span class="sr-only">{{ config('app.name') }}</span>
                 </a>
 
-                <!-- Vertical Divider (xl ke atas) -->
-                <div class="hidden xl:block w-px h-7 bg-white/25"></div>
+                <!-- Vertical Divider (2xl ke atas) -->
+                <div class="hidden 2xl:block w-px h-7 bg-white/25"></div>
 
                 <!-- Navigation Links (xl ke atas) -->
-                <div class="hidden space-x-1 xl:space-x-2 lg:space-x-1 xl:flex">
+                <div class="hidden gap-1 xl:flex items-center">
                     <x-nav-link :href="route('pelatihan.katalog')" :active="request()->routeIs('pelatihan.katalog', 'pelatihan.detail')" class="text-sm px-3 py-2">
                         Katalog
                     </x-nav-link>
@@ -44,7 +44,7 @@
                         @endphp
                         <x-dropdown align="left" width="48">
                             <x-slot name="trigger">
-                                <button class="text-sm px-3 py-2 rounded-full border transition-colors text-white {{ $isOtherMenuActive ? 'bg-white/20 border-white/35' : 'border-white/35 bg-white/15 hover:bg-white/25' }}">
+                                <button class="inline-flex items-center h-10 px-3 whitespace-nowrap leading-none text-sm rounded-full border font-medium transition-colors text-white {{ $isOtherMenuActive ? 'bg-white/20 border-white/35' : 'border-transparent hover:bg-white/10' }}">
                                     Lainnya
                                 </button>
                             </x-slot>
@@ -178,15 +178,15 @@
                 @else
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
-                        <button class="inline-flex items-center px-3 py-2 border rounded-full text-sm leading-4 font-medium text-white border-white/35 bg-white/15 hover:bg-white/25 transition-colors">
-                            <div>{{ Auth::user()->name }}</div>
+                        <button class="inline-flex items-center h-10 px-3 whitespace-nowrap leading-none text-sm font-medium rounded-full border border-white/35 bg-white/15 hover:bg-white/25 transition-colors text-white">
+                            <div class="truncate max-w-[9rem]">{{ Auth::user()->name }}</div>
 
                             @if (auth()->user()->isPanitia())
-                                <span class="ms-2 inline-block px-2 py-1 text-xs font-semibold rounded-full" style="background-color: color-mix(in srgb, var(--color-primary) 15%, white); color: var(--color-primary);">Panitia</span>
+                                <span class="ms-2 hidden 2xl:inline-block px-2 py-1 text-xs font-semibold rounded-full" style="background-color: color-mix(in srgb, var(--color-primary) 15%, white); color: var(--color-primary);">Panitia</span>
                             @elseif (auth()->user()->isAdmin())
-                                <span class="ms-2 inline-block px-2 py-1 text-xs font-semibold rounded-full" style="background-color: color-mix(in srgb, var(--color-primary) 15%, white); color: var(--color-primary);">Admin</span>
+                                <span class="ms-2 hidden 2xl:inline-block px-2 py-1 text-xs font-semibold rounded-full" style="background-color: color-mix(in srgb, var(--color-primary) 15%, white); color: var(--color-primary);">Admin</span>
                             @else
-                                <span class="ms-2 inline-block px-2 py-1 text-xs font-semibold rounded-full" style="background-color: color-mix(in srgb, var(--color-success) 15%, white); color: var(--color-success);">Peserta</span>
+                                <span class="ms-2 hidden 2xl:inline-block px-2 py-1 text-xs font-semibold rounded-full" style="background-color: color-mix(in srgb, var(--color-success) 15%, white); color: var(--color-success);">Peserta</span>
                             @endif
 
                             <div class="ms-1">
@@ -198,6 +198,16 @@
                     </x-slot>
 
                     <x-slot name="content">
+                        <div class="px-4 py-2 text-xs text-[var(--color-muted)]">
+                            @if (auth()->user()->isPanitia())
+                                Panitia
+                            @elseif (auth()->user()->isAdmin())
+                                Admin
+                            @else
+                                Peserta
+                            @endif
+                        </div>
+
                         <x-dropdown-link :href="route('profile.edit')" class="text-[var(--color-text)]">
                             Profil
                         </x-dropdown-link>

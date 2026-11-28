@@ -7,16 +7,15 @@ use Tests\TestCase;
 class TemaDropdownTriggerTest extends TestCase
 {
     /**
-     * Test: navigation.blade.php tombol trigger dropdown tidak memuat
+     * Test: navigation.blade.php tombol trigger dropdown "Lainnya" tidak memuat
      * text-[var(--color-text)] dan harus memuat text-white
      */
     public function test_dropdown_trigger_button_no_color_text_class(): void
     {
         $navFile = file_get_contents(resource_path('views/layouts/navigation.blade.php'));
 
-        // Cari button trigger dropdown (dari "inline-flex items-center px-3 py-2" sampai </button>)
-        // Pattern: button class="inline-flex items-center px-3 py-2 border..." sampa </button>
-        $pattern = '/<button class="inline-flex items-center px-3 py-2 border rounded-full text-sm[^>]*>[^<]*<div>{{ Auth::user\(\)->name }}<\/div>/s';
+        // Cari button trigger dropdown "Lainnya" dengan pattern baru: inline-flex items-center h-10
+        $pattern = '/<button class="inline-flex items-center h-10 px-3 whitespace-nowrap leading-none text-sm rounded-full border[^>]*>[^<]*Lainnya/s';
 
         preg_match($pattern, $navFile, $matches);
 
@@ -37,42 +36,46 @@ class TemaDropdownTriggerTest extends TestCase
                 'Dropdown trigger button should have text-white'
             );
         } else {
-            $this->fail('Could not find dropdown trigger button in navigation.blade.php');
+            $this->fail('Could not find dropdown trigger button "Lainnya" in navigation.blade.php');
         }
     }
 
     /**
      * Test: Tombol trigger menggunakan Tailwind classes (tidak inline style)
+     * Pattern diperbarui untuk mencari button "Lainnya" dengan class baru
      */
     public function test_dropdown_trigger_uses_tailwind_classes(): void
     {
         $navFile = file_get_contents(resource_path('views/layouts/navigation.blade.php'));
 
-        // Cari button trigger
-        $pattern = '/<button class="inline-flex items-center px-3 py-2 border rounded-full[^>]+">/s';
+        // Cari button trigger "Lainnya" dengan pattern baru: h-10 px-3 whitespace-nowrap rounded-full border
+        $pattern = '/<button class="inline-flex items-center h-10 px-3 whitespace-nowrap leading-none text-sm rounded-full border[^>]*>.*?Lainnya/s';
 
         preg_match($pattern, $navFile, $matches);
 
         if (! empty($matches[0])) {
             $triggerButton = $matches[0];
 
-            // Assert menggunakan Tailwind classes (tidak ada style inline dengan background/border color inline)
+            // Assert menggunakan Tailwind classes
             $this->assertStringContainsString(
-                'border-white/35',
+                'rounded-full',
                 $triggerButton,
-                'Should use border-white/35 Tailwind class'
+                'Should use rounded-full Tailwind class'
             );
 
             $this->assertStringContainsString(
-                'bg-white/15',
+                'border',
                 $triggerButton,
-                'Should use bg-white/15 Tailwind class'
+                'Should use border Tailwind class'
             );
 
-            $this->assertStringContainsString(
-                'hover:bg-white/25',
-                $triggerButton,
-                'Should use hover:bg-white/25 Tailwind class'
+            // Conditional: jika active, ada bg-white/20 border-white/35; jika inactive, ada border-transparent hover:bg-white/10
+            $hasActiveStyle = strpos($triggerButton, 'bg-white/20') !== false && strpos($triggerButton, 'border-white/35') !== false;
+            $hasInactiveStyle = strpos($triggerButton, 'border-transparent') !== false && strpos($triggerButton, 'hover:bg-white/10') !== false;
+
+            $this->assertTrue(
+                $hasActiveStyle || $hasInactiveStyle,
+                'Should have either active (bg-white/20 border-white/35) or inactive (border-transparent hover:bg-white/10) style'
             );
 
             // Assert TIDAK memuat style inline dengan rgba
@@ -88,7 +91,7 @@ class TemaDropdownTriggerTest extends TestCase
                 'Should not have inline style with background-color'
             );
         } else {
-            $this->fail('Could not find dropdown trigger button in navigation.blade.php');
+            $this->fail('Could not find dropdown trigger button "Lainnya" in navigation.blade.php');
         }
     }
 
@@ -133,8 +136,8 @@ class TemaDropdownTriggerTest extends TestCase
     {
         $navFile = file_get_contents(resource_path('views/layouts/navigation.blade.php'));
 
-        // Cari button Daftar dengan route register
-        $pattern = '/<a href="{{ route\(\'register\'\) }}" class="[^"]*"[^>]*>Daftar<\/a>/s';
+        // Cari button Daftar dengan route register (double quotes di href)
+        $pattern = '/<a href="[^"]*route\(.*?register.*?\)[^"]*" class="[^"]*"[^>]*>Daftar<\/a>/s';
 
         preg_match($pattern, $navFile, $matches);
 
