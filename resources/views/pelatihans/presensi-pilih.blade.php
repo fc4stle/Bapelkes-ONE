@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl leading-tight" style="color: var(--color-text);">
+        <h2 class="font-semibold text-xl leading-tight">
             {{ __('Pilih Presensi') }}
         </h2>
     </x-slot>

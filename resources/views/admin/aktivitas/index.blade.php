@@ -1,6 +1,8 @@
 <x-app-layout>
     <x-slot name="header">
-        Riwayat Aktivitas
+        <h2 class="font-semibold text-xl">
+            Riwayat Aktivitas
+        </h2>
     </x-slot>
 
     <div class="py-12">
