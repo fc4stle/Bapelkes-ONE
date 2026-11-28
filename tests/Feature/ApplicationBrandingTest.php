@@ -67,14 +67,14 @@ class ApplicationBrandingTest extends TestCase
     }
 
     /**
-     * Navbar menampilkan nama pendek portal
+     * Navbar menampilkan logo putih
      */
-    public function test_navbar_displays_short_brand_name(): void
+    public function test_navbar_displays_white_logo(): void
     {
         $response = $this->get('/');
 
         $response->assertStatus(200);
-        $response->assertSee('Portal Pelatihan Terpadu');
+        $response->assertSee('logo-bapelkes-putih.png');
     }
 
     /**
@@ -160,22 +160,22 @@ class ApplicationBrandingTest extends TestCase
     }
 
     /**
-     * Navigation navbar memakai nama pendek "Portal Pelatihan Terpadu"
+     * Navigation navbar menampilkan logo putih
      */
-    public function test_navigation_uses_short_brand_name(): void
+    public function test_navigation_uses_white_logo(): void
     {
         $navPath = resource_path('views/layouts/navigation.blade.php');
         $navContent = file_get_contents($navPath);
 
         $this->assertStringContainsString(
-            'Portal Pelatihan Terpadu',
+            'logo-bapelkes-putih.png',
             $navContent,
-            'Navigation navbar harus memiliki "Portal Pelatihan Terpadu"'
+            'Navigation navbar harus menampilkan logo-bapelkes-putih.png'
         );
-        $this->assertStringNotContainsString(
-            '<a href="/" class="font-bold text-sm sm:text-base" style="color: var(--color-primary);">\n                        Bapelkes ONE\n                    </a>',
+        $this->assertStringContainsString(
+            'sr-only',
             $navContent,
-            'Navigation tidak boleh hardcode "Bapelkes ONE"'
+            'Navigation harus memiliki sr-only text untuk screen readers'
         );
     }
 
