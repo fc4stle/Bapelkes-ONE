@@ -156,7 +156,7 @@
                 @guest
                     <div class="space-x-2 text-sm font-medium">
                         <a href="{{ route('login') }}" class="px-3 py-2 rounded-md text-white hover:opacity-100 opacity-80">Masuk</a>
-                        <a href="{{ route('register') }}" class="px-4 py-2 rounded-full text-white font-semibold border-white/35 bg-white/20 hover:bg-white/30 transition-colors inline-block">Daftar</a>
+                        <a href="{{ route('register') }}" class="px-4 py-2 rounded-full text-white font-semibold border border-white/35 bg-white/20 hover:bg-white/30 transition-colors inline-block">Daftar</a>
                     </div>
                 @else
                 <x-dropdown align="right" width="48">

@@ -12,8 +12,8 @@ export default {
     theme: {
         extend: {
             fontFamily: {
-                sans: ['Public Sans', ...defaultTheme.fontFamily.sans],
-                serif: ['Source Serif 4', ...defaultTheme.fontFamily.serif],
+                sans: ['Poppins', ...defaultTheme.fontFamily.sans],
+                serif: ['Poppins', ...defaultTheme.fontFamily.serif],
             },
         },
     },
