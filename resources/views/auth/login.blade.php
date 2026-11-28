@@ -1,5 +1,13 @@
 <x-guest-layout>
-    <h2 class="text-2xl font-bold mb-6" style="color: var(--color-text);">Masuk ke Akun Anda</h2>
+    <div class="mb-8">
+        <h2 class="text-3xl font-bold mb-2" style="color: var(--color-text); font-size: 30px;">Masuk</h2>
+        <p class="text-sm" style="color: var(--color-muted);">
+            Peserta, panitia, dan admin masuk dari halaman ini.
+        </p>
+        <p class="text-xs mt-4" style="color: var(--color-muted);">
+            Portal terpadu pelatihan dan layanan peserta, studi kasus Bapelkes DIY
+        </p>
+    </div>
 
     <!-- Error Alert -->
     @if ($errors->any())
@@ -19,17 +27,18 @@
         @csrf
 
         <!-- Email Address -->
-        <div>
+        <div class="mb-4">
             <x-input-label for="email" value="Email" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
+            <x-text-input id="email" class="block mt-2 w-full" style="height: 50px; border-color: var(--color-line);" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
             <x-input-error :messages="$errors->get('email')" class="mt-2" />
         </div>
 
         <!-- Password -->
-        <div class="mt-4">
+        <div class="mb-4">
             <x-input-label for="password" value="Kata sandi" />
 
-            <x-text-input id="password" class="block mt-1 w-full"
+            <x-text-input id="password" class="block mt-2 w-full"
+                            style="height: 50px; border-color: var(--color-line);"
                             type="password"
                             name="password"
                             required autocomplete="current-password" />
@@ -38,7 +47,7 @@
         </div>
 
         <!-- Remember Me -->
-        <div class="block mt-4">
+        <div class="block mb-4">
             <label for="remember_me" class="inline-flex items-center">
                 <input id="remember_me" type="checkbox" class="rounded" style="border-color: #d1d5db;" name="remember">
                 <span class="ms-2 text-sm" style="color: var(--color-text);">Ingat saya</span>
@@ -46,7 +55,7 @@
         </div>
 
         <div class="flex flex-col gap-4 justify-between mt-6">
-            <button type="submit" class="inline-flex items-center justify-center px-4 py-2 bg-[var(--color-primary)] border border-transparent rounded-[var(--radius-btn)] font-semibold text-xs text-white uppercase tracking-widest hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-2 transition ease-in-out duration-150 w-full disabled:opacity-50 disabled:cursor-not-allowed" x-bind:disabled="submitting">
+            <button type="submit" class="inline-flex items-center justify-center px-4 py-3 bg-[var(--color-primary)] border border-transparent rounded-[var(--radius-btn)] font-semibold text-sm text-white uppercase tracking-widest hover:opacity-90 focus:outline-none transition ease-in-out duration-150 w-full disabled:opacity-50 disabled:cursor-not-allowed" style="border-radius: 9999px;" x-bind:disabled="submitting">
                 <span x-show="!submitting">Masuk</span>
                 <span x-show="submitting" class="inline-flex items-center gap-2">
                     <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -59,7 +68,7 @@
 
             <div class="text-center text-sm">
                 <span style="color: var(--color-text);">Belum punya akun?</span>
-                <a class="font-semibold" style="color: var(--color-primary);" href="{{ route('register') }}">Daftar</a>
+                <a class="font-semibold" style="color: var(--color-primary);" href="{{ route('register') }}">Daftar sebagai peserta</a>
             </div>
 
             @if (Route::has('password.request'))
