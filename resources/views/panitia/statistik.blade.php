@@ -10,31 +10,31 @@
             <!-- Kartu Ringkasan Global -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 <!-- Total Pelatihan -->
-                <div class="rounded-lg p-6" style="background-color: var(--color-bg); border-left: 4px solid var(--color-primary);">
+                <div class="rounded-lg p-6" style="background-color: var(--color-bg); border-left: 4px solid var(--color-primary);" data-reveal>
                     <div class="flex items-baseline justify-between">
                         <p class="text-sm font-medium text-[var(--color-muted)]">Total Pelatihan</p>
-                        <span class="text-3xl font-bold" style="color: var(--color-primary);">{{ $totalPelatihan }}</span>
+                        <span class="text-3xl font-bold" style="color: var(--color-primary);" data-count-to="{{ $totalPelatihan }}">{{ $totalPelatihan }}</span>
                     </div>
                 </div>
 
                 <!-- Peserta Unik Terverifikasi -->
-                <div class="rounded-lg p-6" style="background-color: var(--color-bg); border-left: 4px solid var(--color-primary);">
+                <div class="rounded-lg p-6" style="background-color: var(--color-bg); border-left: 4px solid var(--color-primary);" data-reveal>
                     <div class="flex items-baseline justify-between">
                         <p class="text-sm font-medium text-[var(--color-muted)]">Peserta Unik Terverifikasi</p>
-                        <span class="text-3xl font-bold" style="color: var(--color-primary);">{{ $pesertaTerverifikasi }}</span>
+                        <span class="text-3xl font-bold" style="color: var(--color-primary);" data-count-to="{{ $pesertaTerverifikasi }}">{{ $pesertaTerverifikasi }}</span>
                     </div>
                 </div>
 
                 <!-- Total Pendaftaran Terverifikasi -->
-                <div class="rounded-lg p-6" style="background-color: var(--color-bg); border-left: 4px solid var(--color-accent);">
+                <div class="rounded-lg p-6" style="background-color: var(--color-bg); border-left: 4px solid var(--color-accent);" data-reveal>
                     <div class="flex items-baseline justify-between">
                         <p class="text-sm font-medium text-[var(--color-muted)]">Total Pendaftaran Terverifikasi</p>
-                        <span class="text-3xl font-bold" style="color: var(--color-accent);">{{ $totalPendaftaranTerverifikasi }}</span>
+                        <span class="text-3xl font-bold" style="color: var(--color-accent);" data-count-to="{{ $totalPendaftaranTerverifikasi }}">{{ $totalPendaftaranTerverifikasi }}</span>
                     </div>
                 </div>
 
                 <!-- Tingkat Kehadiran Global -->
-                <div class="rounded-lg p-6" style="background-color: var(--color-bg); border-left: 4px solid var(--color-success);">
+                <div class="rounded-lg p-6" style="background-color: var(--color-bg); border-left: 4px solid var(--color-success);" data-reveal>
                     <div class="flex items-baseline justify-between">
                         <p class="text-sm font-medium text-[var(--color-muted)]">Tingkat Kehadiran Global</p>
                         <span class="text-3xl font-bold" style="color: var(--color-success);">
@@ -46,7 +46,7 @@
 
             <!-- Rata-rata TIYAS Global (jika ada) -->
             @if ($rataRataTiyasGlobal !== null)
-                <div class="rounded-lg p-6 mb-8" style="background-color: var(--color-bg);">
+                <div class="rounded-lg p-6 mb-8" style="background-color: var(--color-bg);" data-reveal>
                     <div class="flex items-baseline justify-between">
                         <p class="text-sm font-medium text-[var(--color-muted)]">Rata-rata Skor TIYAS Global</p>
                         <span class="text-3xl font-bold" style="color: var(--color-primary);">{{ $rataRataTiyasGlobal }}</span>

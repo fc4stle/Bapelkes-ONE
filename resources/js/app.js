@@ -12,14 +12,16 @@ Alpine.start();
 
 // ========== INTERAKSI TAHAP B ==========
 
+// D) KEDIP REVEAL - Tambahkan kelas reveal-ready di awal untuk cegah flash elemen
+// Ini HARUS di luar DOMContentLoaded agar berjalan sebelum first paint
+const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+if (!prefersReducedMotion) {
+  document.documentElement.classList.add('reveal-ready');
+}
+
 // 1) MUNCUL SAAT SCROLL (Reveal on Scroll)
 document.addEventListener('DOMContentLoaded', function () {
-  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
   if (!prefersReducedMotion) {
-    // Tambahkan kelas reveal-ready ke document
-    document.documentElement.classList.add('reveal-ready');
-
     // Setup IntersectionObserver
     const observer = new IntersectionObserver(
       (entries) => {
@@ -55,7 +57,15 @@ document.addEventListener('DOMContentLoaded', function () {
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting && !entry.target.dataset.counted) {
-            const target = parseInt(entry.target.getAttribute('data-count-to'), 10);
+            const targetStr = entry.target.getAttribute('data-count-to');
+            const target = parseFloat(targetStr);
+            
+            // Skip jika target bukan angka (NaN)
+            if (isNaN(target)) {
+              entry.target.dataset.counted = 'true';
+              return;
+            }
+            
             const duration = 800; // ms
             const start = Date.now();
 
@@ -67,14 +77,26 @@ document.addEventListener('DOMContentLoaded', function () {
 
               // EaseOut: 1 - (1 - progress)^3
               const eased = 1 - Math.pow(1 - progress, 3);
-              const current = Math.round(target * eased);
+              const current = target * eased;
+              
+              // Tentukan jumlah desimal dari target
+              const decimalPlaces = targetStr.includes('.') ? 
+                (targetStr.split('.')[1]?.length || 0) : 0;
+              
+              const displayValue = decimalPlaces > 0
+                ? current.toFixed(decimalPlaces)
+                : Math.round(current).toLocaleString('id-ID');
 
-              entry.target.textContent = current.toLocaleString('id-ID');
+              entry.target.textContent = displayValue;
 
               if (progress < 1) {
                 requestAnimationFrame(animate);
               } else {
-                entry.target.textContent = target.toLocaleString('id-ID');
+                // Format final value with proper locale
+                const finalValue = decimalPlaces > 0
+                  ? target.toFixed(decimalPlaces)
+                  : target.toLocaleString('id-ID');
+                entry.target.textContent = finalValue;
               }
             };
 
@@ -94,27 +116,56 @@ document.addEventListener('DOMContentLoaded', function () {
 
 // 3) UMPAN BALIK AKSI (Form Submission & Loading State)
 document.addEventListener('DOMContentLoaded', function () {
+  const submitButtons = new Map(); // Simpan original state tombol
+
+  // Simpan original innerHTML semua tombol submit
+  document.querySelectorAll('button[type="submit"], button:not([type]), input[type="submit"]').forEach((button) => {
+    submitButtons.set(button, button.innerHTML);
+  });
+
+  // Listener pageshow global (bfcache recovery)
+  window.addEventListener('pageshow', (event) => {
+    if (event.persisted) {
+      // Kembalikan semua tombol ke state awal
+      submitButtons.forEach((originalHtml, button) => {
+        button.disabled = false;
+        button.setAttribute('aria-busy', 'false');
+        button.innerHTML = originalHtml;
+      });
+    }
+  });
+
   // Status memproses: disable submit button pada form submit
   document.querySelectorAll('form:not([data-no-loading])').forEach((form) => {
     form.addEventListener('submit', function (e) {
-      const submitButton = form.querySelector('button[type="submit"]');
-      if (submitButton) {
-        const loadingText = submitButton.getAttribute('data-loading-text') || 'Memproses...';
-        const originalText = submitButton.textContent;
-
-        submitButton.disabled = true;
-        submitButton.setAttribute('aria-busy', 'true');
-        submitButton.textContent = loadingText;
-
-        // Kembalikan keadaan awal pada pageshow (bfcache)
-        const handlePageShow = () => {
-          submitButton.disabled = false;
-          submitButton.setAttribute('aria-busy', 'false');
-          submitButton.textContent = originalText;
-          window.removeEventListener('pageshow', handlePageShow);
-        };
-        window.addEventListener('pageshow', handlePageShow);
+      // Jika default sudah dicegah, jangan lakukan apa pun
+      if (e.defaultPrevented) {
+        return;
       }
+
+      // Jika validasi form gagal, jangan ubah tombol
+      if (!form.checkValidity()) {
+        return;
+      }
+
+      // Tunda satu tick (setTimeout 0)
+      setTimeout(() => {
+        // Cek lagi e.defaultPrevented
+        if (e.defaultPrevented) {
+          return;
+        }
+
+        // Cari tombol submit (selektor: button[type="submit"], button:not([type]), input[type="submit"])
+        const submitButton = form.querySelector('button[type="submit"], button:not([type]), input[type="submit"]');
+        if (submitButton && submitButtons.has(submitButton)) {
+          const loadingText = submitButton.getAttribute('data-loading-text') || 'Memproses...';
+          const originalHtml = submitButtons.get(submitButton);
+
+          submitButton.disabled = true;
+          submitButton.setAttribute('aria-busy', 'true');
+          submitButton.innerHTML = loadingText;
+        }
+      }, 0);
     });
   });
 });
@@ -197,13 +248,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // Debounce 350ms untuk input q
   form.querySelectorAll('input, select').forEach((field) => {
-    field.addEventListener('input', () => {
-      clearTimeout(searchTimeout);
-      searchTimeout = setTimeout(performSearch, 350);
-    });
-    field.addEventListener('change', () => {
-      clearTimeout(searchTimeout);
-      searchTimeout = setTimeout(performSearch, 350);
-    });
+    if (field.type === 'text' || field.type === 'search') {
+      // Input teks: gunakan 'input' event
+      field.addEventListener('input', () => {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(performSearch, 350);
+      });
+    } else if (field.tagName === 'SELECT' || field.type === 'checkbox' || field.type === 'radio' || field.type === 'date') {
+      // Select/checkbox/date/radio: gunakan 'change' event
+      field.addEventListener('change', () => {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(performSearch, 350);
+      });
+    }
   });
 });

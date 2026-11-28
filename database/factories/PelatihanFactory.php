@@ -31,4 +31,26 @@ class PelatihanFactory extends Factory
             'status' => fake()->randomElement(['draft', 'dibuka', 'ditutup', 'selesai']),
         ];
     }
+
+    /**
+     * State: Pelatihan dibuka (untuk katalog peserta)
+     */
+    public function dibuka(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'status' => 'dibuka',
+        ]);
+    }
+
+    /**
+     * State: Pelatihan sedang berlangsung
+     */
+    public function berlangsung(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'status' => 'dibuka',
+            'tanggal_mulai' => now()->subDays(5),
+            'tanggal_selesai' => now()->addDays(5),
+        ]);
+    }
 }
