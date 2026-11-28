@@ -140,7 +140,7 @@
             </div>
         </div>
         <div class="footer-note">
-            Dokumen simulasi proyek akademik UNY — bukan sertifikat resmi Bapelkes.
+            Dokumen simulasi proyek akademik UNY, bukan sertifikat resmi Bapelkes.
         </div>
     </div>
 </body>

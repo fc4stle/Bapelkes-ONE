@@ -1,4 +1,4 @@
-# Inventori Komponen — Pertemuan 4
+# Inventori Komponen, Pertemuan 4
 
 BAPELKES ONE · Praktik Aplikasi Web INF60295 · Universitas Negeri Yogyakarta
 
@@ -15,7 +15,7 @@ BAPELKES ONE · Praktik Aplikasi Web INF60295 · Universitas Negeri Yogyakarta
 | Komponen | File | State | Kriteria Pemeriksaan |
 |---|---|---|---|
 | Card | `card.blade.php` | normal, selected, unavailable | Info utama dan aksi tidak membingungkan; state unavailable dibuat redup dan non-interaktif |
-| Status Badge | `status-badge.blade.php` | pending, approved, rejected | Warna bukan satu-satunya pembeda — tiap status punya teks sendiri (Menunggu Verifikasi / Terverifikasi / Ditolak) |
+| Status Badge | `status-badge.blade.php` | pending, approved, rejected | Warna bukan satu-satunya pembeda, tiap status punya teks sendiri (Menunggu Verifikasi / Terverifikasi / Ditolak) |
 
 ## Komponen yang Belum Diubah (dipakai apa adanya)
 
@@ -36,10 +36,10 @@ Dibandingkan dengan wireframe desktop Pertemuan 3 (`Pertemuan03/05-wireframe-des
 
 | Halaman | Wireframe Pertemuan 3 | Implementasi Pertemuan 4 | Alasan selisih |
 |---|---|---|---|
-| D1 — Katalog | Daftar sederhana: nama pelatihan, metode, kuota dalam baris memanjang | Kartu dengan nama, deskripsi singkat, rentang tanggal, lokasi, metode, kuota, dan badge "Tersedia" | Info yang dibutuhkan peserta untuk memutuskan ternyata lebih banyak dari sekadar nama+kuota; kartu juga lebih mudah dibuat responsif (1 kolom di mobile) dibanding baris tabel |
-| D2 — Detail | Tanggal, lokasi, kuota ("18/25 tersedia"), deskripsi, tombol Daftar | Tanggal, lokasi, metode, kuota (format "0/40"), tombol Kembali + Ajukan Pendaftaran | Ditambah info Metode karena pelatihan ada yang luring/daring/blended (relevan sejak Pertemuan 2); format kuota mengikuti field `kuota` di database, bukan dihitung manual |
-| D3 — Form | 3 field (nama, instansi, unggah surat tugas) + 1 pesan error generik | 5 field wajib (nama, NIK, kontak, profesi, instansi) + 2 unggah dokumen opsional + bagian asrama + pesan error per field | Mengikuti acceptance criteria pendaftaran kolektif/asrama yang sudah ditetapkan di Pertemuan 2–3; pesan error per field dipilih karena lebih jelas menunjukkan field mana yang bermasalah dibanding satu pesan umum |
-| D4 — Status | Daftar status dengan badge "Menunggu verifikasi" / "Terverifikasi" | Tabel (desktop) / kartu (mobile) dengan badge serupa + tombol Batalkan untuk status pending | Ditambah aksi pembatalan karena acceptance criteria peserta mengizinkan membatalkan pendaftaran yang belum diverifikasi |
+| D1, Katalog | Daftar sederhana: nama pelatihan, metode, kuota dalam baris memanjang | Kartu dengan nama, deskripsi singkat, rentang tanggal, lokasi, metode, kuota, dan badge "Tersedia" | Info yang dibutuhkan peserta untuk memutuskan ternyata lebih banyak dari sekadar nama+kuota; kartu juga lebih mudah dibuat responsif (1 kolom di mobile) dibanding baris tabel |
+| D2, Detail | Tanggal, lokasi, kuota ("18/25 tersedia"), deskripsi, tombol Daftar | Tanggal, lokasi, metode, kuota (format "0/40"), tombol Kembali + Ajukan Pendaftaran | Ditambah info Metode karena pelatihan ada yang luring/daring/blended (relevan sejak Pertemuan 2); format kuota mengikuti field `kuota` di database, bukan dihitung manual |
+| D3, Form | 3 field (nama, instansi, unggah surat tugas) + 1 pesan error generik | 5 field wajib (nama, NIK, kontak, profesi, instansi) + 2 unggah dokumen opsional + bagian asrama + pesan error per field | Mengikuti acceptance criteria pendaftaran kolektif/asrama yang sudah ditetapkan di Pertemuan 2–3; pesan error per field dipilih karena lebih jelas menunjukkan field mana yang bermasalah dibanding satu pesan umum |
+| D4, Status | Daftar status dengan badge "Menunggu verifikasi" / "Terverifikasi" | Tabel (desktop) / kartu (mobile) dengan badge serupa + tombol Batalkan untuk status pending | Ditambah aksi pembatalan karena acceptance criteria peserta mengizinkan membatalkan pendaftaran yang belum diverifikasi |
 
 Kesimpulannya: struktur dan urutan layar (katalog → detail → form → status) tidak berubah dari wireframe,
 tapi jumlah field dan informasi per layar bertambah mengikuti keputusan desain dan acceptance criteria

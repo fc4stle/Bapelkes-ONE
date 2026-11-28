@@ -324,7 +324,7 @@ class ApplicationBrandingTest extends TestCase
         $response = $this->get('/');
 
         $response->assertStatus(200);
-        $response->assertSee('Portal terpadu pelatihan dan layanan peserta — studi kasus Bapelkes DIY');
+        $response->assertSee('Portal terpadu pelatihan dan layanan peserta, studi kasus Bapelkes DIY');
     }
 
     /**
@@ -346,7 +346,7 @@ class ApplicationBrandingTest extends TestCase
         $response = $this->get(route('login'));
 
         $response->assertStatus(200);
-        $response->assertSee('Portal terpadu pelatihan dan layanan peserta — studi kasus Bapelkes DIY');
+        $response->assertSee('Portal terpadu pelatihan dan layanan peserta, studi kasus Bapelkes DIY');
     }
 
     /**

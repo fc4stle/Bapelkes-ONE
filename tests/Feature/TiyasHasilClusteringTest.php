@@ -119,7 +119,7 @@ class TiyasHasilClusteringTest extends TestCase
     }
 
     /**
-     * NEW TEST 1: Feature dengan 12 respons—halaman memuat SVG grafik klaster, legenda Klaster,
+     * NEW TEST 1: Feature dengan 12 respons-halaman memuat SVG grafik klaster, legenda Klaster,
      * tabel statistik deskriptif, kotak 'Cara membaca hasil ini', kalimat penjelasan per klaster.
      */
     public function test_12_responses_page_renders_all_components_svg_deskriptif_explanation()
@@ -176,7 +176,7 @@ class TiyasHasilClusteringTest extends TestCase
     }
 
     /**
-     * NEW TEST 2: Feature dengan 3 respons—halaman memuat tabel statistik deskriptif,
+     * NEW TEST 2: Feature dengan 3 respons-halaman memuat tabel statistik deskriptif,
      * TIDAK memuat grafik SVG klaster, memuat pesan 'minimal 8 peserta'.
      */
     public function test_3_responses_renders_deskriptif_no_svg_and_minimal_8_message()
@@ -237,7 +237,7 @@ class TiyasHasilClusteringTest extends TestCase
     }
 
     /**
-     * NEW TEST 3: 12 respons halaman—tabel derajat keanggotaan judul kolom adalah 'Klaster 1', 'Klaster 2', dll (1-based, konsisten dengan kolom Dominan).
+     * NEW TEST 3: 12 respons halaman-tabel derajat keanggotaan judul kolom adalah 'Klaster 1', 'Klaster 2', dll (1-based, konsisten dengan kolom Dominan).
      * Verifikasi TIDAK ada 'Klaster 0'.
      */
     public function test_12_responses_membership_table_cluster_headers_1_based_not_0()
@@ -333,11 +333,11 @@ class TiyasHasilClusteringTest extends TestCase
     }
 
     /**
-     * NEW TEST 5: Halaman 12 respons—elips keyakinan per klaster ada (atribut data-klaster-area).
+     * NEW TEST 5: Halaman 12 respons-elips keyakinan per klaster ada (atribut data-klaster-area).
      * Verifikasi jumlah elips = c (jumlah klaster optimal).
      */
     /**
-     * NEW TEST 8: Halaman dengan data identical points—tidak ada NaN/INF di HTML output.
+     * NEW TEST 8: Halaman dengan data identical points-tidak ada NaN/INF di HTML output.
      * Klaster dengan 1 peserta (identical point) harus a=0, b=0 (minimal 6px oleh controller).
      */
     public function test_identical_points_no_nan_inf_in_html(): void
@@ -347,7 +347,7 @@ class TiyasHasilClusteringTest extends TestCase
         $panitia = User::factory()->create(['role' => 'panitia']);
         $pelatihan = Pelatihan::factory()->create(['status' => 'selesai', 'tanggal_selesai' => now()->subDay()]);
 
-        // Buat 1 peserta saja—jadi FCM clustering akan menghasilkan 1 klaster dengan 1 titik (identical)
+        // Buat 1 peserta saja-jadi FCM clustering akan menghasilkan 1 klaster dengan 1 titik (identical)
         // Atau: buat 8+ peserta tapi semua dengan profil identik sehingga FCM mungkin collapse ke 1 klaster
         // Untuk safety, buat 8 peserta dengan profil yang bisa collapse, atau just 1 peserta
         $peserta = User::factory()->create(['role' => 'peserta']);
@@ -387,7 +387,7 @@ class TiyasHasilClusteringTest extends TestCase
     }
 
     /**
-     * NEW TEST 9: Feature 12 respons—halaman render empat data-chart:
+     * NEW TEST 9: Feature 12 respons-halaman render empat data-chart:
      * "deskriptif-mean-sd", "deskriptif-kategori-stacked", "centroid-grouped-bars", "membership-horizontal-stacked"
      */
     public function test_12_responses_render_all_four_data_charts(): void
@@ -436,7 +436,7 @@ class TiyasHasilClusteringTest extends TestCase
     }
 
     /**
-     * NEW TEST 10: Feature 12 respons—setiap profil A, B, C, D menampilkan teks rekomendasi dari config/tiyas.php.
+     * NEW TEST 10: Feature 12 respons-setiap profil A, B, C, D menampilkan teks rekomendasi dari config/tiyas.php.
      * Jika halaman punya klaster profil A dan B, maka harus ada rekomendasi A dan B dari config.
      */
     public function test_12_responses_display_profile_recommendations_from_config(): void
@@ -493,7 +493,7 @@ class TiyasHasilClusteringTest extends TestCase
     }
 
     /**
-     * NEW TEST 11: Feature <8 respons—halaman render statistik deskriptif, TIDAK ada klaster grafik, tidak error.
+     * NEW TEST 11: Feature <8 respons-halaman render statistik deskriptif, TIDAK ada klaster grafik, tidak error.
      * Verifikasi pesan minimal 8 peserta dan deskriptif tetap tampil.
      */
     public function test_less_than_8_responses_no_clustering_charts_deskriptif_ok(): void
@@ -536,7 +536,7 @@ class TiyasHasilClusteringTest extends TestCase
     }
 
     /**
-     * NEW TEST 12: Feature 12 respons—halaman TIDAK mengandung 'NaN' atau 'INF' di seluruh HTML output.
+     * NEW TEST 12: Feature 12 respons-halaman TIDAK mengandung 'NaN' atau 'INF' di seluruh HTML output.
      * Guard numerik layer: Service degenerate→0, Controller min/max bound, View render-only.
      */
     public function test_12_responses_no_nan_inf_in_html_numeric_guards(): void
@@ -584,7 +584,7 @@ class TiyasHasilClusteringTest extends TestCase
     }
 
     /**
-     * NEW TEST: SVG struktur validation — memastikan tidak ada &quot; escape, line elements proper, dan XML valid.
+     * NEW TEST: SVG struktur validation, memastikan tidak ada &quot; escape, line elements proper, dan XML valid.
      * Validasi 3 SVG charts di halaman hasil: fcm-scatter, deskriptif-mean-sd, deskriptif-kategori-stacked.
      */
     public function test_12_responses_svg_structure_validation_no_escaped_quotes_proper_nesting(): void
@@ -684,7 +684,7 @@ class TiyasHasilClusteringTest extends TestCase
     }
 
     /**
-     * NEW TEST 12: Feature 12 respons—scatter plot circle fill colors match dominant cluster (no off-by-one shift).
+     * NEW TEST 12: Feature 12 respons-scatter plot circle fill colors match dominant cluster (no off-by-one shift).
      * Verify:
      * 1. Each <circle> has fill = cluster dominant color token (K1, K2, K3, K4 from config)
      * 2. Circle color matches the centroid X marker color for same cluster

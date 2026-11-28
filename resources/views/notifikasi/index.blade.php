@@ -30,7 +30,7 @@
                 @if ($notifikasi->count() > 0)
                     <div class="space-y-3">
                         @foreach ($notifikasi as $notif)
-                            <a href="{{ route('notifikasi.buka', $notif->id) }}" class="block p-4 rounded-lg" style="background-color: var(--color-surface); border: 1px solid #e5e7eb; text-decoration: none; transition: all 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
+                            <a href="{{ route('notifikasi.buka', $notif->id) }}" class="block p-4 rounded-lg" style="background-color: var(--color-surface); border: 1px solid var(--color-line); text-decoration: none; transition: all 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
                                 <div class="flex justify-between items-start mb-2">
                                     <h3 class="font-semibold" style="color: var(--color-text);">
                                         {{ $notif->data['judul_pelatihan'] ?? 'Notifikasi' }}
@@ -57,7 +57,7 @@
                         @endforeach
                     </div>
                 @else
-                    <div class="p-8 text-center rounded-lg" style="background-color: var(--color-surface); border: 1px solid #e5e7eb;">
+                    <div class="p-8 text-center rounded-lg" style="background-color: var(--color-surface); border: 1px solid var(--color-line);">
                         <p style="color: var(--color-text);">Tidak ada notifikasi</p>
                     </div>
                 @endif

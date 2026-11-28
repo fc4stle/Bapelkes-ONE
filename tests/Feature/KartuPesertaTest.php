@@ -351,7 +351,7 @@ class KartuPesertaTest extends TestCase
         // Pita kartu harus menampilkan
         $response->assertSee('Kartu Peserta Digital');
         $response->assertSee('Studi Kasus: Bapelkes DIY');
-        $response->assertSee('Dokumen simulasi proyek akademik UNY — bukan dokumen resmi.');
+        $response->assertSee('Dokumen simulasi proyek akademik UNY, bukan dokumen resmi.');
         // Memastikan teks lama tidak ada
         $response->assertDontSee('Bapelkes Dinkes DIY');
     }
@@ -393,7 +393,7 @@ class KartuPesertaTest extends TestCase
             'pendaftaran' => $pendaftaran,
         ])->render();
 
-        $this->assertStringContainsString('Dokumen simulasi proyek akademik UNY — bukan sertifikat resmi Bapelkes.', $html);
+        $this->assertStringContainsString('Dokumen simulasi proyek akademik UNY, bukan sertifikat resmi Bapelkes.', $html);
         $this->assertStringContainsString('Kepala (simulasi)', $html);
         $this->assertStringContainsString('CONTOH', $html);
         $this->assertStringNotContainsString('Kepala Bapelkes', $html);

@@ -28,7 +28,7 @@ Jumlah Pelatihan: 6
   (membaca ulang dari database, bukan dari objek di memori).
 - **DELETE**: jumlah baris kembali ke 6 setelah `$p->delete()`.
 
-## CRUD Pendaftaran ("Booking") — termasuk fitur edit baru Pertemuan 5
+## CRUD Pendaftaran ("Booking"), termasuk fitur edit baru Pertemuan 5
 
 ```
 $ php artisan tinker --execute '...'
@@ -44,10 +44,10 @@ Jumlah Pendaftaran: 0
 
 - **CREATE**: jumlah baris bertambah dari 0 menjadi 1.
 - **UPDATE**: field `data_diri.nama` (JSON) berubah dari "Peserta Uji DB" menjadi "Peserta Uji DB
-  (diubah)", dikonfirmasi lewat `$pendaftaran->fresh()->data_diri['nama']` — ini adalah operasi yang sama
+  (diubah)", dikonfirmasi lewat `$pendaftaran->fresh()->data_diri['nama']`, ini adalah operasi yang sama
   persis dengan yang dijalankan `PendaftaranController::updateSelf()` saat peserta mengklik "Simpan
   Perubahan" di form edit.
-- **DELETE**: jumlah baris kembali ke 0 setelah `$pendaftaran->delete()` — operasi yang sama dengan
+- **DELETE**: jumlah baris kembali ke 0 setelah `$pendaftaran->delete()`, operasi yang sama dengan
   tombol "Batalkan".
 
 Bukti yang sama, lewat jalur HTTP sungguhan (bukan tinker) dan lewat browser, ada di

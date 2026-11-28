@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+        <h2 class="font-semibold text-xl text-[var(--color-text)] leading-tight">
             Kelola Asrama
         </h2>
     </x-slot>
@@ -30,7 +30,7 @@
                                     id="tanggal"
                                     name="tanggal"
                                     value="{{ $tanggal ?? '' }}"
-                                    class="px-3 py-2 border border-gray-300 rounded-md text-sm"
+                                    class="px-3 py-2 border border-[var(--color-line)] rounded-md text-sm"
                                 />
                             </div>
                             <button
@@ -43,7 +43,7 @@
                             @if ($tanggal)
                                 <a
                                     href="{{ route('panitia.asrama.index') }}"
-                                    class="px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50"
+                                    class="px-4 py-2 text-sm font-medium text-[var(--color-text)] border border-[var(--color-line)] rounded-md hover:bg-[var(--color-bg)]"
                                 >
                                     Reset
                                 </a>
@@ -53,18 +53,18 @@
 
                     @if ($asramas->isEmpty())
                         <div class="text-center py-12">
-                            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg class="mx-auto h-12 w-12 text-[var(--color-muted)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5.581m0 0H9m5.581 0a2 2 0 100-4h-.581m0 4a2 2 0 100 4h.581m0 0H9" />
                             </svg>
                             <h3 class="mt-2 text-sm font-medium" style="color: var(--color-text);">Belum ada asrama</h3>
-                            <p class="mt-1 text-sm text-gray-500">Mulai dengan membuat asrama baru.</p>
+                            <p class="mt-1 text-sm text-[var(--color-muted)]">Mulai dengan membuat asrama baru.</p>
                         </div>
                     @else
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             @foreach ($asramas as $asrama)
                                 <a
                                     href="{{ route('panitia.asrama.show', $asrama['id']) }}"
-                                    class="p-4 border border-gray-200 rounded-lg hover:shadow-md transition"
+                                    class="p-4 border border-[var(--color-line)] rounded-lg hover:shadow-md transition"
                                     style="background-color: var(--color-surface);"
                                 >
                                     <h3 class="text-lg font-semibold mb-3" style="color: var(--color-primary);">

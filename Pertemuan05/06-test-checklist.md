@@ -1,4 +1,4 @@
-# Checklist Pengujian End-to-End — Pertemuan 5
+# Checklist Pengujian End-to-End, Pertemuan 5
 
 BAPELKES ONE · Praktik Aplikasi Web INF60295 · Universitas Negeri Yogyakarta
 
@@ -23,21 +23,21 @@ ulang, memakai user peserta sungguhan (bukan asumsi/simulasi). Bukti tangkapan l
 ## Keterbatasan yang diketahui (belum diperbaiki)
 
 - Console browser menampilkan error CORS untuk font `fonts.bunny.net` di semua halaman (bukan hanya
-  halaman baru Pertemuan 5) — ini keterbatasan jaringan lingkungan pengujian (font eksternal diblokir),
+  halaman baru Pertemuan 5), ini keterbatasan jaringan lingkungan pengujian (font eksternal diblokir),
   bukan bug aplikasi; tidak memengaruhi fungsi apa pun. Dicatat sebagai pekerjaan rumah di luar cakupan
   Pertemuan 5.
 - 3 test PHPUnit yang sudah gagal sejak sebelum Pertemuan 5 (`PelatihanKatalogTest`, `SertifikatTest`
-  x2) tetap gagal dengan cara yang sama — dikonfirmasi bukan regresi dari pekerjaan Pertemuan 5 (hasil
+  x2) tetap gagal dengan cara yang sama, dikonfirmasi bukan regresi dari pekerjaan Pertemuan 5 (hasil
   sama persis di branch `main` sebelum perubahan apa pun ditambahkan). Tidak diperbaiki karena di luar
   cakupan kerja Pertemuan 5 (fokus: database, model, migration, seeder, dan CRUD).
 
 ## Bug ditemukan & diperbaiki selama pengujian
 
 Saat menguji form edit secara nyata di browser, toggle JavaScript untuk menampilkan/menyembunyikan
-field tanggal asrama (`asrama-fields`) tidak pernah berjalan — field selalu tersembunyi walau checkbox
+field tanggal asrama (`asrama-fields`) tidak pernah berjalan, field selalu tersembunyi walau checkbox
 "Saya butuh menginap" dicentang. Diselidiki dan ditemukan akar masalahnya: layout utama
 (`resources/views/layouts/app.blade.php`) tidak memiliki `@stack('scripts')`, sehingga blok
 `@push('scripts')` pada `create.blade.php` (dan `edit.blade.php` yang baru dibuat) tidak pernah
-dirender ke halaman — bug ini sudah ada sejak Pertemuan 4, sebelum Pertemuan 5. **Diperbaiki** dengan
+dirender ke halaman, bug ini sudah ada sejak Pertemuan 4, sebelum Pertemuan 5. **Diperbaiki** dengan
 menambahkan `@stack('scripts')` sebelum `</body>` di `layouts/app.blade.php`. Dikonfirmasi lewat
 pengujian ulang: toggle asrama berfungsi di kedua form (create & edit) setelah perbaikan.

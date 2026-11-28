@@ -360,7 +360,7 @@ class TiyasFcmMembershipChartTest extends TestCase
                     }
                 }
 
-                // Selalu assertNotNull — tidak boleh skip meski membership=0
+                // Selalu assertNotNull, tidak boleh skip meski membership=0
                 $this->assertNotNull($foundRect,
                     "Rect dengan title diawali '{$titlePrefix}' tidak ditemukan (membership {$membership}%)");
 

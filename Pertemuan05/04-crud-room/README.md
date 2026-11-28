@@ -1,4 +1,4 @@
-# CRUD "Room" — Pertemuan 5
+# CRUD "Room", Pertemuan 5
 
 BAPELKES ONE · Praktik Aplikasi Web INF60295 · Universitas Negeri Yogyakarta
 
@@ -10,14 +10,14 @@ lengkap** sejak sebelum Pertemuan 5, dikerjakan oleh panitia melalui `PelatihanC
 
 | Operasi jobsheet | Implementasi nyata |
 |---|---|
-| `index()` — daftar ruang dari `Room::latest()->get()` | `PelatihanController::index()` — daftar pelatihan dari `Pelatihan::latest()->get()`, route `pelatihans.index` |
-| `create()` — form tambah ruang | `PelatihanController::create()`, route `pelatihans.create` |
-| `store()` — validasi + `Room::create()` | `PelatihanController::store(StorePelatihanRequest $request)`, route `pelatihans.store` — memakai Form Request khusus, bukan validasi inline |
-| `edit()`/`update()` — ubah data ruang | `PelatihanController::edit()` / `update(UpdatePelatihanRequest $request, Pelatihan $pelatihan)`, route `pelatihans.edit` / `pelatihans.update` |
-| `destroy()` — hapus ruang | `PelatihanController::destroy(Pelatihan $pelatihan)`, route `pelatihans.destroy` |
+| `index()`, daftar ruang dari `Room::latest()->get()` | `PelatihanController::index()`, daftar pelatihan dari `Pelatihan::latest()->get()`, route `pelatihans.index` |
+| `create()`, form tambah ruang | `PelatihanController::create()`, route `pelatihans.create` |
+| `store()`, validasi + `Room::create()` | `PelatihanController::store(StorePelatihanRequest $request)`, route `pelatihans.store`, memakai Form Request khusus, bukan validasi inline |
+| `edit()`/`update()`, ubah data ruang | `PelatihanController::edit()` / `update(UpdatePelatihanRequest $request, Pelatihan $pelatihan)`, route `pelatihans.edit` / `pelatihans.update` |
+| `destroy()`, hapus ruang | `PelatihanController::destroy(Pelatihan $pelatihan)`, route `pelatihans.destroy` |
 
 Route terdaftar lewat `Route::resource('pelatihans', PelatihanController::class)->middleware(['auth',
-'role:panitia'])` di `routes/web.php` — persis pola `Route::resource('rooms', RoomController::class)`
+'role:panitia'])` di `routes/web.php`, persis pola `Route::resource('rooms', RoomController::class)`
 pada jobsheet, hanya dengan tambahan middleware peran karena hanya panitia yang boleh mengelola
 pelatihan (peserta hanya boleh melihat katalog).
 

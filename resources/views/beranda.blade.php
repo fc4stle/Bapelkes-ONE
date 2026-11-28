@@ -4,7 +4,7 @@
         <section class="py-10 sm:py-16 px-4">
             <div class="max-w-5xl mx-auto text-center">
                 <h1 class="text-3xl sm:text-5xl font-bold mb-4" style="color: var(--color-text);">Sistem Informasi Portal Pelatihan Terpadu</h1>
-                <p class="text-base sm:text-xl mb-8" style="color: #555;">Portal terpadu pelatihan dan layanan peserta — studi kasus Bapelkes DIY</p>
+                <p class="text-base sm:text-xl mb-8" style="color: #555;">Portal terpadu pelatihan dan layanan peserta, studi kasus Bapelkes DIY</p>
 
                 <div class="flex flex-col sm:flex-row gap-4 justify-center">
                     @auth
@@ -37,10 +37,10 @@
 
         <!-- Search Section -->
         @if (!auth()->check() || auth()->user()->isPeserta())
-            <section class="py-12 px-4" style="border-top: 1px solid #e5e7eb;">
+            <section class="py-12 px-4" style="border-top: 1px solid var(--color-line);">
                 <div class="max-w-5xl mx-auto">
                     <form method="GET" action="{{ route('pelatihan.katalog') }}" class="flex flex-col sm:flex-row gap-3">
-                        <input type="text" name="q" placeholder="Cari pelatihan..." class="flex-1 px-4 py-3 rounded-[var(--radius-btn)] border-2 w-full" style="border-color: #e5e7eb; color: var(--color-text);">
+                        <input type="text" name="q" placeholder="Cari pelatihan..." class="flex-1 px-4 py-3 rounded-[var(--radius-btn)] border-2 w-full" style="border-color: var(--color-line); color: var(--color-text);">
                         <button type="submit" class="w-full sm:w-auto px-6 py-3 rounded-[var(--radius-btn)] text-white font-semibold" style="background-color: var(--color-primary);">
                             Cari
                         </button>
@@ -50,7 +50,7 @@
         @endif
 
         <!-- How to Register Section -->
-        <section class="py-10 sm:py-16 px-4" style="border-top: 1px solid #e5e7eb;">
+        <section class="py-10 sm:py-16 px-4" style="border-top: 1px solid var(--color-line);">
             <div class="max-w-5xl mx-auto">
                 <h2 class="text-2xl sm:text-3xl font-bold text-center mb-12" style="color: var(--color-text);">Cara Mendaftar</h2>
 
@@ -86,7 +86,7 @@
         </section>
 
         <!-- Open Trainings Section -->
-        <section class="py-10 sm:py-16 px-4" style="border-top: 1px solid #e5e7eb;">
+        <section class="py-10 sm:py-16 px-4" style="border-top: 1px solid var(--color-line);">
             <div class="max-w-5xl mx-auto">
                 <h2 class="text-2xl sm:text-3xl font-bold text-center mb-12" style="color: var(--color-text);">Pelatihan yang Sedang Dibuka</h2>
 
@@ -104,7 +104,7 @@
                 @else
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         @foreach ($trainings as $training)
-                            <x-card style="border: 1px solid #e5e7eb;">
+                            <x-card style="border: 1px solid var(--color-line);">
                                 <h3 class="text-lg font-bold mb-2" style="color: var(--color-text);">{{ $training->nama }}</h3>
                                 <p class="text-sm mb-4" style="color: #666;">
                                     <strong>Tanggal:</strong> {{ $training->tanggal_mulai->format('d M Y') }} - {{ $training->tanggal_selesai->format('d M Y') }}

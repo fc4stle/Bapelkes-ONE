@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+        <h2 class="font-semibold text-xl text-[var(--color-text)] leading-tight">
             Daftar Pelatihan
         </h2>
     </x-slot>
@@ -10,7 +10,7 @@
     <div class="bg-white shadow rounded-lg">
     <div class="px-4 py-5 sm:p-6">
         <div class="flex justify-between items-center mb-6">
-            <h1 class="text-2xl font-bold text-gray-900">Daftar Pelatihan</h1>
+            <h1 class="text-2xl font-bold text-[var(--color-text)]">Daftar Pelatihan</h1>
             <a href="{{ route('pelatihans.create') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2" style="background-color: var(--color-primary);">
                 Tambah Pelatihan
             </a>
@@ -18,11 +18,11 @@
 
         @if ($pelatihans->isEmpty())
             <div class="text-center py-12">
-                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg class="mx-auto h-12 w-12 text-[var(--color-muted)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
-                <h3 class="mt-2 text-sm font-medium text-gray-900">Belum ada pelatihan</h3>
-                <p class="mt-1 text-sm text-gray-500">Mulai dengan menambahkan pelatihan baru.</p>
+                <h3 class="mt-2 text-sm font-medium text-[var(--color-text)]">Belum ada pelatihan</h3>
+                <p class="mt-1 text-sm text-[var(--color-muted)]">Mulai dengan menambahkan pelatihan baru.</p>
                 <div class="mt-6">
                     <a href="{{ route('pelatihans.create') }}" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2" style="background-color: var(--color-primary);">
                         Tambah Pelatihan
@@ -32,42 +32,42 @@
         @else
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
+                    <thead class="bg-[var(--color-bg)]">
                         <tr>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lokasi</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kuota</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Metode</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-[var(--color-muted)] uppercase tracking-wider">Nama</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-[var(--color-muted)] uppercase tracking-wider">Tanggal</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-[var(--color-muted)] uppercase tracking-wider">Lokasi</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-[var(--color-muted)] uppercase tracking-wider">Kuota</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-[var(--color-muted)] uppercase tracking-wider">Metode</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-[var(--color-muted)] uppercase tracking-wider">Status</th>
+                            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-[var(--color-muted)] uppercase tracking-wider">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         @foreach ($pelatihans as $pelatihan)
                             <tr>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm font-medium text-gray-900">{{ $pelatihan->nama }}</div>
+                                    <div class="text-sm font-medium text-[var(--color-text)]">{{ $pelatihan->nama }}</div>
                                     @if ($pelatihan->deskripsi)
-                                        <div class="text-sm text-gray-500 truncate max-w-xs">{{ Str::limit($pelatihan->deskripsi, 50) }}</div>
+                                        <div class="text-sm text-[var(--color-muted)] truncate max-w-xs">{{ Str::limit($pelatihan->deskripsi, 50) }}</div>
                                     @endif
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-muted)]">
                                     {{ $pelatihan->tanggal_mulai->format('d M Y') }} - {{ $pelatihan->tanggal_selesai->format('d M Y') }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $pelatihan->lokasi }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $pelatihan->kuota }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $pelatihan->metode->label() }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-muted)]">{{ $pelatihan->lokasi }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-muted)]">{{ $pelatihan->kuota }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-muted)]">{{ $pelatihan->metode->label() }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     @php
                                         $statusColors = [
-                                            \App\Enums\StatusPelatihan::Draft->value => 'bg-gray-100 text-gray-800',
-                                            \App\Enums\StatusPelatihan::Dibuka->value => 'bg-green-100 text-green-800',
-                                            \App\Enums\StatusPelatihan::Ditutup->value => 'bg-yellow-100 text-yellow-800',
-                                            \App\Enums\StatusPelatihan::Selesai->value => 'bg-gray-100 text-gray-800',
+                                            \App\Enums\StatusPelatihan::Draft->value => 'bg-[var(--color-line)] text-[var(--color-text)]',
+                                            \App\Enums\StatusPelatihan::Dibuka->value => 'bg-[color-mix(in_srgb,var(--color-success)_15%,white)] text-[var(--color-success)]',
+                                            \App\Enums\StatusPelatihan::Ditutup->value => 'bg-[color-mix(in_srgb,var(--color-warning)_15%,white)] text-[var(--color-warning)]',
+                                            \App\Enums\StatusPelatihan::Selesai->value => 'bg-[var(--color-primary-soft)] text-[var(--color-primary)]',
                                         ];
                                     @endphp
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $statusColors[$pelatihan->status->value] ?? 'bg-gray-100 text-gray-800' }}">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $statusColors[$pelatihan->status->value] ?? 'bg-[var(--color-line)] text-[var(--color-text)]' }}">
                                         {{ $pelatihan->status->label() }}
                                     </span>
                                 </td>

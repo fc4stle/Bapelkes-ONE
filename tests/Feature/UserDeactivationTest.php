@@ -145,9 +145,9 @@ class UserDeactivationTest extends TestCase
         $this->assertNotNull($admin2->fresh()->dinonaktifkan_at);
 
         // Sekarang $admin1 adalah admin terakhir yang aktif
-        // Coba nonaktifkan $admin1 via $admin1 (diri sendiri) — error diri sendiri
-        // Tapi jika ada admin2 yang aktif, coba nonaktifkan admin2 — OK
-        // Jadi test: hanya ada admin1 yang aktif, admin1 coba nonaktifkan admin1 — harus gagal dengan pesan "minimal 1 admin"
+        // Coba nonaktifkan $admin1 via $admin1 (diri sendiri), error diri sendiri
+        // Tapi jika ada admin2 yang aktif, coba nonaktifkan admin2, OK
+        // Jadi test: hanya ada admin1 yang aktif, admin1 coba nonaktifkan admin1, harus gagal dengan pesan "minimal 1 admin"
         // Atau lebih mudah: hanya buat admin1 saja, coba nonaktifkan diri sendiri
 
         $response2 = $this->actingAs($admin1)

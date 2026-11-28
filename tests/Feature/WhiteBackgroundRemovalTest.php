@@ -19,7 +19,7 @@ class WhiteBackgroundRemovalTest extends TestCase
 
         $response = $this->actingAs($user)->get(route('dashboard'));
 
-        $response->assertSee('<meta name="theme-color" content="#FFF8E7">', escape: false);
+        $response->assertSee('<meta name="theme-color" content="#6E1423">', escape: false);
     }
 
     /**
@@ -29,7 +29,7 @@ class WhiteBackgroundRemovalTest extends TestCase
     {
         $response = $this->get(route('login'));
 
-        $response->assertSee('<meta name="theme-color" content="#FFF8E7">', escape: false);
+        $response->assertSee('<meta name="theme-color" content="#6E1423">', escape: false);
     }
 
     /**
@@ -114,7 +114,7 @@ class WhiteBackgroundRemovalTest extends TestCase
     }
 
     /**
-     * Test that flash component does not use bg-white
+     * Test that flash component does not use bg-white and uses color-mix for backgrounds
      */
     public function test_flash_component_no_bg_white(): void
     {
@@ -123,7 +123,10 @@ class WhiteBackgroundRemovalTest extends TestCase
 
         // Component should not have bg-white
         $this->assertStringNotContainsString('bg-white', $componentContent);
-        $this->assertStringContainsString('var(--color-surface)', $componentContent);
+        // Flash uses color-mix for tinted backgrounds and CSS variables for text colors
+        $this->assertStringContainsString('color-mix(in srgb', $componentContent);
+        $this->assertStringContainsString('border-[var(--color-success)]', $componentContent);
+        $this->assertStringContainsString('border-[var(--color-danger)]', $componentContent);
     }
 
     /**

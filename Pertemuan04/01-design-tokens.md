@@ -1,4 +1,4 @@
-# Design Token — Pertemuan 4
+# Design Token, Pertemuan 4
 
 BAPELKES ONE · Praktik Aplikasi Web INF60295 · Universitas Negeri Yogyakarta
 

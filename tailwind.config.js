@@ -12,7 +12,8 @@ export default {
     theme: {
         extend: {
             fontFamily: {
-                sans: ['Figtree', ...defaultTheme.fontFamily.sans],
+                sans: ['Public Sans', ...defaultTheme.fontFamily.sans],
+                serif: ['Source Serif 4', ...defaultTheme.fontFamily.serif],
             },
         },
     },

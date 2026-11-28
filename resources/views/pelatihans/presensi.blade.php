@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+        <h2 class="font-semibold text-xl text-[var(--color-text)] leading-tight">
             Presensi: {{ $pelatihan->nama }}
         </h2>
     </x-slot>
@@ -10,17 +10,17 @@
             <div class="bg-white shadow rounded-lg">
                 <div class="px-4 py-5 sm:p-6">
                     <div class="mb-6">
-                        <h1 class="text-2xl font-bold text-gray-900">Presensi Peserta</h1>
-                        <p class="mt-1 text-sm text-gray-500">
+                        <h1 class="text-2xl font-bold text-[var(--color-text)]">Presensi Peserta</h1>
+                        <p class="mt-1 text-sm text-[var(--color-muted)]">
                             {{ $pelatihan->nama }} &middot;
                             {{ $pelatihan->tanggal_mulai->format('d M Y') }} - {{ $pelatihan->tanggal_selesai->format('d M Y') }}
                             &middot; {{ $pelatihan->lokasi }}
                         </p>
-                        <p class="mt-1 text-sm text-gray-500">
+                        <p class="mt-1 text-sm text-[var(--color-muted)]">
                             Masukkan kode presensi dari kartu peserta (hasil scan QR code).
                         </p>
                         <div class="mt-4">
-                            <a href="{{ route('pelatihan.pendaftar', $pelatihan) }}" class="inline-flex items-center text-sm text-gray-600 hover:text-gray-900">
+                            <a href="{{ route('pelatihan.pendaftar', $pelatihan) }}" class="inline-flex items-center text-sm text-[var(--color-muted)] hover:text-[var(--color-text)]">
                                 <svg class="mr-1 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                                     <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
                                 </svg>
@@ -66,11 +66,11 @@
                             <div class="space-y-2">
                                 <template x-for="item in hadirList" :key="item.id">
                                     <div class="flex items-center justify-between text-sm bg-white p-2 rounded border border-blue-100">
-                                        <span class="font-medium text-gray-900" x-text="item.nama"></span>
-                                        <span class="text-gray-500" x-text="item.hadir_at"></span>
+                                        <span class="font-medium text-[var(--color-text)]" x-text="item.nama"></span>
+                                        <span class="text-[var(--color-muted)]" x-text="item.hadir_at"></span>
                                     </div>
                                 </template>
-                                <div x-show="hadirList.length === 0" class="text-sm text-gray-500 italic p-2">
+                                <div x-show="hadirList.length === 0" class="text-sm text-[var(--color-muted)] italic p-2">
                                     Belum ada yang hadir.
                                 </div>
                             </div>
@@ -79,7 +79,7 @@
                         <!-- Bagian Scan QR -->
                         <div class="mb-8">
                             <div class="flex items-center justify-between mb-4">
-                                <h2 class="text-lg font-semibold text-gray-900">Scan QR Code</h2>
+                                <h2 class="text-lg font-semibold text-[var(--color-text)]">Scan QR Code</h2>
                             </div>
 
                             <!-- Hasil Scan (Di atas video) -->
@@ -98,10 +98,10 @@
                                 </div>
                             </div>
 
-                            <div class="border border-gray-200 rounded-lg overflow-hidden">
+                            <div class="border border-[var(--color-line)] rounded-lg overflow-hidden">
                                 <div id="qr_scanner_container" style="display: none; width: 100%; overflow: hidden; position: relative;"></div>
 
-                                <div x-show="!scanActive && !cameraError && !scanResult" class="p-4 bg-gray-50 text-center">
+                                <div x-show="!scanActive && !cameraError && !scanResult" class="p-4 bg-[var(--color-bg)] text-center">
                                     <button type="button"
                                         @click="startScan()"
                                         class="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2"
@@ -113,7 +113,7 @@
                                     </button>
                                 </div>
 
-                                <div x-show="scanActive && !scanResult" class="p-4 bg-gray-50">
+                                <div x-show="scanActive && !scanResult" class="p-4 bg-[var(--color-bg)]">
                                     <button type="button"
                                         @click="stopScan()"
                                         class="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2"
@@ -137,9 +137,9 @@
                         <form method="POST" action="{{ route('pelatihan.presensi.proses', $pelatihan) }}" class="space-y-4">
                             @csrf
                             <div>
-                                <label for="kode_presensi" class="block text-sm font-medium text-gray-700">Kode Presensi (Manual)</label>
+                                <label for="kode_presensi" class="block text-sm font-medium text-[var(--color-text)]">Kode Presensi (Manual)</label>
                                 <input type="text" name="kode_presensi" id="kode_presensi"
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[var(--color-primary)] focus:ring-[var(--color-primary)] sm:text-sm border px-3 py-2 font-mono uppercase"
+                                    class="mt-1 block w-full rounded-md border-[var(--color-line)] shadow-sm focus:border-[var(--color-primary)] focus:ring-[var(--color-primary)] sm:text-sm border px-3 py-2 font-mono uppercase"
                                     placeholder="Masukkan kode dari QR/Scanner"
                                     autofocus>
                                 @error('kode_presensi')
@@ -155,8 +155,8 @@
                             </button>
                         </form>
 
-                        <div class="mt-6 border-t border-gray-200 pt-4">
-                            <p class="text-xs text-gray-400">
+                        <div class="mt-6 border-t border-[var(--color-line)] pt-4">
+                            <p class="text-xs text-[var(--color-muted)]">
                                 Tips: Gunakan "Mulai Scan" untuk scan langsung dari kamera, atau masukkan kode manual di form di atas.
                             </p>
                         </div>

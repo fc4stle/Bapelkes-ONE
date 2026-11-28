@@ -10,15 +10,15 @@
 Sumber-sumber dari Februari–Juli 2026 (post-acquisition) secara konsisten melaporkan:
 
 > *"New users will no longer be able to signup for Koyeb's free Starter tier."*
-> — Yahoo Finance, kuberns.com, communicationstoday.co.in (Feb 2026)
+>, Yahoo Finance, kuberns.com, communicationstoday.co.in (Feb 2026)
 
 > *"Post-acquisition, new users can no longer sign up for the Starter tier. The Pro plan at $29/month plus compute is now the entry point."*
-> — kuberns.com
+>, kuberns.com
 
 Namun pengalaman Alysa bertentangan: signup via GitHub OAuth BERHASIL tanpa CC. Kemungkinan:
 
 1. Kebijakan berubah kembali (buka-tutup) antara Februari dan September 2026
-2. Atau "Starter plan" (bernama) berbeda dari "free Instance type" (512MB RAM) — yang tersembunyi dari landing page tapi masih bisa diakses via dashboard
+2. Atau "Starter plan" (bernama) berbeda dari "free Instance type" (512MB RAM), yang tersembunyi dari landing page tapi masih bisa diakses via dashboard
 3. Atau akun Alysa dianggap "existing" karena signup terjadi di window transisi
 
 **Status free tier Koyeb saat ini: TIDAK JELAS / BERUBAH-UBAH.**
@@ -41,7 +41,7 @@ Ini sendiri adalah RED FLAG untuk kriteria "selama-lama-nya gratis".
 | Dashboard stabil? | **TIDAK** (bug saat ini, Sept 2026) | 🔴 TINGGI |
 | Produk diprioritaskan untuk enterprise? | **YA** (pernyataan Mistral) | 🔴 TINGGI |
 
-**Verdict:** 🔴 **RISIKO TINGGI** — Dashboard tidak stabil + kebijakan berubah-ubah pasca-akuisisi.
+**Verdict:** 🔴 **RISIKO TINGGI**, Dashboard tidak stabil + kebijakan berubah-ubah pasca-akuisisi.
 
 #### SnapDeploy
 
@@ -49,11 +49,11 @@ Ini sendiri adalah RED FLAG untuk kriteria "selama-lama-nya gratis".
 |-------|--------|--------|
 | Auto-stop total karena tidak aktif? | TIDAK (auto-sleep/wake) | ✅ Rendah |
 | Auto-deletion karena inactivity? | TIDAK ADA ketentuan di ToS | ✅ Rendah |
-| 10 deploys/hari = constraint uptime? | **TIDAK** — hanya constraint DEPLOY. App yang sudah live tetap jalan. | ✅ Rendah |
-| Free tier dicabut tiba-tiba? | **MUNGKIN** — perusahaan baru (<1 tahun), tanpa funding | 🔴 TINGGI |
+| 10 deploys/hari = constraint uptime? | **TIDAK**, hanya constraint DEPLOY. App yang sudah live tetap jalan. | ✅ Rendah |
+| Free tier dicabut tiba-tiba? | **MUNGKIN**, perusahaan baru (<1 tahun), tanpa funding | 🔴 TINGGI |
 | Track record | Sangat pendek (~6 bulan) | 🔴 TINGGI |
 
-**Verdict:** 🟡 **RISIKO SEDANG** — Platform terlalu baru, tidak bisa prediksi 3-5 tahun.
+**Verdict:** 🟡 **RISIKO SEDANG**, Platform terlalu baru, tidak bisa prediksi 3-5 tahun.
 
 ---
 
@@ -64,7 +64,7 @@ Ini sendiri adalah RED FLAG untuk kriteria "selama-lama-nya gratis".
 | Platform | Diakquisisi Oleh | Tahun | Free Tier |
 |----------|------------------|-------|-----------|
 | Heroku | Salesforce | 2012 | Dihapus 2022 |
-| Fly.io | (independent) | — | Dihapus 2024 |
+| Fly.io | (independent) |, | Dihapus 2024 |
 | NPM | GitHub (Microsoft) | 2020 | Dihapus 2022 |
 | Koyeb | Mistral AI | 2026 | Ditutup untuk user baru (Feb 2026) |
 
@@ -101,8 +101,8 @@ Karena tidak ada opsi gratis yang benar-benar stabil untuk 3-5 tahun, perlu memp
 | Aspek | Detail |
 |-------|--------|
 | **Biaya** | $3-5/bulan (Hetzner CX22: 2 vCPU, 4GB RAM, €3.79/bulan) |
-| **Stabilitas** | SANGAT TINGGI — VPS tidak pernah "hilang" |
-| **Kontrol** | Penuh — bisa migrasi kapan saja |
+| **Stabilitas** | SANGAT TINGGI, VPS tidak pernah "hilang" |
+| **Kontrol** | Penuh, bisa migrasi kapan saja |
 | **Fitur** | Coolify/Dokploy memberikan UI seperti Vercel/Heroku |
 | **Database** | Supabase (gratis) tetap bisa dipakai |
 | **Risk** | VPS bisa tutup (bangkrut provider), tapi bisa migrasi ke VPS lain |
@@ -136,9 +136,9 @@ Karena tidak ada opsi gratis yang benar-benar stabil untuk 3-5 tahun, perlu memp
 
 1. **Tidak ada yang bisa menghapus akses Anda.** VPS Anda milik Anda, bukan "free tier" yang bisa dicut kapan saja.
 
-2. **Biaya sangat kecil.** €3.79/bulan = ~Rp 65.000/bulan — lebih murah dari paket data bulanan.
+2. **Biaya sangat kecil.** €3.79/bulan = ~Rp 65.000/bulan, lebih murah dari paket data bulanan.
 
-3. **Coolify memberikan UX seperti Vercel.** Git-push deploy, auto-SSL, Docker support, database management — semua ada di UI.
+3. **Coolify memberikan UX seperti Vercel.** Git-push deploy, auto-SSL, Docker support, database management, semua ada di UI.
 
 4. **Migrasi mudah.** Kalau Hetzner tutup (sangat tidak mungkin), VPS bisa di-export dan di-import ke provider lain.
 
@@ -146,7 +146,7 @@ Karena tidak ada opsi gratis yang benar-benar stabil untuk 3-5 tahun, perlu memp
 
 **Setup:**
 1. Buat akun Hetzner (hetzner.cloud)
-2. Buat VPS CX22 (2 vCPU, 4GB RAM, 40GB SSD) — €3.79/bulan
+2. Buat VPS CX22 (2 vCPU, 4GB RAM, 40GB SSD), €3.79/bulan
 3. Install Coolify via script: `curl -fsSL https://cdn.coollabs.io/coolify/install.sh | bash`
 4. Connect GitHub repo → deploy Dockerfile
 5. Database tetap di Supabase (gratis)
@@ -167,7 +167,7 @@ Karena tidak ada opsi gratis yang benar-benar stabil untuk 3-5 tahun, perlu memp
 
 ---
 
-### Pilihan 3: **Koyeb** — TIDAK DIREKOMENDASIKAN untuk jangka panjang
+### Pilihan 3: **Koyeb**, TIDAK DIREKOMENDASIKAN untuk jangka panjang
 
 **Alasan:**
 - Dashboard saat ini TIDAK STABLE (bug September 2026)
@@ -179,14 +179,14 @@ Karena tidak ada opsi gratis yang benar-benar stabil untuk 3-5 tahun, perlu memp
 
 ## Langkah Selanjutnya
 
-1. **Kalau setuju dengan Hetzner + Coolify** — saya siap bantu:
+1. **Kalau setuju dengan Hetzner + Coolify**, saya siap bantu:
    - Setup akun Hetzner
    - Install Coolify di VPS
    - Migrasi Dockerfile ke deployment baru
    - Connect ke Supabase
 
-2. **Kalau mau tetap gratis** — kita bisa coba SnapDeploy dulu, tapi siap-siap dengan exit plan kalau platform tutup.
+2. **Kalau mau tetap gratis**, kita bisa coba SnapDeploy dulu, tapi siap-siap dengan exit plan kalau platform tutup.
 
-3. **Kalau mau coba perbaiki Koyeb** — bisa kita coba create app via CLI (karena dashboard bug), tapi risiko ke depan tetap tinggi.
+3. **Kalau mau coba perbaiki Koyeb**, bisa kita coba create app via CLI (karena dashboard bug), tapi risiko ke depan tetap tinggi.
 
 Saya rekomendasikan **Pilihan 1 (Hetzner + Coolify)** untuk portofolio hidup yang harus stabil 3-5 tahun ke depan.

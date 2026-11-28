@@ -224,7 +224,7 @@ PATCH /pendaftarans/{id}/verifikasi (Verifikasi)
 PATCH /pendaftarans/{id}/tolak   (Tolak)
 
 // Auth (Peserta + Panitia)
-PATCH /pendaftarans/{id}         (Update status verifikasi — fallback)
+PATCH /pendaftarans/{id}         (Update status verifikasi, fallback)
 ```
 
 ---

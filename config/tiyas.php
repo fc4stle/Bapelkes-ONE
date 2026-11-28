@@ -2,7 +2,7 @@
 
 /*
  * Instrumen Model TIYAS (Training Implementation and Yielded Behavior
- * Evaluation System) — Kuesioner Model TIYAS, Lampiran 2 proposal disertasi
+ * Evaluation System), Kuesioner Model TIYAS, Lampiran 2 proposal disertasi
  * Yudi Andriyaningtiyas. Butir dan urutan sama persis dengan instrumen asli.
  *
  * Skala: 4 kategori tanpa pilihan tengah.

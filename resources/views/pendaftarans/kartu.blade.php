@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+        <h2 class="font-semibold text-xl text-[var(--color-text)] leading-tight">
             Kartu Peserta
         </h2>
     </x-slot>
@@ -19,13 +19,13 @@
                         <svg class="mx-auto h-16 w-16 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
-                        <h3 class="mt-4 text-lg font-medium text-gray-900">Menunggu Verifikasi</h3>
-                        <p class="mt-2 text-sm text-gray-500">
+                        <h3 class="mt-4 text-lg font-medium text-[var(--color-text)]">Menunggu Verifikasi</h3>
+                        <p class="mt-2 text-sm text-[var(--color-muted)]">
                             Pendaftaran Anda untuk pelatihan <strong>{{ $pendaftaran->pelatihan->nama }}</strong> sedang menunggu verifikasi dari panitia.
                             Kartu peserta akan tersedia setelah pendaftaran diverifikasi.
                         </p>
                         <div class="mt-6">
-                            <a href="{{ route('pendaftarans.index') }}" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                            <a href="{{ route('pendaftarans.index') }}" class="inline-flex items-center px-4 py-2 border border-[var(--color-line)] shadow-sm text-sm font-medium rounded-md text-[var(--color-text)] bg-white hover:bg-[var(--color-bg)]">
                                 Kembali ke Daftar Pendaftaran
                             </a>
                         </div>
@@ -37,8 +37,8 @@
                         <svg class="mx-auto h-16 w-16 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
-                        <h3 class="mt-4 text-lg font-medium text-gray-900">Pendaftaran Ditolak</h3>
-                        <p class="mt-2 text-sm text-gray-500">
+                        <h3 class="mt-4 text-lg font-medium text-[var(--color-text)]">Pendaftaran Ditolak</h3>
+                        <p class="mt-2 text-sm text-[var(--color-muted)]">
                             Pendaftaran Anda untuk pelatihan <strong>{{ $pendaftaran->pelatihan->nama }}</strong> telah ditolak.
                         </p>
                         @if ($pendaftaran->alasan_penolakan)
@@ -47,7 +47,7 @@
                             </div>
                         @endif
                         <div class="mt-6">
-                            <a href="{{ route('pendaftarans.index') }}" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                            <a href="{{ route('pendaftarans.index') }}" class="inline-flex items-center px-4 py-2 border border-[var(--color-line)] shadow-sm text-sm font-medium rounded-md text-[var(--color-text)] bg-white hover:bg-[var(--color-bg)]">
                                 Kembali ke Daftar Pendaftaran
                             </a>
                         </div>
@@ -77,77 +77,77 @@
                                 </div>
                             </div>
                             <div class="flex-1 min-w-0">
-                                <h4 class="text-xl font-bold text-gray-900 break-words">{{ $pendaftaran->data_diri['nama'] ?? '-' }}</h4>
-                                <p class="text-sm text-gray-500">NIK: {{ $pendaftaran->data_diri['nik'] ?? '-' }}</p>
-                                <p class="text-sm text-gray-500">{{ $pendaftaran->data_diri['profesi'] ?? '-' }} &middot; {{ $pendaftaran->data_diri['instansi'] ?? '-' }}</p>
+                                <h4 class="text-xl font-bold text-[var(--color-text)] break-words">{{ $pendaftaran->data_diri['nama'] ?? '-' }}</h4>
+                                <p class="text-sm text-[var(--color-muted)]">NIK: {{ $pendaftaran->data_diri['nik'] ?? '-' }}</p>
+                                <p class="text-sm text-[var(--color-muted)]">{{ $pendaftaran->data_diri['profesi'] ?? '-' }} &middot; {{ $pendaftaran->data_diri['instansi'] ?? '-' }}</p>
                             </div>
                         </div>
 
-                        <div class="mt-6 border-t border-gray-200 pt-6">
+                        <div class="mt-6 border-t border-[var(--color-line)] pt-6">
                             <dl class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                 <div>
-                                    <dt class="text-xs font-medium text-gray-500 uppercase tracking-wider">Pelatihan</dt>
-                                    <dd class="mt-1 text-sm font-medium text-gray-900">{{ $pendaftaran->pelatihan->nama }}</dd>
+                                    <dt class="text-xs font-medium text-[var(--color-muted)] uppercase tracking-wider">Pelatihan</dt>
+                                    <dd class="mt-1 text-sm font-medium text-[var(--color-text)]">{{ $pendaftaran->pelatihan->nama }}</dd>
                                 </div>
                                 <div>
-                                    <dt class="text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Pelatihan</dt>
-                                    <dd class="mt-1 text-sm text-gray-900">
+                                    <dt class="text-xs font-medium text-[var(--color-muted)] uppercase tracking-wider">Tanggal Pelatihan</dt>
+                                    <dd class="mt-1 text-sm text-[var(--color-text)]">
                                         {{ $pendaftaran->pelatihan->tanggal_mulai->format('d M Y') }} - {{ $pendaftaran->pelatihan->tanggal_selesai->format('d M Y') }}
                                     </dd>
                                 </div>
                                 <div>
-                                    <dt class="text-xs font-medium text-gray-500 uppercase tracking-wider">Lokasi</dt>
-                                    <dd class="mt-1 text-sm text-gray-900">{{ $pendaftaran->pelatihan->lokasi }}</dd>
+                                    <dt class="text-xs font-medium text-[var(--color-muted)] uppercase tracking-wider">Lokasi</dt>
+                                    <dd class="mt-1 text-sm text-[var(--color-text)]">{{ $pendaftaran->pelatihan->lokasi }}</dd>
                                 </div>
                                 <div>
-                                    <dt class="text-xs font-medium text-gray-500 uppercase tracking-wider">Metode</dt>
-                                    <dd class="mt-1 text-sm text-gray-900">{{ $pendaftaran->pelatihan->metode->label() }}</dd>
+                                    <dt class="text-xs font-medium text-[var(--color-muted)] uppercase tracking-wider">Metode</dt>
+                                    <dd class="mt-1 text-sm text-[var(--color-text)]">{{ $pendaftaran->pelatihan->metode->label() }}</dd>
                                 </div>
                                 @if ($pendaftaran->butuh_asrama && $pendaftaran->kamar)
                                     <div class="sm:col-span-2">
-                                        <dt class="text-xs font-medium text-gray-500 uppercase tracking-wider">Asrama</dt>
-                                        <dd class="mt-1 text-sm text-gray-900">
+                                        <dt class="text-xs font-medium text-[var(--color-muted)] uppercase tracking-wider">Asrama</dt>
+                                        <dd class="mt-1 text-sm text-[var(--color-text)]">
                                             {{ $pendaftaran->kamar->asrama->nama }} - Kamar {{ $pendaftaran->kamar->nomor_kamar }}
                                             <br>
-                                            <span class="text-gray-500">Check-in: {{ $pendaftaran->check_in->format('d M Y') }} | Check-out: {{ $pendaftaran->check_out->format('d M Y') }}</span>
+                                            <span class="text-[var(--color-muted)]">Check-in: {{ $pendaftaran->check_in->format('d M Y') }} | Check-out: {{ $pendaftaran->check_out->format('d M Y') }}</span>
                                         </dd>
                                     </div>
                                 @elseif ($pendaftaran->butuh_asrama && !$pendaftaran->kamar)
                                     <div class="sm:col-span-2">
-                                        <dt class="text-xs font-medium text-gray-500 uppercase tracking-wider">Asrama</dt>
+                                        <dt class="text-xs font-medium text-[var(--color-muted)] uppercase tracking-wider">Asrama</dt>
                                         <dd class="mt-1 text-sm text-yellow-600">Asrama penuh, tidak ada kamar tersedia</dd>
                                     </div>
                                 @endif
                             </dl>
                         </div>
 
-                        <div class="mt-6 border-t border-gray-200 pt-6">
+                        <div class="mt-6 border-t border-[var(--color-line)] pt-6">
                             <div class="flex flex-col items-center">
-                                <p class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-3">QR Code Presensi</p>
-                                <div class="bg-white p-4 rounded-lg border-2 border-gray-200 inline-block max-w-full overflow-hidden [&>svg]:max-w-full [&>svg]:h-auto">
+                                <p class="text-xs font-medium text-[var(--color-muted)] uppercase tracking-wider mb-3">QR Code Presensi</p>
+                                <div class="bg-white p-4 rounded-lg border-2 border-[var(--color-line)] inline-block max-w-full overflow-hidden [&>svg]:max-w-full [&>svg]:h-auto">
                                     {!! $qrCode !!}
                                 </div>
-                                <p class="mt-3 text-xs text-gray-500 text-center">
+                                <p class="mt-3 text-xs text-[var(--color-muted)] text-center">
                                     Kode: <span class="font-mono font-medium">{{ $pendaftaran->kode_presensi }}</span>
                                 </p>
-                                <p class="mt-1 text-xs text-gray-400 text-center">
+                                <p class="mt-1 text-xs text-[var(--color-muted)] text-center">
                                     Tunjukkan QR code ini saat presensi di lokasi pelatihan
                                 </p>
                             </div>
                         </div>
                     </div>
 
-                    <div class="bg-gray-50 px-6 py-4">
+                    <div class="bg-[var(--color-bg)] px-6 py-4">
                         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                             <div class="flex-1">
-                                <p class="text-xs text-gray-500 mb-2">
+                                <p class="text-xs text-[var(--color-muted)] mb-2">
                                     Diverifikasi oleh: {{ $pendaftaran->verifier->name ?? 'Panitia' }} pada {{ $pendaftaran->verified_at->format('d M Y H:i') }}
                                 </p>
-                                <p class="text-xs text-gray-400">
-                                    Dokumen simulasi proyek akademik UNY — bukan dokumen resmi.
+                                <p class="text-xs text-[var(--color-muted)]">
+                                    Dokumen simulasi proyek akademik UNY, bukan dokumen resmi.
                                 </p>
                             </div>
-                            <button onclick="window.print()" class="print:hidden w-full sm:w-auto inline-flex items-center justify-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                            <button onclick="window.print()" class="print:hidden w-full sm:w-auto inline-flex items-center justify-center px-3 py-1.5 border border-[var(--color-line)] text-xs font-medium rounded-md text-[var(--color-text)] bg-white hover:bg-[var(--color-bg)]">
                                 Cetak
                             </button>
                         </div>
