@@ -6,12 +6,12 @@
     <div class="py-12">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <!-- Bagian 1: Panel Metrik Perlu Tindakan -->
-            <div class="rounded-xl border bg-white mb-8" style="border-color: var(--color-line);">
+            <div data-reveal class="rounded-xl border bg-white mb-8" style="border-color: var(--color-line);">
                 <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-px overflow-hidden rounded-xl bg-[var(--color-line)]">
                     <!-- Menunggu Verifikasi -->
                     <div class="p-5 bg-white">
                         <p class="text-xs font-medium text-[var(--color-muted)]">Menunggu Verifikasi</p>
-                        <p class="text-3xl font-semibold text-[var(--color-text)] mt-2">{{ $total_pending }}</p>
+                        <p class="text-3xl font-semibold text-[var(--color-text)] mt-2" data-count-to="{{ $total_pending }}">{{ $total_pending }}</p>
                         <div class="mt-3">
                             @if ($total_pending > 0 && $pelatihan_pending_terbanyak)
                                 <a href="{{ route('pelatihan.pendaftar', $pelatihan_pending_terbanyak) }}" class="text-sm font-medium text-[var(--color-primary)] hover:underline">
@@ -31,7 +31,7 @@
                                 <span class="inline-block w-2 h-2 rounded-full" style="background-color: var(--color-warning);"></span>
                             @endif
                         </div>
-                        <p class="text-3xl font-semibold text-[var(--color-text)] mt-2">{{ $pelatihan_perhatian }}</p>
+                        <p class="text-3xl font-semibold text-[var(--color-text)] mt-2" data-count-to="{{ $pelatihan_perhatian }}">{{ $pelatihan_perhatian }}</p>
                         <div class="mt-3">
                             @if ($pelatihan_perhatian > 0)
                                 <a href="{{ route('pelatihans.index') }}" class="text-sm font-medium text-[var(--color-primary)] hover:underline">
@@ -46,7 +46,7 @@
                     <!-- Tanpa TIYAS -->
                     <div class="p-5 bg-white">
                         <p class="text-xs font-medium text-[var(--color-muted)]">Tanpa TIYAS</p>
-                        <p class="text-3xl font-semibold text-[var(--color-text)] mt-2">{{ $pelatihan_tanpa_tiyas }}</p>
+                        <p class="text-3xl font-semibold text-[var(--color-text)] mt-2" data-count-to="{{ $pelatihan_tanpa_tiyas }}">{{ $pelatihan_tanpa_tiyas }}</p>
                         <div class="mt-3">
                             @if ($pelatihan_tanpa_tiyas > 0)
                                 <a href="{{ route('pelatihans.index') }}" class="text-sm font-medium text-[var(--color-primary)] hover:underline">
@@ -61,7 +61,7 @@
                     <!-- Asrama Pending -->
                     <div class="p-5 bg-white">
                         <p class="text-xs font-medium text-[var(--color-muted)]">Asrama Pending</p>
-                        <p class="text-3xl font-semibold text-[var(--color-text)] mt-2">{{ $asrama_pending }}</p>
+                        <p class="text-3xl font-semibold text-[var(--color-text)] mt-2" data-count-to="{{ $asrama_pending }}">{{ $asrama_pending }}</p>
                         <div class="mt-3">
                             @if ($asrama_pending > 0 && $pelatihan_asrama_terbanyak)
                                 <a href="{{ route('pelatihan.pendaftar', $pelatihan_asrama_terbanyak) }}" class="text-sm font-medium text-[var(--color-primary)] hover:underline">
@@ -76,7 +76,7 @@
             </div>
 
             <!-- Bagian 2: Antrian Verifikasi -->
-            <div class="rounded-xl border bg-white mb-8" style="border-color: var(--color-line);">
+            <div data-reveal data-reveal-delay="1" class="rounded-xl border bg-white mb-8" style="border-color: var(--color-line);">
                 <div class="p-5 border-b" style="border-color: var(--color-line);">
                     <h3 class="text-base font-semibold text-[var(--color-text)]">Antrian Verifikasi</h3>
                 </div>
@@ -108,7 +108,7 @@
             </div>
 
             <!-- Bagian 3: Hasil TIYAS Terbaru -->
-            <div class="rounded-xl border bg-white mb-8" style="border-color: var(--color-line);">
+            <div data-reveal data-reveal-delay="2" class="rounded-xl border bg-white mb-8" style="border-color: var(--color-line);">
                 <div class="p-5 border-b" style="border-color: var(--color-line);">
                     <h3 class="text-base font-semibold text-[var(--color-text)]">Hasil TIYAS Terbaru</h3>
                 </div>
@@ -143,7 +143,7 @@
             </div>
 
             <!-- Bagian 4: Tabel Rekap Pelatihan -->
-            <div class="rounded-xl border bg-white" style="border-color: var(--color-line);">
+            <div data-reveal data-reveal-delay="3" class="rounded-xl border bg-white" style="border-color: var(--color-line);">
                 <div class="p-5 border-b" style="border-color: var(--color-line);">
                     <h3 class="text-base font-semibold text-[var(--color-text)]">Dashboard Rekap Pelatihan</h3>
                 </div>

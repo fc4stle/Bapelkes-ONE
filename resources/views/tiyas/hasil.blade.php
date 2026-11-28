@@ -71,14 +71,14 @@
                                 default => 'var(--color-text)',
                             };
                         @endphp
-                        <x-card>
+                        <x-card data-reveal>
                             <div class="flex flex-col h-full">
                                 <!-- Nama konstruk dan kode -->
                                 <h3 class="font-semibold text-sm sm:text-base" style="color: var(--color-text);">{{ $judul }}</h3>
                                 <p style="color: var(--color-text); opacity: 0.6;" class="text-xs">{{ $kode }}</p>
 
                                 <!-- Skor besar -->
-                                <div class="text-3xl sm:text-4xl font-bold my-2" style="color: var(--color-primary);">
+                                <div class="text-3xl sm:text-4xl font-bold my-2" style="color: var(--color-primary);" data-count-to="{{ number_format($skor, 2) }}">
                                     {{ number_format($skor, 2) }}
                                 </div>
                                 <p style="color: var(--color-text); opacity: 0.7;" class="text-xs mb-3">dari 4,00</p>

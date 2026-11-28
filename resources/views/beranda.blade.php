@@ -62,27 +62,8 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
 
             <!-- Bar Cari (Hanya untuk Tamu/Peserta) -->
-            @guest
-                <div class="mb-12">
-                    <form action="{{ route('pelatihan.katalog') }}" method="GET" class="flex gap-2 max-w-md">
-                        <input 
-                            type="text" 
-                            name="search" 
-                            placeholder="Cari pelatihan..." 
-                            class="flex-1 px-4 py-3 rounded-full border focus:outline-none focus:ring-2" 
-                            style="border-color: var(--color-line);"
-                        >
-                        <button 
-                            type="submit" 
-                            class="px-6 py-3 rounded-full font-semibold text-sm text-white transition-colors hover:opacity-90"
-                            style="background-color: var(--color-primary);"
-                        >
-                            Cari
-                        </button>
-                    </form>
-                </div>
-            @else
-                @if (!auth()->user()->isStaf())
+            <div data-reveal>
+                @guest
                     <div class="mb-12">
                         <form action="{{ route('pelatihan.katalog') }}" method="GET" class="flex gap-2 max-w-md">
                             <input 
@@ -101,11 +82,32 @@
                             </button>
                         </form>
                     </div>
-                @endif
-            @endguest
+                @else
+                    @if (!auth()->user()->isStaf())
+                        <div class="mb-12">
+                            <form action="{{ route('pelatihan.katalog') }}" method="GET" class="flex gap-2 max-w-md">
+                                <input 
+                                    type="text" 
+                                    name="search" 
+                                    placeholder="Cari pelatihan..." 
+                                    class="flex-1 px-4 py-3 rounded-full border focus:outline-none focus:ring-2" 
+                                    style="border-color: var(--color-line);"
+                                >
+                                <button 
+                                    type="submit" 
+                                    class="px-6 py-3 rounded-full font-semibold text-sm text-white transition-colors hover:opacity-90"
+                                    style="background-color: var(--color-primary);"
+                                >
+                                    Cari
+                                </button>
+                            </form>
+                        </div>
+                    @endif
+                @endguest
+            </div>
 
             <!-- Pelatihan yang Sedang Dibuka -->
-            <div class="mb-12">
+            <div data-reveal data-reveal-delay="1">
                 <h2 class="text-2xl font-bold mb-6" style="color: var(--color-text);">
                     Pelatihan yang sedang dibuka
                 </h2>
@@ -172,7 +174,7 @@
             </div>
 
             <!-- Cara Mendaftar -->
-            <div class="mb-12">
+            <div data-reveal data-reveal-delay="2" class="mb-12">
                 <h2 class="text-2xl font-bold mb-6" style="color: var(--color-text);">
                     Cara mendaftar
                 </h2>

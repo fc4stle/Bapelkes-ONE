@@ -428,8 +428,9 @@ class PengumumanPelatihanTest extends TestCase
 
         $content = $response->getContent();
 
-        // Pastikan raw script tag tidak ada (not executed)
-        $this->assertStringNotContainsString('<script>', $content);
+        // Pastikan user-injected script dengan alert tidak ada (XSS prevention)
+        $this->assertStringNotContainsString('<script>alert', $content);
+        $this->assertStringNotContainsString('onerror="alert', $content);
 
         // Pastikan HTML escaped version ada
         $this->assertStringContainsString('&lt;script&gt;', $content);

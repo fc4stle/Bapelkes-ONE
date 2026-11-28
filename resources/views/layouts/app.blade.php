@@ -8,6 +8,9 @@
 
         <title>{{ $title ?? 'Beranda' }} - {{ config('app.name', 'Sistem Informasi Portal Pelatihan Terpadu') }}</title>
 
+        <!-- Reveal Ready (non-blocking, inline script) -->
+        <script>if(!matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('reveal-ready');</script>
+
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>

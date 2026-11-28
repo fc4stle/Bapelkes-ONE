@@ -2,15 +2,20 @@
 
 @if($type === 'success' && session('success'))
     <div class="fixed top-4 right-4 md:right-6 md:top-6 left-4 md:left-auto max-w-sm" 
-         x-data="{ show: true }"
-         x-init="setTimeout(() => show = false, 4000)"
+         x-data="{ show: true, closeTimer: null }"
+         x-init="closeTimer = setTimeout(() => show = false, 5000)"
+         @mouseenter="closeTimer ? clearTimeout(closeTimer) : null"
+         @mouseleave="closeTimer = setTimeout(() => show = false, 5000)"
+         @focusin="closeTimer ? clearTimeout(closeTimer) : null"
+         @focusout="closeTimer = setTimeout(() => show = false, 5000)"
          x-show="show"
          x-transition:enter="transition ease-out duration-300"
          x-transition:enter-start="opacity-0 translate-y-2"
          x-transition:enter-end="opacity-100 translate-y-0"
          x-transition:leave="transition ease-in duration-200"
          x-transition:leave-start="opacity-100 translate-y-0"
-         x-transition:leave-end="opacity-0 translate-y-2">
+         x-transition:leave-end="opacity-0 translate-y-2"
+         role="status">
         
         <div class="rounded-[var(--radius-card)] p-[var(--sp-4)] md:p-[var(--sp-6)] border-l-4 border-[var(--color-success)] flex items-start gap-[var(--sp-4)]" style="background-color: color-mix(in srgb, var(--color-success) 10%, white);">
             <!-- Icon Success -->
@@ -27,7 +32,7 @@
 
             <!-- Tombol Tutup -->
             @if($dismissible)
-                <button @click="show = false" class="flex-shrink-0 text-[var(--color-muted)] hover:text-[var(--color-muted)] transition-colors">
+                <button @click="show = false; closeTimer ? clearTimeout(closeTimer) : null" aria-label="Tutup notifikasi" class="flex-shrink-0 text-[var(--color-muted)] hover:text-[var(--color-muted)] transition-colors">
                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
                     </svg>
@@ -45,7 +50,8 @@
              x-show="show"
              x-transition:enter="transition ease-out duration-300"
              x-transition:enter-start="opacity-0 translate-y-2"
-             x-transition:enter-end="opacity-100 translate-y-0">
+             x-transition:enter-end="opacity-100 translate-y-0"
+             role="alert">
             
             <!-- Icon Error -->
             <div class="flex-shrink-0 mt-0.5">
@@ -70,7 +76,7 @@
 
             <!-- Tombol Tutup -->
             @if($dismissible)
-                <button @click="show = false" class="flex-shrink-0 text-[var(--color-muted)] hover:text-[var(--color-muted)] transition-colors">
+                <button @click="show = false" aria-label="Tutup notifikasi" class="flex-shrink-0 text-[var(--color-muted)] hover:text-[var(--color-muted)] transition-colors">
                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
                     </svg>
