@@ -352,9 +352,7 @@ textarea):focus {
   color: #ffffff;
 }
 
-[data-brand="band"] p,
-[data-brand="band"] span,
-[data-brand="band"] a {
+.band-sub {
   color: rgba(255, 255, 255, 0.85);
 }
 

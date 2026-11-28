@@ -13,47 +13,47 @@
 
                 <!-- Navigation Links -->
                 <div class="hidden space-x-1 sm:space-x-4 md:space-x-2 lg:space-x-4 sm:-my-px sm:flex">
-                    <x-nav-link :href="route('pelatihan.katalog')" :active="request()->routeIs('pelatihan.katalog', 'pelatihan.detail')" class="text-[13px] md:text-[13px] lg:text-[14px] text-white opacity-90 hover:opacity-100 rounded-full px-4 py-2" style="background-color: transparent; border: 1px solid rgba(255, 255, 255, 0.35);">
+                    <x-nav-link :href="route('pelatihan.katalog')" :active="request()->routeIs('pelatihan.katalog', 'pelatihan.detail')" class="text-[13px] md:text-[13px] lg:text-[14px]">
                         Katalog
                     </x-nav-link>
 
                     @auth
-                        <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" class="text-[13px] md:text-[13px] lg:text-[14px] text-white opacity-90 hover:opacity-100 rounded-full px-4 py-2" style="background-color: transparent; border: 1px solid rgba(255, 255, 255, 0.35);">
+                        <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" class="text-[13px] md:text-[13px] lg:text-[14px]">
                             Dashboard
                         </x-nav-link>
 
                     @if (auth()->user()->isStaf())
-                        <x-nav-link :href="route('panitia.dashboard')" :active="request()->routeIs('panitia.dashboard')" class="text-[13px] md:text-[13px] lg:text-[14px] text-white opacity-90 hover:opacity-100 rounded-full px-4 py-2" style="background-color: transparent; border: 1px solid rgba(255, 255, 255, 0.35);">
+                        <x-nav-link :href="route('panitia.dashboard')" :active="request()->routeIs('panitia.dashboard')" class="text-[13px] md:text-[13px] lg:text-[14px]">
                             Rekap Panitia
                         </x-nav-link>
 
-                        <x-nav-link :href="route('panitia.asrama.index')" :active="request()->routeIs('panitia.asrama.*')" class="text-[13px] md:text-[13px] lg:text-[14px] text-white opacity-90 hover:opacity-100 rounded-full px-4 py-2" style="background-color: transparent; border: 1px solid rgba(255, 255, 255, 0.35);">
+                        <x-nav-link :href="route('panitia.asrama.index')" :active="request()->routeIs('panitia.asrama.*')" class="text-[13px] md:text-[13px] lg:text-[14px]">
                             Kelola Asrama
                         </x-nav-link>
 
-                        <x-nav-link :href="route('pelatihans.index')" :active="request()->routeIs('pelatihans.index', 'pelatihans.show', 'pelatihans.create', 'pelatihans.edit')" class="text-[13px] md:text-[13px] lg:text-[14px] text-white opacity-90 hover:opacity-100 rounded-full px-4 py-2" style="background-color: transparent; border: 1px solid rgba(255, 255, 255, 0.35);">
+                        <x-nav-link :href="route('pelatihans.index')" :active="request()->routeIs('pelatihans.index', 'pelatihans.show', 'pelatihans.create', 'pelatihans.edit')" class="text-[13px] md:text-[13px] lg:text-[14px]">
                             Kelola Pelatihan
                         </x-nav-link>
 
-                        <x-nav-link :href="route('panitia.presensi.index')" :active="request()->routeIs('panitia.presensi.*', 'pelatihan.presensi')" class="text-[13px] md:text-[13px] lg:text-[14px] text-white opacity-90 hover:opacity-100 rounded-full px-4 py-2" style="background-color: transparent; border: 1px solid rgba(255, 255, 255, 0.35);">
+                        <x-nav-link :href="route('panitia.presensi.index')" :active="request()->routeIs('panitia.presensi.*', 'pelatihan.presensi')" class="text-[13px] md:text-[13px] lg:text-[14px]">
                             Presensi
                         </x-nav-link>
 
-                        <x-nav-link :href="route('panitia.statistik.index')" :active="request()->routeIs('panitia.statistik.*')" class="text-[13px] md:text-[13px] lg:text-[14px] text-white opacity-90 hover:opacity-100 rounded-full px-4 py-2" style="background-color: transparent; border: 1px solid rgba(255, 255, 255, 0.35);">
+                        <x-nav-link :href="route('panitia.statistik.index')" :active="request()->routeIs('panitia.statistik.*')" class="text-[13px] md:text-[13px] lg:text-[14px]">
                             Statistik
                         </x-nav-link>
 
                         @if (auth()->user()->isAdmin())
-                            <x-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')" class="text-[13px] md:text-[13px] lg:text-[14px] text-white opacity-90 hover:opacity-100 rounded-full px-4 py-2" style="background-color: transparent; border: 1px solid rgba(255, 255, 255, 0.35);">
+                            <x-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')" class="text-[13px] md:text-[13px] lg:text-[14px]">
                                 Kelola Pengguna
                             </x-nav-link>
 
-                            <x-nav-link :href="route('admin.aktivitas.index')" :active="request()->routeIs('admin.aktivitas.*')" class="text-[13px] md:text-[13px] lg:text-[14px] text-white opacity-90 hover:opacity-100 rounded-full px-4 py-2" style="background-color: transparent; border: 1px solid rgba(255, 255, 255, 0.35);">
+                            <x-nav-link :href="route('admin.aktivitas.index')" :active="request()->routeIs('admin.aktivitas.*')" class="text-[13px] md:text-[13px] lg:text-[14px]">
                                 Aktivitas
                             </x-nav-link>
                         @endif
                     @else
-                        <x-nav-link :href="route('pendaftarans.index')" :active="request()->routeIs('pendaftarans.index', 'pendaftarans.edit', 'pelatihan.daftar')" class="text-[13px] md:text-[13px] lg:text-[14px] text-white opacity-90 hover:opacity-100 rounded-full px-4 py-2" style="background-color: transparent; border: 1px solid rgba(255, 255, 255, 0.35);">
+                        <x-nav-link :href="route('pendaftarans.index')" :active="request()->routeIs('pendaftarans.index', 'pendaftarans.edit', 'pelatihan.daftar')" class="text-[13px] md:text-[13px] lg:text-[14px]">
                             Pendaftaran Saya
                         </x-nav-link>
                     @endif
@@ -97,7 +97,7 @@
                             x-transition
                         >
                             <div class="p-4 border-b" style="border-color: var(--color-line);">
-                                <h3 class="text-lg font-semibold" style="color: var(--color-text);">Notifikasi</h3>
+                                <h3 class="text-lg font-semibold text-[var(--color-text)]">Notifikasi</h3>
                             </div>
 
                             <div class="max-h-96 overflow-y-auto">
@@ -109,18 +109,18 @@
                                     @foreach ($recentNotif as $notif)
                                         <a 
                                             href="{{ route('notifikasi.buka', $notif->id) }}"
-                                            class="block p-3 hover:bg-[var(--color-bg)] border-b transition-colors"
+                                            class="block p-3 hover:bg-[var(--color-bg)] border-b transition-colors text-[var(--color-text)]"
                                             style="border-color: var(--color-line); text-decoration: none;"
                                         >
                                             <div class="flex justify-between items-start">
                                                 <div>
-                                                    <p class="font-semibold text-sm" style="color: var(--color-text);">
+                                                    <p class="font-semibold text-sm">
                                                         {{ $notif->data['judul_pelatihan'] ?? 'Notifikasi' }}
                                                     </p>
-                                                    <p class="text-xs mt-1" style="color: var(--color-text); opacity: 0.7;">
+                                                    <p class="text-xs mt-1 opacity-70">
                                                         {{ Str::limit($notif->data['pesan'], 50) }}
                                                     </p>
-                                                    <p class="text-xs mt-1" style="color: var(--color-text); opacity: 0.5;">
+                                                    <p class="text-xs mt-1 opacity-50">
                                                         {{ $notif->created_at->diffForHumans() }}
                                                     </p>
                                                 </div>
@@ -134,7 +134,7 @@
                                         </a>
                                     @endforeach
                                 @else
-                                    <div class="p-4 text-center" style="color: var(--color-text);">
+                                    <div class="p-4 text-center text-[var(--color-text)]">
                                         <p class="text-sm">Tidak ada notifikasi</p>
                                     </div>
                                 @endif
@@ -143,8 +143,8 @@
                             <div class="p-3 border-t" style="border-color: var(--color-line);">
                                 <a 
                                     href="{{ route('notifikasi.index') }}"
-                                    class="block text-center py-2 text-sm font-semibold rounded-lg transition-colors hover:bg-[var(--color-primary-hover)]"
-                                    style="color: white; background-color: var(--color-primary); text-decoration: none;"
+                                    class="block text-center py-2 text-sm font-semibold rounded-lg transition-colors hover:bg-[var(--color-primary-hover)] text-white"
+                                    style="background-color: var(--color-primary); text-decoration: none;"
                                 >
                                     Lihat Semua
                                 </a>
@@ -161,7 +161,7 @@
                 @else
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
-                        <button class="inline-flex items-center px-3 py-2 border rounded-full text-sm leading-4 font-medium text-white hover:opacity-100" style="border-color: rgba(255, 255, 255, 0.35); background-color: rgba(255, 255, 255, 0.16);">
+                        <button class="inline-flex items-center px-3 py-2 border rounded-full text-sm leading-4 font-medium text-[var(--color-text)] hover:opacity-100" style="border-color: rgba(255, 255, 255, 0.35); background-color: rgba(255, 255, 255, 0.16);">
                             <div>{{ Auth::user()->name }}</div>
 
                             @if (auth()->user()->isPanitia())
@@ -181,7 +181,7 @@
                     </x-slot>
 
                     <x-slot name="content">
-                        <x-dropdown-link :href="route('profile.edit')">
+                        <x-dropdown-link :href="route('profile.edit')" class="text-[var(--color-text)]">
                             Profil
                         </x-dropdown-link>
 
@@ -189,7 +189,7 @@
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
 
-                            <x-dropdown-link :href="route('logout')"
+                            <x-dropdown-link :href="route('logout')" class="text-[var(--color-text)]"
                                     onclick="event.preventDefault();
                                                 this.closest('form').submit();">
                                 Keluar
@@ -215,47 +215,47 @@
     <!-- Responsive Navigation Menu -->
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden overflow-x-hidden" style="background-color: var(--color-primary-hover);">
         <div class="pt-2 pb-3 space-y-1">
-            <x-responsive-nav-link :href="route('pelatihan.katalog')" :active="request()->routeIs('pelatihan.katalog', 'pelatihan.detail')" style="color: white;">
+            <x-responsive-nav-link :href="route('pelatihan.katalog')" :active="request()->routeIs('pelatihan.katalog', 'pelatihan.detail')" class="text-[var(--color-text)]">
                 Katalog
             </x-responsive-nav-link>
 
             @auth
-                <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" style="color: white;">
+                <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" class="text-[var(--color-text)]">
                     Dashboard
                 </x-responsive-nav-link>
 
                 @if (auth()->user()->isStaf())
-                    <x-responsive-nav-link :href="route('panitia.dashboard')" :active="request()->routeIs('panitia.dashboard')" style="color: white;">
+                    <x-responsive-nav-link :href="route('panitia.dashboard')" :active="request()->routeIs('panitia.dashboard')" class="text-[var(--color-text)]">
                         Rekap Panitia
                     </x-responsive-nav-link>
 
-                    <x-responsive-nav-link :href="route('panitia.asrama.index')" :active="request()->routeIs('panitia.asrama.*')" style="color: white;">
+                    <x-responsive-nav-link :href="route('panitia.asrama.index')" :active="request()->routeIs('panitia.asrama.*')" class="text-[var(--color-text)]">
                         Kelola Asrama
                     </x-responsive-nav-link>
 
-                    <x-responsive-nav-link :href="route('pelatihans.index')" :active="request()->routeIs('pelatihans.index', 'pelatihans.show', 'pelatihans.create', 'pelatihans.edit')" style="color: white;">
+                    <x-responsive-nav-link :href="route('pelatihans.index')" :active="request()->routeIs('pelatihans.index', 'pelatihans.show', 'pelatihans.create', 'pelatihans.edit')" class="text-[var(--color-text)]">
                         Kelola Pelatihan
                     </x-responsive-nav-link>
 
-                    <x-responsive-nav-link :href="route('panitia.presensi.index')" :active="request()->routeIs('panitia.presensi.*', 'pelatihan.presensi')" style="color: white;">
+                    <x-responsive-nav-link :href="route('panitia.presensi.index')" :active="request()->routeIs('panitia.presensi.*', 'pelatihan.presensi')" class="text-[var(--color-text)]">
                         Presensi
                     </x-responsive-nav-link>
 
-                    <x-responsive-nav-link :href="route('panitia.statistik.index')" :active="request()->routeIs('panitia.statistik.*')" style="color: white;">
+                    <x-responsive-nav-link :href="route('panitia.statistik.index')" :active="request()->routeIs('panitia.statistik.*')" class="text-[var(--color-text)]">
                         Statistik
                     </x-responsive-nav-link>
 
                     @if (auth()->user()->isAdmin())
-                        <x-responsive-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')" style="color: white;">
+                        <x-responsive-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')" class="text-[var(--color-text)]">
                             Kelola Pengguna
                         </x-responsive-nav-link>
 
-                        <x-responsive-nav-link :href="route('admin.aktivitas.index')" :active="request()->routeIs('admin.aktivitas.*')" style="color: white;">
+                        <x-responsive-nav-link :href="route('admin.aktivitas.index')" :active="request()->routeIs('admin.aktivitas.*')" class="text-[var(--color-text)]">
                             Aktivitas
                         </x-responsive-nav-link>
                     @endif
                 @else
-                    <x-responsive-nav-link :href="route('pendaftarans.index')" :active="request()->routeIs('pendaftarans.index', 'pendaftarans.edit', 'pelatihan.daftar')" style="color: white;">
+                    <x-responsive-nav-link :href="route('pendaftarans.index')" :active="request()->routeIs('pendaftarans.index', 'pendaftarans.edit', 'pelatihan.daftar')" class="text-[var(--color-text)]">
                         Pendaftaran Saya
                     </x-responsive-nav-link>
                 @endif
@@ -265,18 +265,18 @@
         <!-- Responsive Settings Options -->
         @guest
         <div class="pt-4 pb-1 space-y-1" style="border-top: 1px solid color-mix(in srgb, white 15%, transparent);">
-            <x-responsive-nav-link :href="route('login')" style="color: white;">Masuk</x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('register')" style="color: white;">Daftar</x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('login')" class="text-[var(--color-text)]">Masuk</x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('register')" class="text-[var(--color-text)]">Daftar</x-responsive-nav-link>
         </div>
         @else
         <div class="pt-4 pb-1 space-y-1" style="border-top: 1px solid color-mix(in srgb, white 15%, transparent);">
             <div class="px-4">
-                <div class="font-medium text-base truncate text-white">{{ Auth::user()->name }}</div>
+                <div class="font-medium text-base truncate text-[var(--color-text)]">{{ Auth::user()->name }}</div>
                 <div class="font-medium text-sm truncate" style="color: color-mix(in srgb, white 60%, transparent);">{{ Auth::user()->email }}</div>
             </div>
 
             <div class="mt-3 space-y-1">
-                <x-responsive-nav-link :href="route('notifikasi.index')" :active="request()->routeIs('notifikasi.*')" style="color: white;">
+                <x-responsive-nav-link :href="route('notifikasi.index')" :active="request()->routeIs('notifikasi.*')" class="text-[var(--color-text)]">
                     Notifikasi
                     @php
                         $unreadCountMobile = auth()->user()->unreadNotifications->count();
@@ -291,7 +291,7 @@
                     @endif
                 </x-responsive-nav-link>
 
-                <x-responsive-nav-link :href="route('profile.edit')" style="color: white;">
+                <x-responsive-nav-link :href="route('profile.edit')" class="text-[var(--color-text)]">
                     Profil
                 </x-responsive-nav-link>
 
@@ -299,9 +299,9 @@
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
 
-                    <x-responsive-nav-link :href="route('logout')"
+                    <x-responsive-nav-link :href="route('logout')" class="text-[var(--color-text)]"
                             onclick="event.preventDefault();
-                                        this.closest('form').submit();" style="color: white;">
+                                        this.closest('form').submit();">
                         Keluar
                     </x-responsive-nav-link>
                 </form>
