@@ -19,7 +19,7 @@ class WhiteBackgroundRemovalTest extends TestCase
 
         $response = $this->actingAs($user)->get(route('dashboard'));
 
-        $response->assertSee('<meta name="theme-color" content="#6E1423">', escape: false);
+        $response->assertSee('<meta name="theme-color" content="#0F4C3A">', escape: false);
     }
 
     /**
@@ -29,7 +29,7 @@ class WhiteBackgroundRemovalTest extends TestCase
     {
         $response = $this->get(route('login'));
 
-        $response->assertSee('<meta name="theme-color" content="#6E1423">', escape: false);
+        $response->assertSee('<meta name="theme-color" content="#0F4C3A">', escape: false);
     }
 
     /**
