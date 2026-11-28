@@ -18,8 +18,8 @@ h3,
 h4,
 h5,
 h6 {
-  font-family: var(--font-serif);
-  color: var(--color-primary);
+  font-family: var(--font-sans);
+  color: var(--color-text);
   letter-spacing: -0.01em;
 }
 
@@ -29,7 +29,7 @@ h3,
 h4,
 h5,
 h6 {
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
 }
 
 /* Override font-sans di heading jika ada class */
@@ -44,23 +44,23 @@ h6.font-sans {
 
 :root {
   /* warna */
-  --color-primary: #6E1423;   /* marun institusi */
-  --color-primary-hover: #4F0E19;  /* marun gelap */
-  --color-accent: #B8892B;    /* emas institusi */
-  --color-bg: #F6F1E7;        /* krem ringan */
-  --color-text: #1E2430;      /* teks gelap */
-  --color-surface: #FFFFFF;   /* permukaan putih */
+  --color-primary: #0F4C3A;      /* hijau institusi */
+  --color-primary-hover: #0B3A2C;  /* hijau gelap */
+  --color-accent: #C8962E;       /* emas institusi */
+  --color-bg: #F4F1E8;           /* krem ringan */
+  --color-text: #1B2A24;         /* teks gelap */
+  --color-surface: #FFFFFF;      /* permukaan putih */
   --color-success: #2F6F4E;
   --color-warning: #B7791F;
   --color-danger: #B3263F;
-  --color-muted: #5E6675;     /* teks sekunder */
-  --color-line: #DDD5C3;      /* border terang */
-  --color-gold-soft: #E9D8A6; /* emas lembut */
-  --color-primary-soft: #F3D9DC; /* marun lembut bg */
+  --color-muted: #5F6B64;        /* teks sekunder */
+  --color-line: #DDD8C8;         /* border terang */
+  --color-gold-soft: #E0B04A;    /* emas lembut */
+  --color-primary-soft: #DCEBE4; /* hijau lembut bg */
 
   /* tipografi */
-  --font-serif: 'Source Serif 4', Georgia, serif;
-  --font-sans: 'Public Sans', system-ui, sans-serif;
+  --font-serif: 'Poppins', system-ui, sans-serif;
+  --font-sans: 'Poppins', system-ui, sans-serif;
   --fs-h1: 28px;
   --fs-h2: 20px;
   --fs-body: 16px;
@@ -76,8 +76,8 @@ h6.font-sans {
   --sp-8: 32px;
 
   /* bentuk */
-  --radius-btn: 4px;
-  --radius-card: 2px;
+  --radius-btn: 9999px;
+  --radius-card: 12px;
   --shadow-card: none;
 }
 
