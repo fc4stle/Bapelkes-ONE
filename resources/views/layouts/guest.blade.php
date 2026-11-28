@@ -4,7 +4,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
-        <meta name="theme-color" content="#6E1423">
+        <meta name="theme-color" content="#0F4C3A">
 
         <title>{{ isset($title) ? $title.' - '.config('app.name', 'Sistem Informasi Portal Pelatihan Terpadu') : config('app.name', 'Sistem Informasi Portal Pelatihan Terpadu') }}</title>
 
@@ -17,80 +17,67 @@
         <x-flash type="error" />
 
         <div class="min-h-screen lg:grid lg:grid-cols-2">
-            <!-- Panel Kiri (Desktop Only) -->
-            <div class="hidden lg:flex flex-col justify-between p-12 xl:p-16 lg:overflow-y-auto" style="background-color: var(--color-primary);" data-brand="panel">
-                <!-- Dot Pattern Overlay -->
-                <style>
-                    [data-brand="panel"] {
-                        background-image: radial-gradient(color-mix(in srgb, white 8%, transparent) 1px, transparent 1px);
-                        background-size: 18px 18px;
-                    }
-                </style>
-
-                <!-- Top: Brand Logo & Title -->
+            <!-- Panel Kiri (Desktop Only) - Foto Gedung Saraswati -->
+            <div class="hidden lg:flex flex-col justify-between p-12 xl:p-16 lg:overflow-y-auto relative" style="background: linear-gradient(to bottom, rgba(11, 40, 31, 0.45), rgba(11, 58, 44, 0.92)), url('/images/gedung-saraswati.jpeg') center/cover;" data-brand="panel">
+                <!-- Top: Logo Putih -->
                 <div>
-                    <!-- Logo Circle -->
-                    <div class="flex items-center gap-4 mb-8">
-                        <div class="flex items-center justify-center w-[52px] h-[52px] rounded-full border-2" style="border-color: var(--color-gold-soft);">
-                            <span class="font-serif font-bold text-3xl" style="color: var(--color-gold-soft);">B</span>
-                        </div>
-                        <div class="uppercase tracking-[0.12em] leading-tight" style="color: var(--color-gold-soft); font-size: 12px;">
-                            BAPELKES DINKES DIY
-                        </div>
+                    <img src="/images/logo-bapelkes-putih.png" alt="Balai Pelatihan Kesehatan DIY" class="h-11 mb-12" />
+                </div>
+
+                <!-- Bottom: Content -->
+                <div>
+                    <!-- Brand Pill Label -->
+                    <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white border-opacity-50 mb-8">
+                        <span class="text-sm text-white font-medium">Balai Pelatihan Kesehatan DIY</span>
                     </div>
 
                     <!-- Main Heading -->
-                    <h1 class="font-serif font-bold text-4xl xl:text-5xl leading-tight text-white mb-6">
-                        {{ config('app.name', 'Portal Pelatihan Terpadu') }}
+                    <h1 class="font-bold text-5xl xl:text-5xl leading-tight text-white mb-6" style="font-size: 46px;">
+                        Satu akun untuk semua layanan pelatihan.
                     </h1>
 
                     <!-- Description -->
-                    <p class="text-lg text-white opacity-80 max-w-md mb-8">
-                        Portal terpadu pelatihan dan layanan peserta, studi kasus Bapelkes DIY.
+                    <p class="text-lg text-white max-w-md">
+                        Daftar pelatihan, cetak kartu peserta, isi presensi, dan ambil sertifikat dari satu tempat.
                     </p>
 
-                    <!-- Features List -->
-                    <ul class="space-y-4">
-                        <li class="flex gap-4 text-white opacity-90" style="border-left: 2px solid var(--color-gold-soft);">
-                            <span class="pl-4">Pendaftaran dan verifikasi pelatihan</span>
-                        </li>
-                        <li class="flex gap-4 text-white opacity-90" style="border-left: 2px solid var(--color-gold-soft);">
-                            <span class="pl-4">Presensi, kartu peserta, dan sertifikat</span>
-                        </li>
-                        <li class="flex gap-4 text-white opacity-90" style="border-left: 2px solid var(--color-gold-soft);">
-                            <span class="pl-4">Layanan asrama untuk peserta</span>
-                        </li>
-                        <li class="flex gap-4 text-white opacity-90" style="border-left: 2px solid var(--color-gold-soft);">
-                            <span class="pl-4">Evaluasi transfer pelatihan (TIYAS)</span>
-                        </li>
-                    </ul>
-                </div>
-
-                <!-- Bottom: Copyright -->
-                <div class="text-xs opacity-60 text-white">
-                    © {{ date('Y') }} Bapelkes Dinkes DIY
+                    <!-- Bottom: Copyright Gambar -->
+                    <div class="mt-16 text-xs text-white opacity-70">
+                        Gambar: Gedung Saraswati, Bapelkes DIY
+                    </div>
                 </div>
             </div>
 
             <!-- Panel Kanan (Form Area) -->
-            <div class="flex items-center justify-center px-4 py-8 sm:py-12 lg:px-12" style="background-color: var(--color-bg);">
-                <div class="w-full max-w-md lg:max-w-lg">
-                    <!-- Brand Header (Mobile Only) -->
-                    <a href="/" class="lg:hidden block text-center mb-8" data-brand="mobile">
-                        <div class="flex items-center justify-center gap-3 mb-4">
-                            <!-- Circle Brand -->
-                            <div class="flex items-center justify-center w-[42px] h-[42px] rounded-full border-2" style="border-color: var(--color-primary);">
-                                <span class="font-serif font-bold text-xl" style="color: var(--color-primary);">B</span>
-                            </div>
-                        </div>
-                        <h1 class="font-serif font-bold text-2xl sm:text-3xl leading-tight" style="color: var(--color-primary); font-size: 28px;">{{ config('app.name', 'Portal Pelatihan Terpadu') }}</h1>
-                        <p class="text-xs uppercase tracking-[0.12em] leading-tight mt-2" style="color: var(--color-accent); font-size: 11.5px;">BAPELKES DINKES DIY</p>
-                        <p class="text-sm mt-4" style="color: var(--color-text);">Portal terpadu pelatihan dan layanan peserta, studi kasus Bapelkes DIY</p>
-                    </a>
+            <div class="flex items-center justify-center px-4 py-8 sm:py-12 lg:py-12 lg:px-12 relative" style="background-color: var(--color-bg);">
+                <!-- Mobile Hero (Foto) -->
+                <div class="lg:hidden absolute top-0 left-0 w-full h-32 sm:h-40" style="background: linear-gradient(to bottom, rgba(11, 40, 31, 0.45), rgba(11, 58, 44, 0.92)), url('/images/gedung-saraswati.jpeg') center/cover; overflow: hidden;">
+                    <img src="/images/logo-bapelkes-putih.png" alt="Balai Pelatihan Kesehatan DIY" class="h-8 absolute top-4 left-4" />
+                </div>
 
-                    <!-- Form Card -->
-                    <div class="p-6 sm:p-8 rounded-[var(--radius-card)] overflow-hidden" style="background-color: var(--color-surface); border: 1px solid var(--color-line); border-top: 3px solid var(--color-accent);">
+                <!-- Form Container -->
+                <div class="w-full max-w-xs sm:max-w-sm lg:max-w-[460px] mt-32 sm:mt-40 lg:mt-0" style="display: flex; flex-direction: column; gap: 36px;">
+                    <!-- Portal Label -->
+                    <div style="border-left: 4px solid var(--color-accent); padding-left: 16px;">
+                        <span class="font-semibold text-sm" style="color: var(--color-primary);">Portal Pelatihan Terpadu</span>
+                    </div>
+
+                    <!-- Form Slot -->
+                    <div>
                         {{ $slot }}
+                    </div>
+
+                    <!-- Contact Block -->
+                    <div style="border-top: 1px solid var(--color-line); padding-top: 36px;">
+                        <p class="font-bold mb-2" style="color: var(--color-text); font-size: 15px;">
+                            Balai Pelatihan Kesehatan DIY
+                        </p>
+                        <p class="text-sm mb-2" style="color: var(--color-muted); line-height: 1.5;">
+                            Jl. Raya Solo km 12,8, Tirtomartani, Kalasan, Sleman
+                        </p>
+                        <p class="text-sm" style="color: var(--color-muted);">
+                            bapelkes@jogjaprov.go.id <span style="color: var(--color-line);">|</span> 0274 497253
+                        </p>
                     </div>
                 </div>
             </div>

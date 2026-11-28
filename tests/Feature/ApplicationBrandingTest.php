@@ -67,14 +67,14 @@ class ApplicationBrandingTest extends TestCase
     }
 
     /**
-     * Navbar menampilkan nama pendek portal
+     * Navbar menampilkan logo putih
      */
-    public function test_navbar_displays_short_brand_name(): void
+    public function test_navbar_displays_white_logo(): void
     {
         $response = $this->get('/');
 
         $response->assertStatus(200);
-        $response->assertSee('Portal Pelatihan Terpadu');
+        $response->assertSee('logo-bapelkes-putih.png');
     }
 
     /**
@@ -130,22 +130,17 @@ class ApplicationBrandingTest extends TestCase
     }
 
     /**
-     * Guest layout memakai config('app.name') untuk h1
+     * Guest layout memakai config('app.name') di title
      */
-    public function test_guest_layout_uses_config_app_name_in_h1(): void
+    public function test_guest_layout_uses_config_app_name_in_title(): void
     {
         $layoutPath = resource_path('views/layouts/guest.blade.php');
         $layoutContent = file_get_contents($layoutPath);
 
         $this->assertStringContainsString(
-            "{{ config('app.name'",
+            "{{ isset(\$title) ? \$title.' - '.config('app.name'",
             $layoutContent,
-            'Guest layout h1 harus memakai config(\'app.name\''
-        );
-        $this->assertStringNotContainsString(
-            '<h1 class="text-3xl font-bold" style="color: var(--color-primary);">Bapelkes ONE</h1>',
-            $layoutContent,
-            'Guest layout tidak boleh hardcode "Bapelkes ONE"'
+            'Guest layout title harus memakai config(\'app.name\''
         );
     }
 
@@ -165,22 +160,22 @@ class ApplicationBrandingTest extends TestCase
     }
 
     /**
-     * Navigation navbar memakai nama pendek "Portal Pelatihan Terpadu"
+     * Navigation navbar menampilkan logo putih
      */
-    public function test_navigation_uses_short_brand_name(): void
+    public function test_navigation_uses_white_logo(): void
     {
         $navPath = resource_path('views/layouts/navigation.blade.php');
         $navContent = file_get_contents($navPath);
 
         $this->assertStringContainsString(
-            'Portal Pelatihan Terpadu',
+            'logo-bapelkes-putih.png',
             $navContent,
-            'Navigation navbar harus memiliki "Portal Pelatihan Terpadu"'
+            'Navigation navbar harus menampilkan logo-bapelkes-putih.png'
         );
-        $this->assertStringNotContainsString(
-            '<a href="/" class="font-bold text-sm sm:text-base" style="color: var(--color-primary);">\n                        Bapelkes ONE\n                    </a>',
+        $this->assertStringContainsString(
+            'sr-only',
             $navContent,
-            'Navigation tidak boleh hardcode "Bapelkes ONE"'
+            'Navigation harus memiliki sr-only text untuk screen readers'
         );
     }
 
@@ -230,90 +225,56 @@ class ApplicationBrandingTest extends TestCase
     }
 
     /**
-     * Halaman login memiliki <title> yang mengandung nama aplikasi TEPAT SATU KALI
+     * Halaman login memiliki header dengan judul "Masuk" dan deskripsi peserta/panitia/admin
      */
-    public function test_login_page_title_contains_app_name_exactly_once(): void
+    public function test_login_page_has_correct_heading(): void
     {
         $response = $this->get(route('login'));
 
         $response->assertStatus(200);
-
-        $content = $response->getContent();
-
-        // Extract <title> tag content
-        preg_match('/<title>(.*?)<\\/title>/i', $content, $matches);
-        $this->assertNotEmpty($matches, 'Halaman login harus memiliki <title> tag');
-
-        $titleContent = $matches[1];
-        $appName = config('app.name', 'Sistem Informasi Portal Pelatihan Terpadu');
-
-        // Count berapa kali app name muncul di title
-        $count = substr_count($titleContent, $appName);
-        $this->assertEquals(
-            1,
-            $count,
-            "Nama aplikasi '$appName' harus muncul TEPAT SATU KALI di <title>, tapi ditemukan $count kali. Title: '$titleContent'"
-        );
+        $response->assertSee('Masuk');
+        $response->assertSee('Peserta, panitia, dan admin masuk dari halaman ini.');
     }
 
     /**
-     * Guest layout memiliki responsive heading dengan class text-2xl sm:text-3xl
+     * Guest layout memiliki panel kiri dan form container dengan responsive spacing
      */
-    public function test_guest_layout_has_responsive_heading_classes(): void
+    public function test_guest_layout_has_responsive_spacing(): void
     {
         $response = $this->get(route('login'));
 
         $response->assertStatus(200);
-        $response->assertSee('text-2xl');
-        $response->assertSee('sm:text-3xl');
-    }
-
-    /**
-     * Guest layout memiliki kolom tunggal dengan max-w-md
-     */
-    public function test_guest_layout_has_single_column_max_width(): void
-    {
-        $response = $this->get(route('login'));
-
-        $response->assertStatus(200);
-        $response->assertSee('max-w-md');
-    }
-
-    /**
-     * Guest layout memiliki vertical padding py-8 sm:py-12
-     */
-    public function test_guest_layout_has_responsive_vertical_padding(): void
-    {
-        $response = $this->get(route('login'));
-
-        $response->assertStatus(200);
+        $response->assertSee('lg:grid-cols-2');
+        $response->assertSee('max-w-[460px]');
         $response->assertSee('py-8 sm:py-12');
     }
 
     /**
-     * Guest layout TIDAK memiliki max-w-xs (pembatas subjudul lama)
+     * Guest layout TIDAK memiliki kartu putih (white card background)
      */
-    public function test_guest_layout_does_not_have_max_w_xs(): void
+    public function test_guest_layout_does_not_have_white_card_background(): void
     {
         $layoutPath = resource_path('views/layouts/guest.blade.php');
         $layoutContent = file_get_contents($layoutPath);
 
         $this->assertStringNotContainsString(
-            'max-w-xs',
+            'bg-white',
             $layoutContent,
-            'Guest layout tidak boleh memiliki max-w-xs yang membatasi subjudul'
+            'Guest layout tidak boleh memiliki kartu bg-white untuk form'
         );
     }
 
     /**
-     * Guest layout memiliki header block dengan class mb-6 untuk spacing
+     * Guest layout memiliki panel kiri dengan logo dan foto gedung
      */
-    public function test_guest_layout_has_header_block_with_margin_bottom(): void
+    public function test_guest_layout_has_branded_left_panel(): void
     {
         $response = $this->get(route('login'));
 
         $response->assertStatus(200);
-        $response->assertSee('mb-6');
+        $response->assertSee('logo-bapelkes-putih.png');
+        $response->assertSee('gedung-saraswati.jpeg');
+        $response->assertSee('Portal Pelatihan Terpadu');
     }
 
     /**
@@ -339,24 +300,24 @@ class ApplicationBrandingTest extends TestCase
     }
 
     /**
-     * Halaman login menampilkan tagline studi kasus yang benar
+     * Halaman login menampilkan deskripsi singkat
      */
     public function test_login_page_displays_correct_case_study_tagline(): void
     {
         $response = $this->get(route('login'));
 
         $response->assertStatus(200);
-        $response->assertSee('Portal terpadu pelatihan dan layanan peserta, studi kasus Bapelkes DIY');
+        $response->assertSee('Peserta, panitia, dan admin masuk dari halaman ini.');
     }
 
     /**
-     * Halaman login tidak menampilkan tagline lama tanpa "studi kasus"
+     * Halaman login tidak menampilkan paragraph lama "studi kasus"
      */
     public function test_login_page_does_not_display_old_tagline(): void
     {
         $response = $this->get(route('login'));
 
         $response->assertStatus(200);
-        $response->assertDontSee('Portal terpadu pelatihan dan layanan peserta Bapelkes DIY');
+        $response->assertDontSee('Portal terpadu pelatihan dan layanan peserta, studi kasus Bapelkes DIY');
     }
 }

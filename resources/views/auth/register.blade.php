@@ -1,5 +1,10 @@
 <x-guest-layout>
-    <h2 class="text-2xl font-bold mb-6" style="color: var(--color-text);">Daftar Akun Baru</h2>
+    <div class="mb-8">
+        <h2 class="text-3xl font-bold mb-2" style="color: var(--color-text); font-size: 30px;">Daftar</h2>
+        <p class="text-sm" style="color: var(--color-muted);">
+            Buat akun peserta pelatihan baru.
+        </p>
+    </div>
 
     <p class="text-sm mb-4 p-3 rounded-[var(--radius-card)]" style="background-color: #f0fdf4; color: #15803d;">
         Akun baru otomatis berperan sebagai peserta.
@@ -9,24 +14,25 @@
         @csrf
 
         <!-- Name -->
-        <div>
+        <div class="mb-4">
             <x-input-label for="name" value="Nama Lengkap" />
-            <x-text-input id="name" class="block mt-1 w-full" type="text" name="name" :value="old('name')" required autofocus autocomplete="name" />
+            <x-text-input id="name" class="block mt-2 w-full" style="height: 50px; border-color: var(--color-line);" type="text" name="name" :value="old('name')" required autofocus autocomplete="name" />
             <x-input-error :messages="$errors->get('name')" class="mt-2" />
         </div>
 
         <!-- Email Address -->
-        <div class="mt-4">
+        <div class="mb-4">
             <x-input-label for="email" value="Email" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autocomplete="username" />
+            <x-text-input id="email" class="block mt-2 w-full" style="height: 50px; border-color: var(--color-line);" type="email" name="email" :value="old('email')" required autocomplete="username" />
             <x-input-error :messages="$errors->get('email')" class="mt-2" />
         </div>
 
         <!-- Password -->
-        <div class="mt-4">
+        <div class="mb-4">
             <x-input-label for="password" value="Kata sandi" />
 
-            <x-text-input id="password" class="block mt-1 w-full"
+            <x-text-input id="password" class="block mt-2 w-full"
+                            style="height: 50px; border-color: var(--color-line);"
                             type="password"
                             name="password"
                             required autocomplete="new-password" />
@@ -35,10 +41,11 @@
         </div>
 
         <!-- Confirm Password -->
-        <div class="mt-4">
+        <div class="mb-4">
             <x-input-label for="password_confirmation" value="Konfirmasi Kata sandi" />
 
-            <x-text-input id="password_confirmation" class="block mt-1 w-full"
+            <x-text-input id="password_confirmation" class="block mt-2 w-full"
+                            style="height: 50px; border-color: var(--color-line);"
                             type="password"
                             name="password_confirmation" required autocomplete="new-password" />
 
@@ -46,7 +53,7 @@
         </div>
 
         <div class="flex flex-col gap-4 justify-between mt-6">
-            <button type="submit" class="inline-flex items-center justify-center px-4 py-2 bg-[var(--color-primary)] border border-transparent rounded-[var(--radius-btn)] font-semibold text-xs text-white uppercase tracking-widest hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-2 transition ease-in-out duration-150 w-full disabled:opacity-50 disabled:cursor-not-allowed" x-bind:disabled="submitting">
+            <button type="submit" class="inline-flex items-center justify-center px-4 py-3 bg-[var(--color-primary)] border border-transparent rounded-[var(--radius-btn)] font-semibold text-sm text-white hover:opacity-90 focus:outline-none transition ease-in-out duration-150 w-full disabled:opacity-50 disabled:cursor-not-allowed" style="border-radius: 9999px;" x-bind:disabled="submitting">
                 <span x-show="!submitting">Daftar</span>
                 <span x-show="submitting" class="inline-flex items-center gap-2">
                     <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">

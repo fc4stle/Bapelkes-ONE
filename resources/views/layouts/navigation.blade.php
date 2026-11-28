@@ -1,19 +1,14 @@
-<nav x-data="{ open: false }" style="background-color: var(--color-primary); border-bottom: 4px solid var(--color-accent);">
+<nav x-data="{ open: false }" style="background-color: transparent; border-bottom: 1px solid rgba(255, 255, 255, 0.22); height: 64px;">
     <!-- Primary Navigation Menu -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between" style="height: 72px;">
+        <div class="flex justify-between items-center h-full">
             <div class="flex items-center gap-6 flex-wrap md:flex-nowrap">
-                <!-- Brand Circle + App Name -->
+                <!-- Brand Logo + Screen Reader Name -->
                 <a href="/" class="flex items-center gap-3 shrink-0">
-                    <!-- Circle Brand -->
-                    <div class="flex items-center justify-center w-[42px] h-[42px] rounded-full border-2" style="border-color: var(--color-gold-soft);">
-                        <span class="font-serif font-bold text-xl" style="color: var(--color-gold-soft);">B</span>
-                    </div>
-                    <!-- App Name Lines -->
-                    <div class="flex flex-col max-w-[11rem] sm:max-w-[18rem]">
-                        <span class="font-serif font-bold text-[15px] sm:text-[19px] leading-tight line-clamp-2" style="color: white;">{{ config('app.name', 'Portal Pelatihan Terpadu') }}</span>
-                        <span class="hidden sm:block text-xs uppercase tracking-[0.12em] leading-tight mt-0.5" style="color: var(--color-gold-soft); font-size: 11.5px;">BAPELKES DINKES DIY</span>
-                    </div>
+                    <!-- White Logo Image -->
+                    <img src="/images/logo-bapelkes-putih.png" alt="Balai Pelatihan Kesehatan DIY" style="height: 34px; object-fit: contain;">
+                    <!-- App Name for Screen Readers -->
+                    <span class="sr-only">{{ config('app.name') }}</span>
                 </a>
 
                 <!-- Navigation Links -->
@@ -75,7 +70,7 @@
                             @click="notifOpen = !notifOpen"
                             class="relative p-2 rounded-lg transition-colors text-white opacity-80 hover:opacity-100"
                         >
-                            <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg class="w-6 h-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                             </svg>
                             
@@ -102,7 +97,7 @@
                             x-transition
                         >
                             <div class="p-4 border-b" style="border-color: var(--color-line);">
-                                <h3 class="text-lg font-semibold" style="color: var(--color-text);">Notifikasi</h3>
+                                <h3 class="text-lg font-semibold text-[var(--color-text)]">Notifikasi</h3>
                             </div>
 
                             <div class="max-h-96 overflow-y-auto">
@@ -114,18 +109,18 @@
                                     @foreach ($recentNotif as $notif)
                                         <a 
                                             href="{{ route('notifikasi.buka', $notif->id) }}"
-                                            class="block p-3 hover:bg-[var(--color-bg)] border-b transition-colors"
+                                            class="block p-3 hover:bg-[var(--color-bg)] border-b transition-colors text-[var(--color-text)]"
                                             style="border-color: var(--color-line); text-decoration: none;"
                                         >
                                             <div class="flex justify-between items-start">
                                                 <div>
-                                                    <p class="font-semibold text-sm" style="color: var(--color-text);">
+                                                    <p class="font-semibold text-sm">
                                                         {{ $notif->data['judul_pelatihan'] ?? 'Notifikasi' }}
                                                     </p>
-                                                    <p class="text-xs mt-1" style="color: var(--color-text); opacity: 0.7;">
+                                                    <p class="text-xs mt-1 opacity-70">
                                                         {{ Str::limit($notif->data['pesan'], 50) }}
                                                     </p>
-                                                    <p class="text-xs mt-1" style="color: var(--color-text); opacity: 0.5;">
+                                                    <p class="text-xs mt-1 opacity-50">
                                                         {{ $notif->created_at->diffForHumans() }}
                                                     </p>
                                                 </div>
@@ -139,7 +134,7 @@
                                         </a>
                                     @endforeach
                                 @else
-                                    <div class="p-4 text-center" style="color: var(--color-text);">
+                                    <div class="p-4 text-center text-[var(--color-text)]">
                                         <p class="text-sm">Tidak ada notifikasi</p>
                                     </div>
                                 @endif
@@ -148,8 +143,8 @@
                             <div class="p-3 border-t" style="border-color: var(--color-line);">
                                 <a 
                                     href="{{ route('notifikasi.index') }}"
-                                    class="block text-center py-2 text-sm font-semibold rounded-lg transition-colors hover:bg-[var(--color-primary-hover)]"
-                                    style="color: white; background-color: var(--color-primary); text-decoration: none;"
+                                    class="block text-center py-2 text-sm font-semibold rounded-lg transition-colors hover:bg-[var(--color-primary-hover)] text-white"
+                                    style="background-color: var(--color-primary); text-decoration: none;"
                                 >
                                     Lihat Semua
                                 </a>
@@ -161,24 +156,24 @@
                 @guest
                     <div class="space-x-2 text-sm font-medium">
                         <a href="{{ route('login') }}" class="px-3 py-2 rounded-md text-white hover:opacity-100 opacity-80">Masuk</a>
-                        <a href="{{ route('register') }}" class="px-4 py-2 rounded-[var(--radius-btn)] text-white font-semibold hover:bg-[var(--color-primary-hover)]" style="background-color: var(--color-primary-hover);">Daftar</a>
+                        <a href="{{ route('register') }}" class="px-4 py-2 rounded-full text-white font-semibold border-white/35 bg-white/20 hover:bg-white/30 transition-colors inline-block">Daftar</a>
                     </div>
                 @else
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
-                        <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-[var(--radius-btn)] text-white hover:bg-[var(--color-primary-hover)]" style="background-color: var(--color-primary-hover);">
+                        <button class="inline-flex items-center px-3 py-2 border rounded-full text-sm leading-4 font-medium text-white border-white/35 bg-white/15 hover:bg-white/25 transition-colors">
                             <div>{{ Auth::user()->name }}</div>
 
                             @if (auth()->user()->isPanitia())
-                                <span class="ms-2 inline-block px-2 py-1 text-xs font-semibold rounded-full" style="background-color: var(--color-primary-soft); color: var(--color-primary);">Panitia</span>
+                                <span class="ms-2 inline-block px-2 py-1 text-xs font-semibold rounded-full" style="background-color: color-mix(in srgb, var(--color-primary) 15%, white); color: var(--color-primary);">Panitia</span>
                             @elseif (auth()->user()->isAdmin())
-                                <span class="ms-2 inline-block px-2 py-1 text-xs font-semibold rounded-full" style="background-color: var(--color-primary-soft); color: var(--color-primary);">Admin</span>
+                                <span class="ms-2 inline-block px-2 py-1 text-xs font-semibold rounded-full" style="background-color: color-mix(in srgb, var(--color-primary) 15%, white); color: var(--color-primary);">Admin</span>
                             @else
                                 <span class="ms-2 inline-block px-2 py-1 text-xs font-semibold rounded-full" style="background-color: color-mix(in srgb, var(--color-success) 15%, white); color: var(--color-success);">Peserta</span>
                             @endif
 
                             <div class="ms-1">
-                                <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                <svg class="fill-current h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
                                 </svg>
                             </div>
@@ -186,7 +181,7 @@
                     </x-slot>
 
                     <x-slot name="content">
-                        <x-dropdown-link :href="route('profile.edit')">
+                        <x-dropdown-link :href="route('profile.edit')" class="text-[var(--color-text)]">
                             Profil
                         </x-dropdown-link>
 
@@ -194,7 +189,7 @@
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
 
-                            <x-dropdown-link :href="route('logout')"
+                            <x-dropdown-link :href="route('logout')" class="text-[var(--color-text)]"
                                     onclick="event.preventDefault();
                                                 this.closest('form').submit();">
                                 Keluar
@@ -220,47 +215,47 @@
     <!-- Responsive Navigation Menu -->
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden overflow-x-hidden" style="background-color: var(--color-primary-hover);">
         <div class="pt-2 pb-3 space-y-1">
-            <x-responsive-nav-link :href="route('pelatihan.katalog')" :active="request()->routeIs('pelatihan.katalog', 'pelatihan.detail')">
+            <x-responsive-nav-link :href="route('pelatihan.katalog')" :active="request()->routeIs('pelatihan.katalog', 'pelatihan.detail')" class="text-[var(--color-text)]">
                 Katalog
             </x-responsive-nav-link>
 
             @auth
-                <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
+                <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" class="text-[var(--color-text)]">
                     Dashboard
                 </x-responsive-nav-link>
 
                 @if (auth()->user()->isStaf())
-                    <x-responsive-nav-link :href="route('panitia.dashboard')" :active="request()->routeIs('panitia.dashboard')">
+                    <x-responsive-nav-link :href="route('panitia.dashboard')" :active="request()->routeIs('panitia.dashboard')" class="text-[var(--color-text)]">
                         Rekap Panitia
                     </x-responsive-nav-link>
 
-                    <x-responsive-nav-link :href="route('panitia.asrama.index')" :active="request()->routeIs('panitia.asrama.*')">
+                    <x-responsive-nav-link :href="route('panitia.asrama.index')" :active="request()->routeIs('panitia.asrama.*')" class="text-[var(--color-text)]">
                         Kelola Asrama
                     </x-responsive-nav-link>
 
-                    <x-responsive-nav-link :href="route('pelatihans.index')" :active="request()->routeIs('pelatihans.index', 'pelatihans.show', 'pelatihans.create', 'pelatihans.edit')">
+                    <x-responsive-nav-link :href="route('pelatihans.index')" :active="request()->routeIs('pelatihans.index', 'pelatihans.show', 'pelatihans.create', 'pelatihans.edit')" class="text-[var(--color-text)]">
                         Kelola Pelatihan
                     </x-responsive-nav-link>
 
-                    <x-responsive-nav-link :href="route('panitia.presensi.index')" :active="request()->routeIs('panitia.presensi.*', 'pelatihan.presensi')">
+                    <x-responsive-nav-link :href="route('panitia.presensi.index')" :active="request()->routeIs('panitia.presensi.*', 'pelatihan.presensi')" class="text-[var(--color-text)]">
                         Presensi
                     </x-responsive-nav-link>
 
-                    <x-responsive-nav-link :href="route('panitia.statistik.index')" :active="request()->routeIs('panitia.statistik.*')">
+                    <x-responsive-nav-link :href="route('panitia.statistik.index')" :active="request()->routeIs('panitia.statistik.*')" class="text-[var(--color-text)]">
                         Statistik
                     </x-responsive-nav-link>
 
                     @if (auth()->user()->isAdmin())
-                        <x-responsive-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')">
+                        <x-responsive-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')" class="text-[var(--color-text)]">
                             Kelola Pengguna
                         </x-responsive-nav-link>
 
-                        <x-responsive-nav-link :href="route('admin.aktivitas.index')" :active="request()->routeIs('admin.aktivitas.*')">
+                        <x-responsive-nav-link :href="route('admin.aktivitas.index')" :active="request()->routeIs('admin.aktivitas.*')" class="text-[var(--color-text)]">
                             Aktivitas
                         </x-responsive-nav-link>
                     @endif
                 @else
-                    <x-responsive-nav-link :href="route('pendaftarans.index')" :active="request()->routeIs('pendaftarans.index', 'pendaftarans.edit', 'pelatihan.daftar')">
+                    <x-responsive-nav-link :href="route('pendaftarans.index')" :active="request()->routeIs('pendaftarans.index', 'pendaftarans.edit', 'pelatihan.daftar')" class="text-[var(--color-text)]">
                         Pendaftaran Saya
                     </x-responsive-nav-link>
                 @endif
@@ -270,18 +265,18 @@
         <!-- Responsive Settings Options -->
         @guest
         <div class="pt-4 pb-1 space-y-1" style="border-top: 1px solid color-mix(in srgb, white 15%, transparent);">
-            <x-responsive-nav-link :href="route('login')">Masuk</x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('register')">Daftar</x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('login')" class="text-[var(--color-text)]">Masuk</x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('register')" class="text-[var(--color-text)]">Daftar</x-responsive-nav-link>
         </div>
         @else
         <div class="pt-4 pb-1 space-y-1" style="border-top: 1px solid color-mix(in srgb, white 15%, transparent);">
             <div class="px-4">
-                <div class="font-medium text-base truncate text-white">{{ Auth::user()->name }}</div>
+                <div class="font-medium text-base truncate text-[var(--color-text)]">{{ Auth::user()->name }}</div>
                 <div class="font-medium text-sm truncate" style="color: color-mix(in srgb, white 60%, transparent);">{{ Auth::user()->email }}</div>
             </div>
 
             <div class="mt-3 space-y-1">
-                <x-responsive-nav-link :href="route('notifikasi.index')" :active="request()->routeIs('notifikasi.*')">
+                <x-responsive-nav-link :href="route('notifikasi.index')" :active="request()->routeIs('notifikasi.*')" class="text-[var(--color-text)]">
                     Notifikasi
                     @php
                         $unreadCountMobile = auth()->user()->unreadNotifications->count();
@@ -296,7 +291,7 @@
                     @endif
                 </x-responsive-nav-link>
 
-                <x-responsive-nav-link :href="route('profile.edit')">
+                <x-responsive-nav-link :href="route('profile.edit')" class="text-[var(--color-text)]">
                     Profil
                 </x-responsive-nav-link>
 
@@ -304,7 +299,7 @@
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
 
-                    <x-responsive-nav-link :href="route('logout')"
+                    <x-responsive-nav-link :href="route('logout')" class="text-[var(--color-text)]"
                             onclick="event.preventDefault();
                                         this.closest('form').submit();">
                         Keluar

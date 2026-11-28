@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-[var(--color-text)] leading-tight">
+        <h2 class="font-semibold text-xl leading-tight">
             Daftar Pelatihan: {{ $pelatihan->nama }}
         </h2>
     </x-slot>

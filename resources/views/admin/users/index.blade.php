@@ -1,10 +1,10 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl" style="color: var(--color-primary);">
+            <h2 class="font-semibold text-xl">
                 Kelola Pengguna
             </h2>
-            <a href="{{ route('admin.users.create') }}" class="px-4 py-2 rounded-[var(--radius-btn)] text-white text-sm font-semibold" style="background-color: var(--color-primary);">
+            <a href="{{ route('admin.users.create') }}" class="px-4 py-2 rounded-[var(--radius-btn)] font-semibold text-sm border transition-colors hover:bg-white hover:bg-opacity-10" style="border-color: white; color: white;">
                 Tambah Pengguna
             </a>
         </div>

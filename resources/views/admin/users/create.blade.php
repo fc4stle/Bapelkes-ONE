@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl" style="color: var(--color-primary);">
+        <h2 class="font-semibold text-xl">
             Tambah Pengguna
         </h2>
     </x-slot>
