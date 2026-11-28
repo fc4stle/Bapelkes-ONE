@@ -4,9 +4,9 @@
     <div class="fixed top-4 right-4 md:right-6 md:top-6 left-4 md:left-auto max-w-sm" 
          x-data="{ show: true, closeTimer: null }"
          x-init="closeTimer = setTimeout(() => show = false, 5000)"
-         @mouseenter="clearInterval(closeTimer)"
+         @mouseenter="closeTimer ? clearTimeout(closeTimer) : null"
          @mouseleave="closeTimer = setTimeout(() => show = false, 5000)"
-         @focusin="clearInterval(closeTimer)"
+         @focusin="closeTimer ? clearTimeout(closeTimer) : null"
          @focusout="closeTimer = setTimeout(() => show = false, 5000)"
          x-show="show"
          x-transition:enter="transition ease-out duration-300"
@@ -32,7 +32,7 @@
 
             <!-- Tombol Tutup -->
             @if($dismissible)
-                <button @click="show = false; clearInterval(closeTimer)" aria-label="Tutup notifikasi" class="flex-shrink-0 text-[var(--color-muted)] hover:text-[var(--color-muted)] transition-colors">
+                <button @click="show = false; closeTimer ? clearTimeout(closeTimer) : null" aria-label="Tutup notifikasi" class="flex-shrink-0 text-[var(--color-muted)] hover:text-[var(--color-muted)] transition-colors">
                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
                     </svg>

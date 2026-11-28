@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -11,30 +10,33 @@ class FormLoadingStateTest extends TestCase
     use RefreshDatabase;
 
     /**
-     * B) STATUS MEMPROSES - Form submit mengubah innerHTML tombol
+     * B) STATUS MEMPROSES - Halaman login menampilkan form dengan submit button
      */
-    public function test_form_submit_mengubah_button_state(): void
+    public function test_login_page_memiliki_form_dan_submit_button(): void
     {
-        $user = User::factory()->create();
+        $response = $this->get(route('login'));
 
-        // Form di halaman yang memerlukan auth
-        $response = $this->actingAs($user)->get(route('dashboard'));
-
-        // Cek apakah halaman memiliki form dengan submit button
+        $response->assertOk();
         $html = $response->getContent();
+
+        // Cek form ada
         $this->assertStringContainsString('<form', $html);
-        $this->assertStringContainsString('submit', $html);
+        // Cek submit button ada
+        $this->assertStringContainsString('type="submit"', $html);
     }
 
     /**
      * B) STATUS MEMPROSES - Simpan innerHTML asli tombol (bukan textContent)
      * Agar ikon tidak hilang saat disimpan dan dikembalikan
      */
-    public function test_form_button_menyimpan_inner_htm_l_asli(): void
+    public function test_form_button_menyimpan_inner_html_asli(): void
     {
         // JavaScript di app.js harus menyimpan innerHTML asli, bukan textContent
         // Ini memastikan ikon SVG atau elemen child lain tersimpan
-        $this->assertStringContainsString('innerHTML', file_get_contents(resource_path('js/app.js')));
+        $appJs = file_get_contents(resource_path('js/app.js'));
+
+        // Cek ada 'dataset.originalHtml' atau 'innerHTML' di Map
+        $this->assertStringContainsString('innerHTML', $appJs);
     }
 
     /**
@@ -47,17 +49,31 @@ class FormLoadingStateTest extends TestCase
 
         // Cek ada 'pageshow' event listener
         $this->assertStringContainsString('pageshow', $appJs);
+        // Cek ada event.persisted untuk bfcache detection
+        $this->assertStringContainsString('persisted', $appJs);
     }
 
     /**
-     * B) STATUS MEMPROSES - Selektor tombol sesuai requirement
+     * B) STATUS MEMPROSES - Gunakan e.submitter jika tersedia
      */
-    public function test_form_button_selector_sesuai_requirement(): void
+    public function test_form_handler_gunakan_e_submitter(): void
     {
-        // Selektor harus: 'button[type="submit"], button:not([type]), input[type="submit"]'
         $appJs = file_get_contents(resource_path('js/app.js'));
 
-        // Cek ada selektor untuk submit button
+        // Cek ada reference ke e.submitter
+        $this->assertStringContainsString('e.submitter', $appJs);
+    }
+
+    /**
+     * B) STATUS MEMPROSES - Selektor tombol fallback jika submitter tidak ada
+     */
+    public function test_form_button_selector_fallback(): void
+    {
+        $appJs = file_get_contents(resource_path('js/app.js'));
+
+        // Selektor fallback harus ada: 'button[type="submit"], button:not([type]), input[type="submit"]'
         $this->assertStringContainsString('button[type="submit"]', $appJs);
+        $this->assertStringContainsString('button:not([type])', $appJs);
+        $this->assertStringContainsString('input[type="submit"]', $appJs);
     }
 }

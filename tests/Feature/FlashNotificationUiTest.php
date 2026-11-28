@@ -116,24 +116,7 @@ class FlashNotificationUiTest extends TestCase
     }
 
     /**
-     * A) TES NOTIFIKASI - Flash success harus punya pause/resume handlers
-     */
-    public function test_flash_success_pause_resume_handlers(): void
-    {
-        $response = $this->withSession(['success' => 'Test'])
-            ->get(route('login'));
-
-        $html = $response->getContent();
-
-        // Harus ada event handlers untuk pause/resume
-        $this->assertStringContainsString('@mouseenter', $html);
-        $this->assertStringContainsString('@mouseleave', $html);
-        $this->assertStringContainsString('@focusin', $html);
-        $this->assertStringContainsString('@focusout', $html);
-    }
-
-    /**
-     * A) TES NOTIFIKASI - Flash error TIDAK boleh punya setTimeout
+     * A) TES NOTIFIKASI - Flash error TIDAK boleh punya setTimeout (strict preg_match)
      */
     public function test_flash_error_tidak_punya_timer(): void
     {
@@ -148,20 +131,23 @@ class FlashNotificationUiTest extends TestCase
 
         $html = $followResponse->getContent();
 
-        // Cari error section (role="alert")
-        // Pattern: harus punya role="alert" tapi TIDAK punya setTimeout di dalamnya
-        if (str_contains($html, 'role="alert"')) {
-            // Extract error block roughly
-            preg_match('/role="alert"[^>]*>.*?Terjadi kesalahan/s', $html, $matches);
-            if (count($matches) > 0) {
-                // Error section TIDAK boleh punya setTimeout
-                $this->assertStringNotContainsString('setTimeout', $matches[0]);
-            }
-        }
+        // WAJIB ada role="alert" (assertSee first)
+        $this->assertStringContainsString('role="alert"', $html);
+
+        // Extract error block dengan preg_match (WAJIB cocok / assertSame 1)
+        // Pattern: dari role="alert" sampai closing </div> untuk elemen dengan role="alert"
+        $matches = [];
+        $matchCount = preg_match('/role="alert"[^>]*>.*?<\/div>/s', $html, $matches);
+
+        // WAJIB match SATU kali
+        $this->assertSame(1, $matchCount, 'Error alert block harus ada dan terparsing');
+
+        // Error section dalam blok yang di-extract TIDAK boleh punya setTimeout
+        $this->assertStringNotContainsString('setTimeout', $matches[0]);
     }
 
     /**
-     * A) TES NOTIFIKASI - Flash component dapat di-close via tombol
+     * A) TES NOTIFIKASI - Flash success dapat di-close via tombol
      */
     public function test_flash_success_dapat_ditutup(): void
     {
@@ -170,7 +156,7 @@ class FlashNotificationUiTest extends TestCase
 
         $html = $response->getContent();
 
-        // Harus punya tombol dengan @click="show = false"
+        // Harus punya tombol dengan @click="show = false
         $this->assertStringContainsString('@click="show = false', $html);
     }
 

@@ -12,15 +12,11 @@ Alpine.start();
 
 // ========== INTERAKSI TAHAP B ==========
 
-// D) KEDIP REVEAL - Tambahkan kelas reveal-ready di awal untuk cegah flash elemen
-// Ini HARUS di luar DOMContentLoaded agar berjalan sebelum first paint
-const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-if (!prefersReducedMotion) {
-  document.documentElement.classList.add('reveal-ready');
-}
-
+// D) KEDIP REVEAL - Observer untuk [data-reveal] (kelas reveal-ready ditambah via layout <head>)
 // 1) MUNCUL SAAT SCROLL (Reveal on Scroll)
 document.addEventListener('DOMContentLoaded', function () {
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
   if (!prefersReducedMotion) {
     // Setup IntersectionObserver
     const observer = new IntersectionObserver(
@@ -59,13 +55,13 @@ document.addEventListener('DOMContentLoaded', function () {
           if (entry.isIntersecting && !entry.target.dataset.counted) {
             const targetStr = entry.target.getAttribute('data-count-to');
             const target = parseFloat(targetStr);
-            
+
             // Skip jika target bukan angka (NaN)
             if (isNaN(target)) {
               entry.target.dataset.counted = 'true';
               return;
             }
-            
+
             const duration = 800; // ms
             const start = Date.now();
 
@@ -78,11 +74,12 @@ document.addEventListener('DOMContentLoaded', function () {
               // EaseOut: 1 - (1 - progress)^3
               const eased = 1 - Math.pow(1 - progress, 3);
               const current = target * eased;
-              
+
               // Tentukan jumlah desimal dari target
-              const decimalPlaces = targetStr.includes('.') ? 
-                (targetStr.split('.')[1]?.length || 0) : 0;
-              
+              const decimalPlaces = targetStr.includes('.')
+                ? (targetStr.split('.')[1]?.length || 0)
+                : 0;
+
               const displayValue = decimalPlaces > 0
                 ? current.toFixed(decimalPlaces)
                 : Math.round(current).toLocaleString('id-ID');
@@ -118,8 +115,9 @@ document.addEventListener('DOMContentLoaded', function () {
 document.addEventListener('DOMContentLoaded', function () {
   const submitButtons = new Map(); // Simpan original state tombol
 
-  // Simpan original innerHTML semua tombol submit
+  // Simpan original innerHTML semua tombol submit di dalam dataset
   document.querySelectorAll('button[type="submit"], button:not([type]), input[type="submit"]').forEach((button) => {
+    button.dataset.originalHtml = button.innerHTML;
     submitButtons.set(button, button.innerHTML);
   });
 
@@ -155,8 +153,9 @@ document.addEventListener('DOMContentLoaded', function () {
           return;
         }
 
-        // Cari tombol submit (selektor: button[type="submit"], button:not([type]), input[type="submit"])
-        const submitButton = form.querySelector('button[type="submit"], button:not([type]), input[type="submit"]');
+        // Gunakan e.submitter jika ada (fallback ke selektor)
+        let submitButton = e.submitter || form.querySelector('button[type="submit"], button:not([type]), input[type="submit"]');
+
         if (submitButton && submitButtons.has(submitButton)) {
           const loadingText = submitButton.getAttribute('data-loading-text') || 'Memproses...';
           const originalHtml = submitButtons.get(submitButton);

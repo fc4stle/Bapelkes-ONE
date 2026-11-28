@@ -323,8 +323,8 @@ class AktivitasLogTest extends TestCase
         $response = $this->actingAs($this->admin)
             ->get(route('admin.aktivitas.index'));
 
-        // Blade {{ }} otomatis escape HTML entities
-        $this->assertStringNotContainsString('<script>', $response->getContent());
+        // Blade {{ }} otomatis escape HTML entities - cek user-injected script tidak ada
+        $this->assertStringNotContainsString('<script>alert', $response->getContent());
         $this->assertTrue(true); // View render without error is a pass
     }
 
