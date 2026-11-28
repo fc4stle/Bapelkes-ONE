@@ -340,3 +340,22 @@ textarea):focus {
 }
 
 /* ========== END INTERAKSI UX ========== */
+
+/* ========== HEADER BAND STYLING ========== */
+
+[data-brand="band"] h1,
+[data-brand="band"] h2,
+[data-brand="band"] h3,
+[data-brand="band"] h4,
+[data-brand="band"] h5,
+[data-brand="band"] h6 {
+  color: #ffffff;
+}
+
+[data-brand="band"] p,
+[data-brand="band"] span,
+[data-brand="band"] a {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* ========== END HEADER BAND ========== */

@@ -13,20 +13,23 @@
     </head>
     <body class="font-sans antialiased">
         <div class="min-h-screen" style="background-color: var(--color-bg);">
-            @include('layouts.navigation')
+            <!-- Brand Band (Photo + Nav + Header) -->
+            <div data-brand="band" style="background: linear-gradient(180deg, rgba(11, 40, 31, 0.80), rgba(11, 58, 44, 0.94)), url('/images/gedung-saraswati.jpeg') center 35% / cover; color: white;">
+                @include('layouts.navigation')
+
+                <!-- Page Header (Slot $header) -->
+                @isset($header)
+                    <header class="py-5 px-4 sm:px-6 lg:px-8" style="padding-top: 20px; padding-bottom: 36px;">
+                        <div class="max-w-7xl mx-auto">
+                            {{ $header }}
+                        </div>
+                    </header>
+                @endisset
+            </div>
 
             <!-- Flash Messages -->
             <x-flash type="success" />
             <x-flash type="error" />
-
-            <!-- Page Heading -->
-            @isset($header)
-                <header style="background-color: var(--color-bg); border-bottom: 1px solid var(--color-line);">
-                    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                        {{ $header }}
-                    </div>
-                </header>
-            @endisset
 
             <!-- Page Content -->
             <main>
