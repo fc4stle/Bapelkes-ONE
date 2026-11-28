@@ -19,8 +19,8 @@
 
                 <!-- Page Header (Slot $header) -->
                 @isset($header)
-                    <header class="py-5 px-4 sm:px-6 lg:px-8" style="padding-top: 20px; padding-bottom: 36px;">
-                        <div class="max-w-7xl mx-auto">
+                    <header class="py-5" style="padding-top: 20px; padding-bottom: 36px;">
+                        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                             {{ $header }}
                         </div>
                     </header>

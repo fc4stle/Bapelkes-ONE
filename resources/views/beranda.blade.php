@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <!-- Hero Section dalam Band dengan Padding sejajar Navigation -->
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-left">
+        <div class="text-left">
             <!-- Badge Pil Kecil -->
             <div class="inline-block mb-4">
                 <span class="inline-block px-3 py-1 text-xs font-medium rounded-full border border-white/50 text-white">
@@ -54,7 +54,6 @@
                     </a>
                 @endauth
             </div>
-        </div>
         </div>
     </x-slot>
 
