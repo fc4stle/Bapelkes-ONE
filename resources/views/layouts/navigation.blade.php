@@ -1,8 +1,8 @@
-<nav x-data="{ open: false }" class="h-[72px]" style="background-color: transparent; border-bottom: 1px solid rgba(255, 255, 255, 0.22);">
+<nav x-data="{ open: false, scrolled: false }" x-init="window.addEventListener('scroll', () => scrolled = window.scrollY > 8)" class="sticky top-0 z-40 h-[72px] transition-colors duration-200" :style="scrolled ? 'background-color: color-mix(in srgb, var(--color-primary) 85%, transparent); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255, 255, 255, 0.22); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);' : 'background-color: transparent; border-bottom: 1px solid rgba(255, 255, 255, 0.22);'">
     <!-- Primary Navigation Menu -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center h-full">
-            <div class="flex items-center gap-8 flex-wrap md:flex-nowrap">
+            <div class="flex items-center gap-8 flex-wrap xl:flex-nowrap">
                 <!-- Brand Logo + Screen Reader Name -->
                 <a href="/" class="flex items-center shrink-0">
                     <!-- White Logo Image -->
@@ -11,52 +11,66 @@
                     <span class="sr-only">{{ config('app.name') }}</span>
                 </a>
 
-                <!-- Vertical Divider (sm ke atas) -->
-                <div class="hidden sm:block w-px h-7 bg-white/25"></div>
+                <!-- Vertical Divider (xl ke atas) -->
+                <div class="hidden xl:block w-px h-7 bg-white/25"></div>
 
-                <!-- Navigation Links -->
-                <div class="hidden space-x-1 sm:space-x-4 md:space-x-2 lg:space-x-4 sm:-my-px sm:flex">
-                    <x-nav-link :href="route('pelatihan.katalog')" :active="request()->routeIs('pelatihan.katalog', 'pelatihan.detail')" class="text-sm px-4 py-2">
+                <!-- Navigation Links (xl ke atas) -->
+                <div class="hidden space-x-1 xl:space-x-2 lg:space-x-1 xl:flex">
+                    <x-nav-link :href="route('pelatihan.katalog')" :active="request()->routeIs('pelatihan.katalog', 'pelatihan.detail')" class="text-sm px-3 py-2">
                         Katalog
                     </x-nav-link>
 
                     @auth
-                        <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" class="text-sm px-4 py-2">
+                        <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" class="text-sm px-3 py-2">
                             Dashboard
                         </x-nav-link>
 
                     @if (auth()->user()->isStaf())
-                        <x-nav-link :href="route('panitia.dashboard')" :active="request()->routeIs('panitia.dashboard')" class="text-sm px-4 py-2">
+                        <x-nav-link :href="route('panitia.dashboard')" :active="request()->routeIs('panitia.dashboard')" class="text-sm px-3 py-2">
                             Rekap Panitia
                         </x-nav-link>
 
-                        <x-nav-link :href="route('panitia.asrama.index')" :active="request()->routeIs('panitia.asrama.*')" class="text-sm px-4 py-2">
-                            Kelola Asrama
-                        </x-nav-link>
-
-                        <x-nav-link :href="route('pelatihans.index')" :active="request()->routeIs('pelatihans.index', 'pelatihans.show', 'pelatihans.create', 'pelatihans.edit')" class="text-sm px-4 py-2">
+                        <x-nav-link :href="route('pelatihans.index')" :active="request()->routeIs('pelatihans.index', 'pelatihans.show', 'pelatihans.create', 'pelatihans.edit')" class="text-sm px-3 py-2">
                             Kelola Pelatihan
                         </x-nav-link>
 
-                        <x-nav-link :href="route('panitia.presensi.index')" :active="request()->routeIs('panitia.presensi.*', 'pelatihan.presensi')" class="text-sm px-4 py-2">
+                        <x-nav-link :href="route('panitia.presensi.index')" :active="request()->routeIs('panitia.presensi.*', 'pelatihan.presensi')" class="text-sm px-3 py-2">
                             Presensi
                         </x-nav-link>
 
-                        <x-nav-link :href="route('panitia.statistik.index')" :active="request()->routeIs('panitia.statistik.*')" class="text-sm px-4 py-2">
-                            Statistik
-                        </x-nav-link>
+                        <!-- Dropdown "Lainnya" untuk menu tambahan -->
+                        @php
+                            $isOtherMenuActive = request()->routeIs('panitia.statistik.*', 'panitia.asrama.*', 'admin.users.*', 'admin.aktivitas.*');
+                        @endphp
+                        <x-dropdown align="left" width="48">
+                            <x-slot name="trigger">
+                                <button class="text-sm px-3 py-2 rounded-full border transition-colors text-white {{ $isOtherMenuActive ? 'bg-white/20 border-white/35' : 'border-white/35 bg-white/15 hover:bg-white/25' }}">
+                                    Lainnya
+                                </button>
+                            </x-slot>
 
-                        @if (auth()->user()->isAdmin())
-                            <x-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')" class="text-sm px-4 py-2">
-                                Kelola Pengguna
-                            </x-nav-link>
+                            <x-slot name="content">
+                                <x-dropdown-link :href="route('panitia.statistik.index')" :active="request()->routeIs('panitia.statistik.*')" class="text-[var(--color-text)]">
+                                    Statistik
+                                </x-dropdown-link>
 
-                            <x-nav-link :href="route('admin.aktivitas.index')" :active="request()->routeIs('admin.aktivitas.*')" class="text-sm px-4 py-2">
-                                Aktivitas
-                            </x-nav-link>
-                        @endif
+                                <x-dropdown-link :href="route('panitia.asrama.index')" :active="request()->routeIs('panitia.asrama.*')" class="text-[var(--color-text)]">
+                                    Kelola Asrama
+                                </x-dropdown-link>
+
+                                @if (auth()->user()->isAdmin())
+                                    <x-dropdown-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')" class="text-[var(--color-text)]">
+                                        Kelola Pengguna
+                                    </x-dropdown-link>
+
+                                    <x-dropdown-link :href="route('admin.aktivitas.index')" :active="request()->routeIs('admin.aktivitas.*')" class="text-[var(--color-text)]">
+                                        Aktivitas
+                                    </x-dropdown-link>
+                                @endif
+                            </x-slot>
+                        </x-dropdown>
                     @else
-                        <x-nav-link :href="route('pendaftarans.index')" :active="request()->routeIs('pendaftarans.index', 'pendaftarans.edit', 'pelatihan.daftar')" class="text-sm px-4 py-2">
+                        <x-nav-link :href="route('pendaftarans.index')" :active="request()->routeIs('pendaftarans.index', 'pendaftarans.edit', 'pelatihan.daftar')" class="text-sm px-3 py-2">
                             Pendaftaran Saya
                         </x-nav-link>
                     @endif
@@ -65,7 +79,7 @@
             </div>
 
             <!-- Notification Bell and Settings Dropdown -->
-            <div class="hidden sm:flex sm:items-center sm:ms-6 gap-4">
+            <div class="hidden xl:flex xl:items-center xl:ms-6 gap-4 shrink-0">
                 @auth
                     <!-- Notification Bell Dropdown -->
                     <div x-data="{ notifOpen: false }" class="relative">
@@ -203,8 +217,8 @@
                 @endguest
             </div>
 
-            <!-- Hamburger -->
-            <div class="flex items-center sm:hidden -me-2">
+            <!-- Hamburger (bawah xl) -->
+            <div class="flex items-center xl:hidden -me-2">
                 <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-md transition duration-150 ease-in-out text-white" @keydown.escape="open = false">
                     <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
                         <path :class="{'hidden': open, 'inline-flex': ! open }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
@@ -215,8 +229,8 @@
         </div>
     </div>
 
-    <!-- Responsive Navigation Menu -->
-    <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden overflow-x-hidden" style="background-color: var(--color-primary-hover);">
+    <!-- Responsive Navigation Menu (mobile + tablet) -->
+    <div :class="{'block': open, 'hidden': ! open}" class="hidden xl:hidden overflow-x-hidden" style="background-color: var(--color-primary-hover);">
         <div class="pt-2 pb-3 space-y-1">
             <x-responsive-nav-link :href="route('pelatihan.katalog')" :active="request()->routeIs('pelatihan.katalog', 'pelatihan.detail')" class="text-[var(--color-text)]">
                 Katalog
