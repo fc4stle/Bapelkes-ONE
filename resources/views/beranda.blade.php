@@ -1,60 +1,55 @@
 <x-app-layout>
     <x-slot name="header">
-        <!-- Hidden text untuk assertion test: Sistem Informasi Portal Pelatihan Terpadu -->
-        <span class="sr-only">{{ config('app.name') }}</span>
-        
-        <!-- Hero Section dalam Band -->
+        <!-- Hero Section dalam Band dengan Padding sejajar Navigation -->
         <div class="text-left">
             <!-- Badge Pil Kecil -->
             <div class="inline-block mb-4">
-                <span class="inline-block px-3 py-1 text-xs font-medium rounded-full border" style="border-color: rgba(255, 255, 255, 0.5); color: white;">
+                <span class="inline-block px-3 py-1 text-xs font-medium rounded-full border border-white/50 text-white">
                     Balai Pelatihan Kesehatan DIY
                 </span>
             </div>
 
-            <!-- H1 Hero -->
-            <h1 class="text-4xl sm:text-5xl lg:text-5xl font-bold leading-tight mb-4 text-white">
-                Pelatihan kesehatan Bapelkes DIY, dari daftar sampai sertifikat.
-            </h1>
+            <!-- H1 + Paragraf wrapper -->
+            <div class="max-w-2xl">
+                <!-- H1 Hero -->
+                <h1 class="text-3xl sm:text-4xl font-semibold leading-tight mb-4 text-white">
+                    Pelatihan kesehatan Bapelkes DIY, dari daftar sampai sertifikat.
+                </h1>
 
-            <!-- Subtitle -->
-            <p class="text-lg mb-4 font-semibold" style="color: rgba(255, 255, 255, 0.85);">
-                Portal terpadu pelatihan dan layanan peserta, studi kasus Bapelkes DIY
-            </p>
-
-            <!-- Paragraf Deskripsi -->
-            <p class="text-lg mb-8 leading-relaxed" style="color: rgba(255, 255, 255, 0.85);">
-                Lihat jadwal pelatihan, daftar, cetak kartu peserta, dan unduh sertifikat dari satu portal.
-            </p>
+                <!-- Paragraf Deskripsi -->
+                <p class="text-base sm:text-lg mb-8 leading-relaxed band-sub">
+                    Lihat jadwal pelatihan, daftar, cetak kartu peserta, dan unduh sertifikat dari satu portal.
+                </p>
+            </div>
 
             <!-- Tombol CTA -->
             <div class="flex flex-col sm:flex-row gap-3 flex-wrap">
                 @auth
                     @if (auth()->user()->isStaf())
                         <!-- Tombol Utama untuk Staf -->
-                        <a href="{{ route('panitia.dashboard') }}" class="inline-block px-6 py-3 rounded-full font-semibold text-sm transition-colors hover:opacity-90" style="background-color: var(--color-gold-soft); color: var(--color-text);">
+                        <a href="{{ route('panitia.dashboard') }}" class="inline-block px-6 py-3 rounded-full font-semibold text-sm transition-colors hover:opacity-90 bg-[var(--color-gold-soft)] text-[var(--color-text)]">
                             Rekap Panitia
                         </a>
                         <!-- Tombol Sekunder untuk Staf -->
-                        <a href="{{ route('pelatihans.index') }}" class="inline-block px-6 py-3 rounded-full font-semibold text-sm border transition-colors hover:bg-white hover:bg-opacity-10" style="border-color: white; color: white;">
+                        <a href="{{ route('pelatihans.index') }}" class="inline-block px-6 py-3 rounded-full font-semibold text-sm border border-white/50 text-white transition-colors hover:bg-white/10">
                             Kelola Pelatihan
                         </a>
                     @else
                         <!-- Tombol Utama untuk Peserta -->
-                        <a href="{{ route('pelatihan.katalog') }}" class="inline-block px-6 py-3 rounded-full font-semibold text-sm transition-colors hover:opacity-90" style="background-color: var(--color-gold-soft); color: var(--color-text);">
+                        <a href="{{ route('pelatihan.katalog') }}" class="inline-block px-6 py-3 rounded-full font-semibold text-sm transition-colors hover:opacity-90 bg-[var(--color-gold-soft)] text-[var(--color-text)]">
                             Lihat Katalog
                         </a>
                         <!-- Tombol Sekunder untuk Peserta -->
-                        <a href="{{ route('dashboard') }}" class="inline-block px-6 py-3 rounded-full font-semibold text-sm border transition-colors hover:bg-white hover:bg-opacity-10" style="border-color: white; color: white;">
-                            Daftar Akun
+                        <a href="{{ route('pendaftarans.index') }}" class="inline-block px-6 py-3 rounded-full font-semibold text-sm border border-white/50 text-white transition-colors hover:bg-white/10">
+                            Pendaftaran Saya
                         </a>
                     @endif
                 @else
                     <!-- Tombol untuk Tamu -->
-                    <a href="{{ route('pelatihan.katalog') }}" class="inline-block px-6 py-3 rounded-full font-semibold text-sm transition-colors hover:opacity-90" style="background-color: var(--color-gold-soft); color: var(--color-text);">
+                    <a href="{{ route('pelatihan.katalog') }}" class="inline-block px-6 py-3 rounded-full font-semibold text-sm transition-colors hover:opacity-90 bg-[var(--color-gold-soft)] text-[var(--color-text)]">
                         Lihat Katalog
                     </a>
-                    <a href="{{ route('register') }}" class="inline-block px-6 py-3 rounded-full font-semibold text-sm border transition-colors hover:bg-white hover:bg-opacity-10" style="border-color: white; color: white;">
+                    <a href="{{ route('register') }}" class="inline-block px-6 py-3 rounded-full font-semibold text-sm border border-white/50 text-white transition-colors hover:bg-white/10">
                         Daftar Akun
                     </a>
                 @endauth

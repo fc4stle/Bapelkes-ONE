@@ -1,59 +1,62 @@
-<nav x-data="{ open: false }" style="background-color: transparent; border-bottom: 1px solid rgba(255, 255, 255, 0.22); height: 64px;">
+<nav x-data="{ open: false }" class="h-[72px]" style="background-color: transparent; border-bottom: 1px solid rgba(255, 255, 255, 0.22);">
     <!-- Primary Navigation Menu -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center h-full">
-            <div class="flex items-center gap-6 flex-wrap md:flex-nowrap">
+            <div class="flex items-center gap-8 flex-wrap md:flex-nowrap">
                 <!-- Brand Logo + Screen Reader Name -->
-                <a href="/" class="flex items-center gap-3 shrink-0">
+                <a href="/" class="flex items-center shrink-0">
                     <!-- White Logo Image -->
-                    <img src="/images/logo-bapelkes-putih.png" alt="Balai Pelatihan Kesehatan DIY" style="height: 34px; object-fit: contain;">
+                    <img src="/images/logo-bapelkes-putih.png" alt="Balai Pelatihan Kesehatan DIY" class="h-9 sm:h-11 w-auto">
                     <!-- App Name for Screen Readers -->
                     <span class="sr-only">{{ config('app.name') }}</span>
                 </a>
 
+                <!-- Vertical Divider (sm ke atas) -->
+                <div class="hidden sm:block w-px h-7 bg-white/25"></div>
+
                 <!-- Navigation Links -->
                 <div class="hidden space-x-1 sm:space-x-4 md:space-x-2 lg:space-x-4 sm:-my-px sm:flex">
-                    <x-nav-link :href="route('pelatihan.katalog')" :active="request()->routeIs('pelatihan.katalog', 'pelatihan.detail')" class="text-[13px] md:text-[13px] lg:text-[14px]">
+                    <x-nav-link :href="route('pelatihan.katalog')" :active="request()->routeIs('pelatihan.katalog', 'pelatihan.detail')" class="text-sm px-4 py-2">
                         Katalog
                     </x-nav-link>
 
                     @auth
-                        <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" class="text-[13px] md:text-[13px] lg:text-[14px]">
+                        <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" class="text-sm px-4 py-2">
                             Dashboard
                         </x-nav-link>
 
                     @if (auth()->user()->isStaf())
-                        <x-nav-link :href="route('panitia.dashboard')" :active="request()->routeIs('panitia.dashboard')" class="text-[13px] md:text-[13px] lg:text-[14px]">
+                        <x-nav-link :href="route('panitia.dashboard')" :active="request()->routeIs('panitia.dashboard')" class="text-sm px-4 py-2">
                             Rekap Panitia
                         </x-nav-link>
 
-                        <x-nav-link :href="route('panitia.asrama.index')" :active="request()->routeIs('panitia.asrama.*')" class="text-[13px] md:text-[13px] lg:text-[14px]">
+                        <x-nav-link :href="route('panitia.asrama.index')" :active="request()->routeIs('panitia.asrama.*')" class="text-sm px-4 py-2">
                             Kelola Asrama
                         </x-nav-link>
 
-                        <x-nav-link :href="route('pelatihans.index')" :active="request()->routeIs('pelatihans.index', 'pelatihans.show', 'pelatihans.create', 'pelatihans.edit')" class="text-[13px] md:text-[13px] lg:text-[14px]">
+                        <x-nav-link :href="route('pelatihans.index')" :active="request()->routeIs('pelatihans.index', 'pelatihans.show', 'pelatihans.create', 'pelatihans.edit')" class="text-sm px-4 py-2">
                             Kelola Pelatihan
                         </x-nav-link>
 
-                        <x-nav-link :href="route('panitia.presensi.index')" :active="request()->routeIs('panitia.presensi.*', 'pelatihan.presensi')" class="text-[13px] md:text-[13px] lg:text-[14px]">
+                        <x-nav-link :href="route('panitia.presensi.index')" :active="request()->routeIs('panitia.presensi.*', 'pelatihan.presensi')" class="text-sm px-4 py-2">
                             Presensi
                         </x-nav-link>
 
-                        <x-nav-link :href="route('panitia.statistik.index')" :active="request()->routeIs('panitia.statistik.*')" class="text-[13px] md:text-[13px] lg:text-[14px]">
+                        <x-nav-link :href="route('panitia.statistik.index')" :active="request()->routeIs('panitia.statistik.*')" class="text-sm px-4 py-2">
                             Statistik
                         </x-nav-link>
 
                         @if (auth()->user()->isAdmin())
-                            <x-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')" class="text-[13px] md:text-[13px] lg:text-[14px]">
+                            <x-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')" class="text-sm px-4 py-2">
                                 Kelola Pengguna
                             </x-nav-link>
 
-                            <x-nav-link :href="route('admin.aktivitas.index')" :active="request()->routeIs('admin.aktivitas.*')" class="text-[13px] md:text-[13px] lg:text-[14px]">
+                            <x-nav-link :href="route('admin.aktivitas.index')" :active="request()->routeIs('admin.aktivitas.*')" class="text-sm px-4 py-2">
                                 Aktivitas
                             </x-nav-link>
                         @endif
                     @else
-                        <x-nav-link :href="route('pendaftarans.index')" :active="request()->routeIs('pendaftarans.index', 'pendaftarans.edit', 'pelatihan.daftar')" class="text-[13px] md:text-[13px] lg:text-[14px]">
+                        <x-nav-link :href="route('pendaftarans.index')" :active="request()->routeIs('pendaftarans.index', 'pendaftarans.edit', 'pelatihan.daftar')" class="text-sm px-4 py-2">
                             Pendaftaran Saya
                         </x-nav-link>
                     @endif
@@ -156,7 +159,7 @@
                 @guest
                     <div class="space-x-2 text-sm font-medium">
                         <a href="{{ route('login') }}" class="px-3 py-2 rounded-md text-white hover:opacity-100 opacity-80">Masuk</a>
-                        <a href="{{ route('register') }}" class="px-4 py-2 rounded-full text-white font-semibold border-white/35 bg-white/20 hover:bg-white/30 transition-colors inline-block">Daftar</a>
+                        <a href="{{ route('register') }}" class="px-4 py-2 rounded-full text-white font-semibold border border-white/35 bg-white/20 hover:bg-white/30 transition-colors inline-block">Daftar</a>
                     </div>
                 @else
                 <x-dropdown align="right" width="48">
@@ -201,7 +204,7 @@
             </div>
 
             <!-- Hamburger -->
-            <div class="-me-2 flex items-center sm:hidden">
+            <div class="flex items-center sm:hidden -me-2">
                 <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-md transition duration-150 ease-in-out text-white" @keydown.escape="open = false">
                     <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
                         <path :class="{'hidden': open, 'inline-flex': ! open }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />

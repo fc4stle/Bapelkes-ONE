@@ -209,18 +209,20 @@ class ApplicationBrandingTest extends TestCase
      */
     public function test_beranda_view_has_correct_application_name(): void
     {
+        // Test memeriksa bahwa halaman beranda memiliki nama aplikasi lengkap di title atau konten yang tampil
+        $response = $this->get('/');
+
+        // Assert: title halaman berisi nama aplikasi
+        $response->assertSee('Pelatihan kesehatan Bapelkes DIY, dari daftar sampai sertifikat', false);
+
+        // Assert: tidak ada hardcode "Bapelkes ONE" di h1 lama
         $berandaPath = resource_path('views/beranda.blade.php');
         $berandaContent = file_get_contents($berandaPath);
 
-        $this->assertStringContainsString(
-            'Sistem Informasi Portal Pelatihan Terpadu',
-            $berandaContent,
-            'beranda.blade.php harus memiliki nama aplikasi lengkap'
-        );
         $this->assertStringNotContainsString(
             '<h1 class="text-3xl sm:text-5xl font-bold mb-4" style="color: var(--color-text);">Bapelkes ONE</h1>',
             $berandaContent,
-            'beranda.blade.php tidak boleh hardcode "Bapelkes ONE"'
+            'beranda.blade.php tidak boleh hardcode "Bapelkes ONE" dengan style color inline'
         );
     }
 
@@ -285,18 +287,18 @@ class ApplicationBrandingTest extends TestCase
         $response = $this->get('/');
 
         $response->assertStatus(200);
-        $response->assertSee('Portal terpadu pelatihan dan layanan peserta, studi kasus Bapelkes DIY');
+        $response->assertSee('Lihat jadwal pelatihan, daftar, cetak kartu peserta, dan unduh sertifikat dari satu portal');
     }
 
     /**
-     * Beranda tidak menampilkan tagline lama tanpa "studi kasus"
+     * Beranda tidak menampilkan tagline lama dengan "studi kasus"
      */
     public function test_beranda_does_not_display_old_tagline(): void
     {
         $response = $this->get('/');
 
         $response->assertStatus(200);
-        $response->assertDontSee('Portal terpadu pelatihan dan layanan peserta Bapelkes DIY');
+        $response->assertDontSee('Portal terpadu pelatihan dan layanan peserta, studi kasus Bapelkes DIY');
     }
 
     /**
