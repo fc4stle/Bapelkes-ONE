@@ -70,7 +70,7 @@
                             @click="notifOpen = !notifOpen"
                             class="relative p-2 rounded-lg transition-colors text-white opacity-80 hover:opacity-100"
                         >
-                            <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg class="w-6 h-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                             </svg>
                             
@@ -156,24 +156,24 @@
                 @guest
                     <div class="space-x-2 text-sm font-medium">
                         <a href="{{ route('login') }}" class="px-3 py-2 rounded-md text-white hover:opacity-100 opacity-80">Masuk</a>
-                        <a href="{{ route('register') }}" class="px-4 py-2 rounded-full text-white font-semibold hover:opacity-100 opacity-90" style="background-color: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255, 255, 255, 0.35);">Daftar</a>
+                        <a href="{{ route('register') }}" class="px-4 py-2 rounded-full text-white font-semibold border-white/35 bg-white/20 hover:bg-white/30 transition-colors inline-block">Daftar</a>
                     </div>
                 @else
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
-                        <button class="inline-flex items-center px-3 py-2 border rounded-full text-sm leading-4 font-medium text-[var(--color-text)] hover:opacity-100" style="border-color: rgba(255, 255, 255, 0.35); background-color: rgba(255, 255, 255, 0.16);">
+                        <button class="inline-flex items-center px-3 py-2 border rounded-full text-sm leading-4 font-medium text-white border-white/35 bg-white/15 hover:bg-white/25 transition-colors">
                             <div>{{ Auth::user()->name }}</div>
 
                             @if (auth()->user()->isPanitia())
-                                <span class="ms-2 inline-block px-2 py-1 text-xs font-semibold rounded-full" style="background-color: var(--color-primary-soft); color: var(--color-primary);">Panitia</span>
+                                <span class="ms-2 inline-block px-2 py-1 text-xs font-semibold rounded-full" style="background-color: color-mix(in srgb, var(--color-primary) 15%, white); color: var(--color-primary);">Panitia</span>
                             @elseif (auth()->user()->isAdmin())
-                                <span class="ms-2 inline-block px-2 py-1 text-xs font-semibold rounded-full" style="background-color: var(--color-primary-soft); color: var(--color-primary);">Admin</span>
+                                <span class="ms-2 inline-block px-2 py-1 text-xs font-semibold rounded-full" style="background-color: color-mix(in srgb, var(--color-primary) 15%, white); color: var(--color-primary);">Admin</span>
                             @else
                                 <span class="ms-2 inline-block px-2 py-1 text-xs font-semibold rounded-full" style="background-color: color-mix(in srgb, var(--color-success) 15%, white); color: var(--color-success);">Peserta</span>
                             @endif
 
                             <div class="ms-1">
-                                <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                <svg class="fill-current h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
                                 </svg>
                             </div>
